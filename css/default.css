@@ -1,0 +1,43 @@
+body {
+	background-color: gray;
+	text-align: center;
+}
+
+a:hover {
+	color: black;
+}
+
+a:visited {
+	color: #a0a;
+}
+
+.site {
+	background-color: white
+	line-height: 1.5em;
+	width: 80%
+}
+
+.site .header {
+	border-bottom: 4px solid #ddd;
+}
+
+.site .content {
+	width: 70%
+}
+
+.site .contact {
+	float: right;
+}
+
+.site .sidenav {
+	float: right;
+}
+
+
+
+
+
+
+
+
+
