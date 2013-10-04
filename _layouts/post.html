@@ -15,11 +15,11 @@
     </div>
 
     <script type="text/javascript">
-		$('#disqus_container .comment').on('click',function(){
+		$("#disqus_container .comment").on('click',function(){
 			$(this).html('加载中...');
-		        var disqus_shortname = 'blogleon';
-		        var that = this;
-		        $.getScript('http://' + disqus_shortname + '.disqus.com/embed.js',function(){$(that).remove()}); 
+			var disqus_shortname = 'blogleon';
+			var that = this;
+			$.getScript('http://' + disqus_shortname + '.disqus.com/embed.js',function(){$(that).remove()}); 
 		});
     </script>
 </body>
