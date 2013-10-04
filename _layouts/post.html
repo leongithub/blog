@@ -9,7 +9,9 @@
 
 　　{{ content }}
 
-	更新了1
+	<p id="p1">如果点击“隐藏”按钮，我就会消失。</p>
+<button id="hide" type="button">隐藏</button>
+<button id="show" type="button">显示</button>
 
     <div id="disqus_container">
         <a href="#" class="comment" onclick="return false;">点击查看评论</a>
@@ -17,6 +19,14 @@
     </div>
 
     <script type="text/javascript">
+$(document).ready(function(){
+  $("#hide").click(function(){
+  $("p").hide();
+  });
+  $("#show").click(function(){
+  $("p").show();
+  });
+});
 		$("#disqus_container .comment").click(function(){
 			alert("gogogo");
 		});
