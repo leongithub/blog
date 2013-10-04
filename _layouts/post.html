@@ -9,12 +9,17 @@
 
 　　{{ content }}
 
+	更新了1
+
     <div id="disqus_container">
         <a href="#" class="comment" onclick="return false;">点击查看评论</a>
     	<div id="disqus_thread"></div>
     </div>
 
     <script type="text/javascript">
+		$("#disqus_container .comment").click(function(){
+			alert("gogogo");
+		});
 		$("#disqus_container .comment").on('click',function(){
 			$(this).html('加载中...');
 			var disqus_shortname = 'blogleon';
