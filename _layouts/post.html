@@ -1,34 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head>
-　　<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-　　<title>{{ page.title }}</title>
-	<link rel="stylesheet" href="/blog/js/prettify/prettify.css" />
-	<script type="text/javascript" src="/blog/js/prettify/prettify.js"></script>
-	<script src="/blog/js/jquery-1.7.1.min.js" type="text/javascript"></script>
-</head>
-<body onload="prettyPrint()">
+---
+layout: default
+---
 
-　　{{ content }}
-<!--
-    <div id="disqus_container">
-        <a href="#" class="comment" onclick="return false;">点击查看评论</a>
-    	<div id="disqus_thread"></div>
-    </div>
+<link rel="stylesheet" href="/blog/js/prettify/prettify.css" />
+<script type="text/javascript" src="/blog/js/prettify/prettify.js"></script>
 
-    <script type="text/javascript">
-		$("#disqus_container .comment").on('click',function(){
-			$(this).html('加载中...');
-			var disqus_shortname = 'blogleon';
-			var that = this;
-			$.getScript('http://' + disqus_shortname + '.disqus.com/embed.js',function(){$(that).remove()}); 
-		});
-    </script>
--->
 <div id="disqus_thread"></div>
 <script type="text/javascript">
-    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-    var disqus_shortname = 'blogleon'; // required: replace example with your forum shortname 这个地方需要改成你配置的网站名
+	(function() {
+		prettyPrint();	
+	})();
+
+    var disqus_shortname = 'blogleon'; 
     /* * * DON'T EDIT BELOW THIS LINE * * */
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
@@ -36,9 +19,3 @@
         (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
     })();
 </script>
-<!--
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
--->	
-</body>
-</html>
