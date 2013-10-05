@@ -1,5 +1,9 @@
 body {
-	display: block;
+    font-family: "微软雅黑","Arial","Helvetica","sans-serif";
+}
+
+li {
+    list-style-type: none;
 }
 
 a {
@@ -49,4 +53,3 @@ a:hover {
     padding-top: 1em;
     padding-bottom: 2em;
 }
-
