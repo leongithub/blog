@@ -1,6 +1,10 @@
 body {
-	background-color: gray;
+	background-color: white;
 	text-align: center;
+}
+
+a {
+	text-decoration: none;
 }
 
 a:hover {
@@ -12,21 +16,35 @@ a:visited {
 }
 
 .site {
-	background-color: white
 	line-height: 1.5em;
-	width: 80%
+	width: 50em;
+	text-align: justify;
+	margin: 3em auto 2em auto;
 }
 
 .site .header {
-	border-bottom: 4px solid #ddd;
+	border-bottom: 1px solid gray;
+}
+
+.site .header .title {
+	font-size: 200%;
+	font-weight: bold;
+	color: blue;
+}
+
+.site .header .description {
+	margin-top: 1em;
+	margin-bottom: 2em;
+	color: #222;
 }
 
 .site .content {
-	width: 70%
+	width: 70%;
 }
 
 .site .contact {
 	float: right;
+	clear: left;
 }
 
 .site .sidenav {
