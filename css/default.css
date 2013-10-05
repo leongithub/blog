@@ -1,5 +1,5 @@
 body {
-	background-color: white;
+	background-color: #eee;
 	text-align: center;
 }
 
@@ -11,45 +11,58 @@ a:hover {
 	color: black;
 }
 
-a:visited {
-	color: #a0a;
-}
-
 .site {
+    background-color: #fff;
 	line-height: 1.5em;
-	width: 50em;
+	width: 61em;
 	text-align: justify;
-	margin: 3em auto 2em auto;
+	margin: auto;
+	padding-left: 2em;
+	padding-right: 2em;
 }
 
 .site .header {
+    padding-top: 3em;
+    padding-bottom: 3em;
 	border-bottom: 1px solid gray;
 }
 
 .site .header .title {
-	font-size: 200%;
+	font-size: 230%;
 	font-weight: bold;
 	color: blue;
 }
 
 .site .header .description {
 	margin-top: 1em;
-	margin-bottom: 2em;
-	color: #222;
+	font-weight: bold;
+	color: #999;
 }
 
 .site .content {
+    float: left;
 	width: 70%;
 }
 
 .site .contact {
 	float: right;
-	clear: left;
 }
 
 .site .sidenav {
 	float: right;
+	clear: right;
 }
+
+.site .footer {
+    float: bottom;
+    border-top: 1px solid #eee;
+    clear: both;
+    padding-top: 2em;
+    padding-bottom: 2em;
+}
+
+
+
 
 
 
