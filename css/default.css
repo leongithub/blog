@@ -1,74 +1,49 @@
 body {
-	background-color: #eee;
-	text-align: center;
+	display: block;
 }
 
 a {
+    color: black;
 	text-decoration: none;
 }
 
 a:hover {
-	color: black;
+	color: #e40;
 }
 
 .site {
-    background-color: #fff;
 	line-height: 1.5em;
-	width: 61em;
-	text-align: justify;
+	width: 50em;
 	margin: auto;
-	padding-left: 2em;
-	padding-right: 2em;
+
 }
 
 .site .header {
-    padding-top: 3em;
-    padding-bottom: 3em;
+    padding-top: 2em;
+    padding-bottom: 2em;
 	border-bottom: 1px solid gray;
 }
 
 .site .header .title {
 	font-size: 230%;
 	font-weight: bold;
-	color: blue;
+}
+
+.site .header .title a {
+    color: #0ef;
 }
 
 .site .header .description {
 	margin-top: 1em;
+	font-size: 0.9em;
 	font-weight: bold;
-	color: #999;
-}
-
-.site .content {
-    float: left;
-	width: 70%;
-}
-
-.site .contact {
-	float: right;
-}
-
-.site .sidenav {
-	float: right;
-	clear: right;
+	color: #777;
 }
 
 .site .footer {
     float: bottom;
-    border-top: 1px solid #eee;
+    border-top: 1px solid #ddd;
     clear: both;
-    padding-top: 2em;
+    padding-top: 1em;
     padding-bottom: 2em;
 }
-
-
-
-
-
-
-
-
-
-
-
-
