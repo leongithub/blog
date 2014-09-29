@@ -17,15 +17,14 @@ a:hover {
 
 .site {
 	line-height: 1.5em;
-	width: 60em;
+	width: 65em;
 	margin: auto;
-
 }
 
 .site .header {
     padding-top: 2em;
     padding-bottom: 2em;
-	border-bottom: 1px solid gray;
+    border-bottom: 1px solid gray;
 }
 
 .site .header .site-title {
