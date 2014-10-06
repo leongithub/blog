@@ -10,12 +10,12 @@ layout: default
 <!-- 前后文章导航 -->
 <div class="previous_post">
 {% if page.previous %}
-<a href="{{ site.baseurl }}{{ page.previous.url }}"><-{{ page.previous.title }}</a>
+<a href="{{ site.baseurl }}{{ page.previous.url }}"><<{{ page.previous.title }}</a>
 {% endif %}
 </div>
 <div class="next_post">
 {% if page.next %}
-<a href="{{ site.baseurl }}{{ page.next.url }}">{{ page.next.title }}-></a>
+<a href="{{ site.baseurl }}{{ page.next.url }}">{{ page.next.title }}>></a>
 {% endif %}
 </div>
 
