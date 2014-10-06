@@ -6,6 +6,10 @@ a {
     text-decoration: none;
 }
 
+a:hover {
+    text-decoration: underline;
+}
+
 .site {
 	line-height: 1.5em;
 	width: 65em;
