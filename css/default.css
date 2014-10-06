@@ -57,3 +57,7 @@ a:hover {
     margin-right: 60px;
     font-size: 14px;
 }
+
+#table-of-contents {
+    overflow: auto;
+}
