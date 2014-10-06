@@ -5,7 +5,8 @@ layout: default
 <div id="post">
   {{ content }}
   <p class="post-date">{{ page.date|date:"%Y-%m-%d" }}</p>
-  
+</div>
+
 <!-- 前后文章 -->
 <div class="previous_post">
 {% if page.previous %}
@@ -16,8 +17,6 @@ layout: default
 {% if page.next %}
 ← <a href="{{ page.next }}">下一篇</a>
 {% endif %}
-</div>
-
 </div>
 
 <div id="disqus_thread"></div>
