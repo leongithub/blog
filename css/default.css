@@ -2,6 +2,10 @@ body {
     font-family: "微软雅黑","Arial","Helvetica","sans-serif";
 }
 
+a {
+    text-decoration: none;
+}
+
 .site {
 	line-height: 1.5em;
 	width: 65em;
