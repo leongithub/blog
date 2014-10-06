@@ -7,18 +7,15 @@ layout: default
   <p class="post-date">{{ page.date|date:"%Y-%m-%d" }}</p>
 </div>
 
-{{ page.previous }}
-{{ page.next }}
-
 <!-- 前后文章 -->
 <div class="previous_post">
 {% if page.previous %}
-← <a href="{{ page.previous }}">上一篇</a>
+← <a href="{{ page.previous.url }}">{{ page.previous.title }}</a>
 {% endif %}
 </div>
 <div class="next_post">
 {% if page.next %}
-← <a href="{{ page.next }}">下一篇</a>
+← <a href="{{ page.next.url }}">{{ page.next.title }}</a>
 {% endif %}
 </div>
 
