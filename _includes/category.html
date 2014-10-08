@@ -1,23 +1,17 @@
 <div class="category">
 <ul>
-  {% for post in site.categories.android %}
-  <li>
-    {{ post.title }}
-  </li>
-  {% endfor %}
   {% for category in site.categories %}
   <li>
-    0:{{ category[0] }}
+    {{ category[0] }}
+    {% for post in category %}
+        {% capture length %}{{ forloop.length }}{% endcapture %}
+    {% endfor %}
+
+    {{ length }}
   </li>
   {% endfor %}
 </ul>
 
-{{ site.categories }}
 
-{% for post in site.categories.android %}
-    {% capture length %}{{ forloop.length }}{% endcapture %}
-{% endfor %}
 
-{{ length }}
-11
 </div>
