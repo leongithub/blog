@@ -5,6 +5,11 @@
     {{ post.title }}
   </li>
   {% endfor %}
+  {% for category in site.categories %}
+  <li>
+    {{ category.title }}
+  </li>
+  {% endfor %}
 </ul>
 {{ site.categories }}
 </div>
