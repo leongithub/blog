@@ -1,0 +1,197 @@
+#+OPTIONS: ^:{}
+* 下载与构建Android源码
+  在开始之前，先确定你系统满足下列要求：
+  + 一个Linux或Mac系统
+  + 对于Gingerbread（2.3.x）以及以上版本需要64-bit环境
+  + 一个单个的构建需要30G，如果全版本构建需要100G或更多。源码下载约8.5G
+  + Python 2.6 -- 2.7
+  + GNU Make 3.81 -- 3.82
+  + JDK 7 to master brancd;JDK 6 用来构建Gingerbread（2.3.x） -- KitKat（4.4.x）;JDK 5 用来构建Cupcake -- Froyo
+  + Git 1.7 或者更新
+
+* 安装Build环境
+** 选择一个分支
+   因为分支间build环境会有差异，所以你选择一个分支，也就选择了build环境
+** 装配一个Linux build环境
+   在内部，Android build常规测试是在最近的Ubuntu LTS（12.04）上。
+*** 安装JDK
+     master branch需要Java 7,在Ubuntu上用OpenJDK。
+#+NAME: Java 7: For the latest version of Android
+#+BEGIN_SRC sh
+  $ sudo apt-get update
+  $ sudo apt-get install openjdk-7-jdk
+#+END_SRC
+
+*** 安装需要的包（Ubuntu 12.04）
+     你需要64-bit版本的Ubuntu，建议12.04.
+#+BEGIN_SRC sh
+  $ sudo apt-get install git gnupg flex bison gperf build-essential \
+    zip curl libc6-dev libncurses5-dev:i386 x11proto-core-dev \
+    libx11-dev:i386 libreadline6-dev:i386 libgl1-mesa-glx:i386 \
+    libgl1-mesa-dev g++-multilib mingw32 tofrodos \
+    python-markdown libxml2-utils xsltproc zlib1g-dev:i386
+  $ sudo ln -s /usr/lib/i386-linux-gnu/mesa/libGL.so.1 /usr/lib/i386-linux-gnu/libGL.so
+#+END_SRC
+
+*** 配置USB访问
+     在GNU/linux系统下，默认普通用户是不能直接访问USB的，所以要配置。建议创建/etc/udev/rules.d/51-android.rules (as the root user)，并复制下面到文件中，<username>替换成你的
+#+BEGIN_EXAMPLE
+  # adb protocol on passion (Nexus One)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="4e12", MODE="0600", OWNER="<username>"
+  # fastboot protocol on passion (Nexus One)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="0bb4", ATTR{idProduct}=="0fff", MODE="0600", OWNER="<username>"
+  # adb protocol on crespo/crespo4g (Nexus S)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="4e22", MODE="0600", OWNER="<username>"
+  # fastboot protocol on crespo/crespo4g (Nexus S)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="4e20", MODE="0600", OWNER="<username>"
+  # adb protocol on stingray/wingray (Xoom)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="22b8", ATTR{idProduct}=="70a9", MODE="0600", OWNER="<username>"
+  # fastboot protocol on stingray/wingray (Xoom)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="708c", MODE="0600", OWNER="<username>"
+  # adb protocol on maguro/toro (Galaxy Nexus)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="04e8", ATTR{idProduct}=="6860", MODE="0600", OWNER="<username>"
+  # fastboot protocol on maguro/toro (Galaxy Nexus)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="4e30", MODE="0600", OWNER="<username>"
+  # adb protocol on panda (PandaBoard)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="0451", ATTR{idProduct}=="d101", MODE="0600", OWNER="<username>"
+  # adb protocol on panda (PandaBoard ES)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="d002", MODE="0600", OWNER="<username>"
+  # fastboot protocol on panda (PandaBoard)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="0451", ATTR{idProduct}=="d022", MODE="0600", OWNER="<username>"
+  # usbboot protocol on panda (PandaBoard)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="0451", ATTR{idProduct}=="d00f", MODE="0600", OWNER="<username>"
+  # usbboot protocol on panda (PandaBoard ES)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="0451", ATTR{idProduct}=="d010", MODE="0600", OWNER="<username>"
+  # adb protocol on grouper/tilapia (Nexus 7)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="4e42", MODE="0600", OWNER="<username>"
+  # fastboot protocol on grouper/tilapia (Nexus 7)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="4e40", MODE="0600", OWNER="<username>"
+  # adb protocol on manta (Nexus 10)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="4ee2", MODE="0600", OWNER="<username>"
+  # fastboot protocol on manta (Nexus 10)
+  SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="4ee0", MODE="0600", OWNER="<username>"
+#+END_EXAMPLE
+
+*** 配置ccache
+     你可以在build的时候使用ccache编译工具，Ccache作为一个编译缓存能够在rebuild的时候提高速度。如果你经常执行“make clean”，或者经常切换于不同的build产品
+在~/.bashrc中加上
+#+BEGIN_SRC sh
+  export USE_CCACHE=1
+#+END_SRC
+默认缓存被存储在~/.ccache，也可以在~/.bashrc中指定目录：
+#+BEGIN_SRC sh
+  export CCACHE_DIR=<path-to-your-cache-directory>
+#+END_SRC
+建议cache大小是50-100G。在下载完源代码后运行下列命令
+#+BEGIN_SRC sh
+  prebuilts/misc/linux-x86/ccache/ccache -M 50G
+#+END_SRC
+
+
+* 下载源码
+** 安装repo
+    repo是一个使用Git工作更加容易操作的工具
+安装Repo：
+1. 在你的主目录建立一个bin/ 
+   #+BEGIN_SRC sh
+     $ mkdir ~/bin
+     $ PATH=~/bin:$PATH
+   #+END_SRC
+2. 下载Repo，给它执行权限
+   #+BEGIN_SRC sh
+     $ curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+     $ chmod a+x ~/bin/repo
+   #+END_SRC
+
+** 初始化Repo客户端
+1. 创建一个目录，名称任意
+   #+BEGIN_SRC sh
+     $ mkdir WORKING_DIRECTORY
+     $ cd WORKING_DIRECTORY
+   #+END_SRC
+2. 运行repo init，指定manifest的URL，下载主分支
+   #+BEGIN_SRC sh
+     $ repo init -u https://android.googlesource.com/platform/manifest
+   #+END_SRC
+也可以下载其他分支
+#+BEGIN_SRC sh
+  $ repo init -u https://android.googlesource.com/platform/manifest -b android-4.0.1_r1
+#+END_SRC
+
+** 下载源码
+#+BEGIN_SRC sh
+  $ repo sync
+#+END_SRC
+
+
+* Build
+** 初始化
+先用envsetup.sh初始化环境
+#+BEGIN_SRC sh
+  $ source build/envsetup.sh
+#+END_SRC
+or
+#+BEGIN_SRC sh
+  $ . build/envsetup.sh
+#+END_SRC
+** 选择一个目标（Choose a Target）
+用lunch选择构建那个目标，如：
+#+BEGIN_SRC sh
+  $ lunch aosp_arm-eng
+#+END_SRC
+如果你输入lunch不加参数，它会提示你选择target
+target形式：BUILD-BUILDTYPE。
+BUILD一部分如下：
+| Build name  | Device       | Notes                                                         |
+|-------------+--------------+---------------------------------------------------------------|
+| aosp_arm    | ARM emulator | AOSP, fully configured with all languages, apps, input method |
+| aosp_maguro | maguro       | AOSP, running on Galaxy Nexus GSM/HSPA+ ("maguro")            |
+| aosp_panda  | panda        | AOSP, running on PandaBoard ("panda")                         |
+
+BUILDTYPE下列其中之一：
+| Buildtype | Use                                                                         |
+|-----------+-----------------------------------------------------------------------------|
+| user      | limited access; suited for production                                       |
+| userdebug | like "user" but with root access and debuggability; preferred for debugging |
+| eng       | development configuration with additional debugging tools                   |
+当你在命令行下输入lunch aosp然后按两下TAB键，会有很多提示。
+当我运行 lunch aosp_arm64-eng时，编译会出错，而运行lunch aosp_arm-eng之后编译就可以通过
+
+** Build the Code
+终于到build的时候了，别激动。这时候就用到了make，GNU make通过设置 -jN参数来支持并行编译，通常N设置为hardware threads的1到2倍。
+例如：dual-E5520，配置为两个CPU，每个CPU为4核，每核两个线程。最快的build命令为 make -j16 至  make -j32。
+我的机器为i5-3470，4核，所以我运行
+#+BEGIN_SRC sh
+  $ make -j8
+#+END_SRC
+
+** Run It!
+*** Flash a Device（应该就是说-刷机）
+首先让设备进入fastboot模式，可以手动，也可以在shell中输入
+#+BEGIN_SRC sh
+  $ adb reboot bootloader
+#+END_SRC
+设备进入fastboot模式后，运行：
+#+BEGIN_SRC sh
+  $ fastboot flashall -w
+#+END_SRC
+-w选项会擦除设备上的/data分区，这在你设备第一次刷时很有用，其他情况则可以不加-w
+*** 启动模拟器
+emulator会在build过程中加入到你的path中，运行
+#+BEGIN_SRC sh
+  $ emulator
+#+END_SRC
+很不幸，类似提示  cache partition was configured to be ext4 （expect yaffs2）
+最后运行
+#+BEGIN_SRC sh
+  $ . build/envsetup.sh
+  $ lunch sdk-eng
+  $ make sdk
+  $ emulator
+#+END_SRC
+ok！不过后来我重新编译后，把out/target/product/generic/cache.img 删除也是可以启动的
+
+还有一个问题，当你退出当前环境，下次进入时就会遇到很多启动emulator困难，如：emulator找不到、img找不到
+网上说可以指定img运行，emulator -system out/..../system.img -data out/..../userdata.img -ramdisk out/..../ramdisk.img
+但是今天我运行就报错，还要配置什么环境变量。。。
+也可以按照[[https://source.android.com/source/using-eclipse.html#debugging-the-emulator-with-eclipse][官网]] 上说的做，几分钟就ok了，删除cache.img，然后运行emulator

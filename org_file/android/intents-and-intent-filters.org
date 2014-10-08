@@ -1,0 +1,188 @@
+#+TITLE: INTENT与URI
+#+OPTIONS: ^:nil
+
+* Intents和Intent Filters
+
+** Intent类型
+
+Intent类型分为显式和隐式。
+
+为了确保你的app安全，当start一个service时应采用显式Intent，同样也不要为你的services声明intent filters。
+用隐式intent去start一个service是冒险的，因为你不能确定哪一个service会响应这个intent，调用者也不能知道哪个service启动了
+
+** 构建Intent
+
+*Component name*
+
+没有指定component name的intent是隐式的
+
+*Action*
+
+Intent类里面有很多action的常量定义，其他framework中也有，也可以自己定义：
+#+BEGIN_SRC java
+  static final String ACTION_TIMETRAVEL = "com.example.action.TIMETRAVEL";
+#+END_SRC
+
+*Data*
+
+主要是设置data与MIME类型，设置MIME类型可以帮助Android系统找到最适合的component。
+设置data URI调用setData()，设置MIME类型用setType()，如果两个都需要设置，要用setDataAndType()方法，因为setData与setType会覆盖掉彼此设置的值。
+
+*Category*
+
+*Extras*
+
+Intent已经指定很多EXTRA_*常量，如果需要声明自己的extra keys：
+#+BEGIN_SRC java
+  static final String EXTRA_GIGAWATTS = "com.example.EXTRA_GIGAWATTS";
+#+END_SRC
+
+*Flags*
+
+flags可以指导Android系统怎样运行(launch)activity(如，activity应该属于哪个task)和在activity运行之后如何对待
+
+*** 显式intent例子
+#+BEGIN_SRC java
+  // Executed in an Activity, so 'this' is the Context
+  // The fileUrl is a string URL, such as "http://www.example.com/image.png"
+  Intent downloadIntent = new Intent(this, DownloadService.class);
+  downloadIntent.setData(Uri.parse(fileUrl));
+  startService(downloadIntent);
+#+END_SRC
+
+*** 隐式intent例子
+当手机没有app可以处理你的传递给startActivity()的intent时，你的app就会crash。可以像下面这样验证：
+#+BEGIN_SRC java
+  // Create the text message with a string
+  Intent sendIntent = new Intent();
+  sendIntent.setAction(Intent.ACTION_SEND);
+  sendIntent.putExtra(Intent.EXTRA_TEXT, textMessage);
+  sendIntent.setType(HTTP.PLAIN_TEXT_TYPE); // "text/plain" MIME type
+  
+  // Verify that the intent will resolve to an activity
+  if (sendIntent.resolveActivity(getPackageManager()) != null) {
+      startActivity(sendIntent);
+  }
+#+END_SRC
+
+*** app chooser
+当多个app响应intent，系统会弹出app对话框让用户选择用哪个，也可以使被选择的那个app成为默认的，这样下次就可以直接运行那个app而不需要选择。
+但有些情况每次都让用户选择会更好一些，例如：分享。
+#+BEGIN_SRC java
+  Intent intent = new Intent(Intent.ACTION_SEND);
+  ...
+  
+  // Always use string resources for UI text.
+  // This says something like "Share this photo with"
+  String title = getResources().getString(R.string.chooser_title);
+  // Create intent to show chooser
+  Intent chooser = Intent.createChooser(intent, title);
+  
+  // Verify the intent will resolve to at least one activity
+  if (intent.resolveActivity(getPackageManager()) != null) {
+      startActivity(chooser);
+  }
+#+END_SRC
+
+** 接收隐式intent
+要接收隐式intent，只要在manifest.xml的component里声明一个或多个<intent-filter>就好。一个<intent-filter>可以包含一个或多个下列三个元素：<action>,<data>,<category>
+
+为了接收隐式intent，必须在intent filter里包含CATEGORY_DEFAULT。因为startActivity()与startActivityForResult()方法把所有的intent当作声明了CATEGORY_DEFAULT来处理。如果你不声明CATEGORY_DEFAULT，那么你的activity将不会接收到隐式intent
+#+BEGIN_SRC xml
+  <activity android:name="ShareActivity">
+      <intent-filter>
+          <action android:name="android.intent.action.SEND"/>
+          <category android:name="android.intent.category.DEFAULT"/>
+          <data android:mimeType="text/plain"/>
+      </intent-filter>
+  </activity>
+#+END_SRC
+对于所有的activity都要声明intent filters，而对于broadcast可以用代码来声明，registerReceiver()和unregisterReceiver().
+#+BEGIN_SRC xml
+  <activity android:name="MainActivity">
+      <!-- This activity is the main entry, should appear in app launcher -->
+      <intent-filter>
+          <action android:name="android.intent.action.MAIN" />
+          <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+  </activity>
+  
+  <activity android:name="ShareActivity">
+      <!-- This activity handles "SEND" actions with text data -->
+      <intent-filter>
+          <action android:name="android.intent.action.SEND"/>
+          <category android:name="android.intent.category.DEFAULT"/>
+          <data android:mimeType="text/plain"/>
+      </intent-filter>
+      <!-- This activity also handles "SEND" and "SEND_MULTIPLE" with media data -->
+      <intent-filter>
+          <action android:name="android.intent.action.SEND"/>
+          <action android:name="android.intent.action.SEND_MULTIPLE"/>
+          <category android:name="android.intent.category.DEFAULT"/>
+          <data android:mimeType="application/vnd.google.panorama360+jpg"/>
+          <data android:mimeType="image/*"/>
+          <data android:mimeType="video/*"/>
+      </intent-filter>
+  </activity>
+#+END_SRC
+
+** Intent 分解(Resolution)
+当系统接收一个隐式intent去启动activity，它会通过比较intent filters的以下三方面来找到最合适的activity
+  + action
+  + data(URI 和 data type)
+  + category
+
+*** Action test
+想要通过一个filter，intent中的action必须匹配filter中action列表中的一个。如果filter中没有列出任何的action，那么将没有intent能够匹配通过。如果intent中没有指定action，它将匹配通过filter(只要filter中至少有一个action项)
+*** Category test
+要想通过Category test，那么在intent里的每一个category都必须匹配filter中的category。filter中category多于intent中的没事，因此intent中如果没有category，将总是可以通过category test。
+
+*再次强调* Android会通过startActivity()与startActivityForResult()方法自动地为隐式intent加上CATEGORY_DEFAULT category，所以想让activity接收隐式intent，就必须在filters中包含一个"android.intent.category.DEFAULT"的category
+*** Data test
+#+BEGIN_SRC xml
+  <intent-filter>
+      <data android:mimeType="video/mpeg" android:scheme="http" ... />
+      <data android:mimeType="audio/mpeg" android:scheme="http" ... />
+      ...
+  </intent-filter>
+#+END_SRC
+每个<data>都可以指定一个URI和一个data type。每个URI由四个部分组成：scheme,host,port和path。
+#+BEGIN_QUOTE
+<scheme>://<host>:<port>/<path>
+#+END_QUOTE
+例如：
+#+BEGIN_QUOTE
+content://com.example.project:200/folder/subfolder/etc
+#+END_QUOTE
+scheme->content,host->com.example.project,port->200,path->folder/subfolder/etc
+
+这些属性有下列从属关系：
++ 如果没有指定scheme，host将被忽略
++ 如果没有指定host，port将被忽略
++ 如果scheme与host都没有指定，path将被忽略
+当filter与intent中的URI比较时，只比较filter含有的URI部分
++ 如果filter中URI只指定了scheme，那么所有包含那个scheme的URI将匹配这个filter
++ 如果指定scheme和authority，没有指定path，那么含有相同scheme和authority将匹配通过filter
++ 如果都指定了，那么只有具有相同的scheme，authority和path的URI才能匹配通过
+path还可以设置'*'通配符
+
+当intent中URI和MIME type与filter中URI和MIME type比较时，有以下规则：
+1. 既不包含URI也不包含MIME type的intent，只能匹配通过没有指定任何的URI和MIME type的filter
+2. 包含URI但不包含MIME type(neither explicit nor inferable from the URI)的intent，只能匹配通过只包含URI并URI格式匹配的filter
+3. 包含MIME type但不包含URI的intent，只能匹配通过只包含MIME type并匹配的filter
+4. 即包含URI也包含MIME type(either explicit or inferable from the URI)的intent，MIME type部分的匹配通过，只能是filter中包含MIME type。URI部分的匹配通过，可以是URI匹配filter中的URI，或者URI含有 /content:/ 或 /file:/ 并且filter不包含URI。换句话说，如果一个component的filter只含有MIME type，那么它支持 /content:/ 和 /file:/ 数据。
+最后这条规则反映了intent对component可以从一个file或content provider中获取本地数据的期待。因此，filter可以只列出数据类型，并不需要列出 /content:/ 和 /file:/ scheme。下面这个例子告诉Android，这个component可以从content provider获取图片数据并显示：
+#+BEGIN_SRC xml
+  <intent-filter>
+      <data android:mimeType="image/*" />
+      ...
+  </intent-filter>
+#+END_SRC
+因为很多数据都是由content provider提供，所以这种filter很常见。
+另一种比较常见的filter配置是含有scheme和data type。例如下面这个例子告诉Android，这个component可以从网络获取视频数据：
+#+BEGIN_SRC xml
+  <intent-filter>
+      <data android:scheme="http" android:type="video/*" />
+      ...
+  </intent-filter>
+#+END_SRC
