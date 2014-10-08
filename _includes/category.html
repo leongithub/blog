@@ -19,23 +19,6 @@
 {% endfor %}
 
 {{ length }}
-8
-{{ collection.title }}
-{{ site.categories.title }}
-{{ site.categories.android.title }}
-9
-{{ collection.all_products_count }}
-{{ site.categories.all_products_count }}  
-{{ site.categories.android.all_products_count }}  
-10
-{{ collection.categories }}
-{% for categ in site.categories.products %}
-{{ categ }}
-{% endfor %}
 11
 {{ site.categories | split: ',' }}
-{% assign categories = site.categories | split: ',' %}
-first: {{ categories[0] }}
-second: {{ categories[1] }}
-remove: {{ categories[0] | remove: "=>[]" }}
 </div>
