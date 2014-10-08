@@ -3,7 +3,7 @@
   {% for category in site.categories %}
   <li>
     {{ category[0] }}
-    {% for post in category %}
+    {% for post in category[1] %}
         {% capture length %}{{ forloop.length }}{% endcapture %}
     {% endfor %}
 
@@ -11,7 +11,4 @@
   </li>
   {% endfor %}
 </ul>
-
-
-
 </div>
