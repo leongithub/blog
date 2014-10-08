@@ -1,0 +1,510 @@
+---
+layout: post
+title: Intent与URI
+category: android
+description: 未完待续
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>INTENT与URI</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta name="title" content="INTENT与URI"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2014-10-06T15:20+0800"/>
+<meta name="author" content="leon"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+
+<div id="preamble">
+
+</div>
+
+<div id="content">
+<h1 class="title">INTENT与URI</h1>
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 Intents和Intent Filters</a>
+<ul>
+<li><a href="#sec-1-1">1.1 Intent类型</a></li>
+<li><a href="#sec-1-2">1.2 构建Intent</a>
+<ul>
+<li><a href="#sec-1-2-1">1.2.1 显式intent例子</a></li>
+<li><a href="#sec-1-2-2">1.2.2 隐式intent例子</a></li>
+<li><a href="#sec-1-2-3">1.2.3 app chooser</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-3">1.3 接收隐式intent</a></li>
+<li><a href="#sec-1-4">1.4 Intent 分解(Resolution)</a>
+<ul>
+<li><a href="#sec-1-4-1">1.4.1 Action test</a></li>
+<li><a href="#sec-1-4-2">1.4.2 Category test</a></li>
+<li><a href="#sec-1-4-3">1.4.3 Data test</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Intents和Intent Filters</h2>
+<div class="outline-text-2" id="text-1">
+
+
+
+</div>
+
+<div id="outline-container-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Intent类型</h3>
+<div class="outline-text-3" id="text-1-1">
+
+
+<p>
+Intent类型分为显式和隐式。
+</p>
+<p>
+为了确保你的app安全，当start一个service时应采用显式Intent，同样也不要为你的services声明intent filters。
+用隐式intent去start一个service是冒险的，因为你不能确定哪一个service会响应这个intent，调用者也不能知道哪个service启动了
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> 构建Intent</h3>
+<div class="outline-text-3" id="text-1-2">
+
+
+<p>
+<b>Component name</b>
+</p>
+<p>
+没有指定component name的intent是隐式的
+</p>
+<p>
+<b>Action</b>
+</p>
+<p>
+Intent类里面有很多action的常量定义，其他framework中也有，也可以自己定义：
+</p>
+
+
+<pre class="src src-java"><span style="color: #a020f0;">static</span> <span style="color: #a020f0;">final</span> <span style="color: #228b22;">String</span> <span style="color: #a0522d;">ACTION_TIMETRAVEL</span> = <span style="color: #8b2252;">"com.example.action.TIMETRAVEL"</span>;
+</pre>
+
+
+<p>
+<b>Data</b>
+</p>
+<p>
+主要是设置data与MIME类型，设置MIME类型可以帮助Android系统找到最适合的component。
+设置data URI调用setData()，设置MIME类型用setType()，如果两个都需要设置，要用setDataAndType()方法，因为setData与setType会覆盖掉彼此设置的值。
+</p>
+<p>
+<b>Category</b>
+</p>
+<p>
+<b>Extras</b>
+</p>
+<p>
+Intent已经指定很多EXTRA_*常量，如果需要声明自己的extra keys：
+</p>
+
+
+<pre class="src src-java"><span style="color: #a020f0;">static</span> <span style="color: #a020f0;">final</span> <span style="color: #228b22;">String</span> <span style="color: #a0522d;">EXTRA_GIGAWATTS</span> = <span style="color: #8b2252;">"com.example.EXTRA_GIGAWATTS"</span>;
+</pre>
+
+
+<p>
+<b>Flags</b>
+</p>
+<p>
+flags可以指导Android系统怎样运行(launch)activity(如，activity应该属于哪个task)和在activity运行之后如何对待
+</p>
+
+</div>
+
+<div id="outline-container-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> 显式intent例子</h4>
+<div class="outline-text-4" id="text-1-2-1">
+
+
+
+
+<pre class="src src-java"><span style="color: #b22222;">// </span><span style="color: #b22222;">Executed in an Activity, so 'this' is the Context</span>
+<span style="color: #b22222;">// </span><span style="color: #b22222;">The fileUrl is a string URL, such as "http://www.example.com/image.png"</span>
+<span style="color: #228b22;">Intent</span> <span style="color: #a0522d;">downloadIntent</span> = <span style="color: #a020f0;">new</span> <span style="color: #228b22;">Intent</span>(<span style="color: #a020f0;">this</span>, DownloadService.<span style="color: #a020f0;">class</span>);
+downloadIntent.setData(Uri.parse(fileUrl));
+startService(downloadIntent);
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1-2-2" class="outline-4">
+<h4 id="sec-1-2-2"><span class="section-number-4">1.2.2</span> 隐式intent例子</h4>
+<div class="outline-text-4" id="text-1-2-2">
+
+<p>当手机没有app可以处理你的传递给startActivity()的intent时，你的app就会crash。可以像下面这样验证：
+</p>
+
+
+<pre class="src src-java"><span style="color: #b22222;">// </span><span style="color: #b22222;">Create the text message with a string</span>
+<span style="color: #228b22;">Intent</span> <span style="color: #a0522d;">sendIntent</span> = <span style="color: #a020f0;">new</span> <span style="color: #228b22;">Intent</span>();
+sendIntent.setAction(<span style="color: #008b8b;">Intent</span>.ACTION_SEND);
+sendIntent.putExtra(<span style="color: #008b8b;">Intent</span>.EXTRA_TEXT, textMessage);
+sendIntent.setType(<span style="color: #008b8b;">HTTP</span>.PLAIN_TEXT_TYPE); <span style="color: #b22222;">// </span><span style="color: #b22222;">"text/plain" MIME type</span>
+
+<span style="color: #b22222;">// </span><span style="color: #b22222;">Verify that the intent will resolve to an activity</span>
+<span style="color: #a020f0;">if</span> (sendIntent.resolveActivity(getPackageManager()) != <span style="color: #008b8b;">null</span>) {
+    startActivity(sendIntent);
+}
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1-2-3" class="outline-4">
+<h4 id="sec-1-2-3"><span class="section-number-4">1.2.3</span> app chooser</h4>
+<div class="outline-text-4" id="text-1-2-3">
+
+<p>当多个app响应intent，系统会弹出app对话框让用户选择用哪个，也可以使被选择的那个app成为默认的，这样下次就可以直接运行那个app而不需要选择。
+但有些情况每次都让用户选择会更好一些，例如：分享。
+</p>
+
+
+<pre class="src src-java"><span style="color: #228b22;">Intent</span> <span style="color: #a0522d;">intent</span> = <span style="color: #a020f0;">new</span> <span style="color: #228b22;">Intent</span>(<span style="color: #008b8b;">Intent</span>.ACTION_SEND);
+...
+
+<span style="color: #b22222;">// </span><span style="color: #b22222;">Always use string resources for UI text.</span>
+<span style="color: #b22222;">// </span><span style="color: #b22222;">This says something like "Share this photo with"</span>
+String title = getResources().getString(R.string.chooser_title);
+<span style="color: #b22222;">// </span><span style="color: #b22222;">Create intent to show chooser</span>
+<span style="color: #228b22;">Intent</span> <span style="color: #a0522d;">chooser</span> = Intent.createChooser(intent, title);
+
+<span style="color: #b22222;">// </span><span style="color: #b22222;">Verify the intent will resolve to at least one activity</span>
+<span style="color: #a020f0;">if</span> (intent.resolveActivity(getPackageManager()) != <span style="color: #008b8b;">null</span>) {
+    startActivity(chooser);
+}
+</pre>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> 接收隐式intent</h3>
+<div class="outline-text-3" id="text-1-3">
+
+<p>要接收隐式intent，只要在manifest.xml的component里声明一个或多个&lt;intent-filter&gt;就好。一个&lt;intent-filter&gt;可以包含一个或多个下列三个元素：&lt;action&gt;,&lt;data&gt;,&lt;category&gt;
+</p>
+<p>
+为了接收隐式intent，必须在intent filter里包含CATEGORY_DEFAULT。因为startActivity()与startActivityForResult()方法把所有的intent当作声明了CATEGORY_DEFAULT来处理。如果你不声明CATEGORY_DEFAULT，那么你的activity将不会接收到隐式intent
+</p>
+
+
+<pre class="src src-xml">&lt;<span style="color: #0000ff;">activity</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">name</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">ShareActivity</span><span style="color: #8b2252;">"</span>&gt;
+    &lt;<span style="color: #0000ff;">intent-filter</span>&gt;
+        &lt;<span style="color: #0000ff;">action</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">name</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">android.intent.action.SEND</span><span style="color: #8b2252;">"</span>/&gt;
+        &lt;<span style="color: #0000ff;">category</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">name</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">android.intent.category.DEFAULT</span><span style="color: #8b2252;">"</span>/&gt;
+        &lt;<span style="color: #0000ff;">data</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">mimeType</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">text/plain</span><span style="color: #8b2252;">"</span>/&gt;
+    &lt;/<span style="color: #0000ff;">intent-filter</span>&gt;
+&lt;/<span style="color: #0000ff;">activity</span>&gt;
+</pre>
+
+<p>
+对于所有的activity都要声明intent filters，而对于broadcast可以用代码来声明，registerReceiver()和unregisterReceiver().
+</p>
+
+
+<pre class="src src-xml">&lt;<span style="color: #0000ff;">activity</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">name</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">MainActivity</span><span style="color: #8b2252;">"</span>&gt;
+    <span style="color: #b22222;">&lt;!--</span><span style="color: #b22222;"> This activity is the main entry, should appear in app launcher </span><span style="color: #b22222;">--&gt;</span>
+    &lt;<span style="color: #0000ff;">intent-filter</span>&gt;
+        &lt;<span style="color: #0000ff;">action</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">name</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">android.intent.action.MAIN</span><span style="color: #8b2252;">"</span> /&gt;
+        &lt;<span style="color: #0000ff;">category</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">name</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">android.intent.category.LAUNCHER</span><span style="color: #8b2252;">"</span> /&gt;
+    &lt;/<span style="color: #0000ff;">intent-filter</span>&gt;
+&lt;/<span style="color: #0000ff;">activity</span>&gt;
+
+&lt;<span style="color: #0000ff;">activity</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">name</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">ShareActivity</span><span style="color: #8b2252;">"</span>&gt;
+    <span style="color: #b22222;">&lt;!--</span><span style="color: #b22222;"> This activity handles "SEND" actions with text data </span><span style="color: #b22222;">--&gt;</span>
+    &lt;<span style="color: #0000ff;">intent-filter</span>&gt;
+        &lt;<span style="color: #0000ff;">action</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">name</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">android.intent.action.SEND</span><span style="color: #8b2252;">"</span>/&gt;
+        &lt;<span style="color: #0000ff;">category</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">name</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">android.intent.category.DEFAULT</span><span style="color: #8b2252;">"</span>/&gt;
+        &lt;<span style="color: #0000ff;">data</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">mimeType</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">text/plain</span><span style="color: #8b2252;">"</span>/&gt;
+    &lt;/<span style="color: #0000ff;">intent-filter</span>&gt;
+    <span style="color: #b22222;">&lt;!--</span><span style="color: #b22222;"> This activity also handles "SEND" and "SEND_MULTIPLE" with media data </span><span style="color: #b22222;">--&gt;</span>
+    &lt;<span style="color: #0000ff;">intent-filter</span>&gt;
+        &lt;<span style="color: #0000ff;">action</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">name</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">android.intent.action.SEND</span><span style="color: #8b2252;">"</span>/&gt;
+        &lt;<span style="color: #0000ff;">action</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">name</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">android.intent.action.SEND_MULTIPLE</span><span style="color: #8b2252;">"</span>/&gt;
+        &lt;<span style="color: #0000ff;">category</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">name</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">android.intent.category.DEFAULT</span><span style="color: #8b2252;">"</span>/&gt;
+        &lt;<span style="color: #0000ff;">data</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">mimeType</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">application/vnd.google.panorama360+jpg</span><span style="color: #8b2252;">"</span>/&gt;
+        &lt;<span style="color: #0000ff;">data</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">mimeType</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">image/*</span><span style="color: #8b2252;">"</span>/&gt;
+        &lt;<span style="color: #0000ff;">data</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">mimeType</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">video/*</span><span style="color: #8b2252;">"</span>/&gt;
+    &lt;/<span style="color: #0000ff;">intent-filter</span>&gt;
+&lt;/<span style="color: #0000ff;">activity</span>&gt;
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Intent 分解(Resolution)</h3>
+<div class="outline-text-3" id="text-1-4">
+
+<p>当系统接收一个隐式intent去启动activity，它会通过比较intent filters的以下三方面来找到最合适的activity
+</p><ul>
+<li>action
+</li>
+<li>data(URI 和 data type)
+</li>
+<li>category
+</li>
+</ul>
+
+
+
+</div>
+
+<div id="outline-container-1-4-1" class="outline-4">
+<h4 id="sec-1-4-1"><span class="section-number-4">1.4.1</span> Action test</h4>
+<div class="outline-text-4" id="text-1-4-1">
+
+<p>想要通过一个filter，intent中的action必须匹配filter中action列表中的一个。如果filter中没有列出任何的action，那么将没有intent能够匹配通过。如果intent中没有指定action，它将匹配通过filter(只要filter中至少有一个action项)
+</p></div>
+
+</div>
+
+<div id="outline-container-1-4-2" class="outline-4">
+<h4 id="sec-1-4-2"><span class="section-number-4">1.4.2</span> Category test</h4>
+<div class="outline-text-4" id="text-1-4-2">
+
+<p>要想通过Category test，那么在intent里的每一个category都必须匹配filter中的category。filter中category多于intent中的没事，因此intent中如果没有category，将总是可以通过category test。
+</p>
+<p>
+<b>再次强调</b> Android会通过startActivity()与startActivityForResult()方法自动地为隐式intent加上CATEGORY_DEFAULT category，所以想让activity接收隐式intent，就必须在filters中包含一个"android.intent.category.DEFAULT"的category
+</p></div>
+
+</div>
+
+<div id="outline-container-1-4-3" class="outline-4">
+<h4 id="sec-1-4-3"><span class="section-number-4">1.4.3</span> Data test</h4>
+<div class="outline-text-4" id="text-1-4-3">
+
+
+
+
+<pre class="src src-xml">&lt;<span style="color: #0000ff;">intent-filter</span>&gt;
+    &lt;<span style="color: #0000ff;">data</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">mimeType</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">video/mpeg</span><span style="color: #8b2252;">"</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">scheme</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">http</span><span style="color: #8b2252;">"</span> ... /&gt;
+    &lt;<span style="color: #0000ff;">data</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">mimeType</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">audio/mpeg</span><span style="color: #8b2252;">"</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">scheme</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">http</span><span style="color: #8b2252;">"</span> ... /&gt;
+    ...
+&lt;/<span style="color: #0000ff;">intent-filter</span>&gt;
+</pre>
+
+<p>
+每个&lt;data&gt;都可以指定一个URI和一个data type。每个URI由四个部分组成：scheme,host,port和path。
+</p><blockquote>
+
+<p>&lt;scheme&gt;://&lt;host&gt;:&lt;port&gt;/&lt;path&gt;
+</p>
+</blockquote>
+
+
+<p>
+例如：
+</p><blockquote>
+
+<p>content://com.example.project:200/folder/subfolder/etc
+</p>
+</blockquote>
+
+
+<p>
+scheme-&gt;content,host-&gt;com.example.project,port-&gt;200,path-&gt;folder/subfolder/etc
+</p>
+<p>
+这些属性有下列从属关系：
+</p><ul>
+<li>如果没有指定scheme，host将被忽略
+</li>
+<li>如果没有指定host，port将被忽略
+</li>
+<li>如果scheme与host都没有指定，path将被忽略
+</li>
+</ul>
+
+<p>当filter与intent中的URI比较时，只比较filter含有的URI部分
+</p><ul>
+<li>如果filter中URI只指定了scheme，那么所有包含那个scheme的URI将匹配这个filter
+</li>
+<li>如果指定scheme和authority，没有指定path，那么含有相同scheme和authority将匹配通过filter
+</li>
+<li>如果都指定了，那么只有具有相同的scheme，authority和path的URI才能匹配通过
+</li>
+</ul>
+
+<p>path还可以设置'*'通配符
+</p>
+<p>
+当intent中URI和MIME type与filter中URI和MIME type比较时，有以下规则：
+</p><ol>
+<li>既不包含URI也不包含MIME type的intent，只能匹配通过没有指定任何的URI和MIME type的filter
+</li>
+<li>包含URI但不包含MIME type(neither explicit nor inferable from the URI)的intent，只能匹配通过只包含URI并URI格式匹配的filter
+</li>
+<li>包含MIME type但不包含URI的intent，只能匹配通过只包含MIME type并匹配的filter
+</li>
+<li>即包含URI也包含MIME type(either explicit or inferable from the URI)的intent，MIME type部分的匹配通过，只能是filter中包含MIME type。URI部分的匹配通过，可以是URI匹配filter中的URI，或者URI含有 <i>content:</i> 或 <i>file:</i> 并且filter不包含URI。换句话说，如果一个component的filter只含有MIME type，那么它支持 <i>content:</i> 和 <i>file:</i> 数据。
+</li>
+</ol>
+
+<p>最后这条规则反映了intent对component可以从一个file或content provider中获取本地数据的期待。因此，filter可以只列出数据类型，并不需要列出 <i>content:</i> 和 <i>file:</i> scheme。下面这个例子告诉Android，这个component可以从content provider获取图片数据并显示：
+</p>
+
+
+<pre class="src src-xml">&lt;<span style="color: #0000ff;">intent-filter</span>&gt;
+    &lt;<span style="color: #0000ff;">data</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">mimeType</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">image/*</span><span style="color: #8b2252;">"</span> /&gt;
+    ...
+&lt;/<span style="color: #0000ff;">intent-filter</span>&gt;
+</pre>
+
+<p>
+因为很多数据都是由content provider提供，所以这种filter很常见。
+另一种比较常见的filter配置是含有scheme和data type。例如下面这个例子告诉Android，这个component可以从网络获取视频数据：
+</p>
+
+
+<pre class="src src-xml">&lt;<span style="color: #0000ff;">intent-filter</span>&gt;
+    &lt;<span style="color: #0000ff;">data</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">scheme</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">http</span><span style="color: #8b2252;">"</span> <span style="color: #483d8b;">android</span>:<span style="color: #a0522d;">type</span>=<span style="color: #8b2252;">"</span><span style="color: #8b2252;">video/*</span><span style="color: #8b2252;">"</span> /&gt;
+    ...
+&lt;/<span style="color: #0000ff;">intent-filter</span>&gt;
+</pre>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="postamble">
+<p class="date">Date: 2014-10-06T15:20+0800</p>
+<p class="author">Author: leon</p>
+<p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
+<a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
+
+</div>
+</body>
+</html>
