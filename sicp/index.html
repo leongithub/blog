@@ -1,0 +1,9 @@
+---
+layout: default
+---
+{% for post in site.categories.android %}
+<li>
+  <h2><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h2>
+  {{ post.description }}
+</li>
+{% endfor %}
