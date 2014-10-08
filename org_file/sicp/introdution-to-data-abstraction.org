@@ -1,0 +1,65 @@
+#+TITLE: 2.1 数据抽象
+#+OPTIONS: ^:nil
+
+* 例子：有理数的算术运算
+假定我们做有理数上的算术，加减乘除和比较两个有理数是否相等，等等。
+
+假定我们已经有了一种从分子和分母构造有理数的方法。并进一步假定，如果有了一个有理数，我们能够取得它的分子和分母
++ (make-rat <n> <d>) returns the rational number whose numerator is the integer <n> and whose denominator is the integer <d>.
++ (numer <x>) returns the numerator of the rational number <x>.
++ (denom <x>) returns the denominator of the rational number <x>.
+那么就可以根据下面的关系做有理数的加减乘除和相等的判断了：
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-1.gif]]
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-2.gif]]
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-3.gif]]
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-4.gif]]
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-5.gif]]
+
+#+BEGIN_SRC lisp -n
+  (defun add-rat (x y)
+    (make-rat (+ (* (numer x) (denom y))
+                 (* (numer y) (denom x)))
+              (* (denom x) (denom y))))
+  
+  (defun sub-rat (x y)
+    (make-rat (- (* (numer x) (denom y))
+                 (* (numer y) (denom x)))
+              (* (denom x) (denom y))))
+  
+  (defun mul-rat (x y)
+    (make-rat (* (numer x) (numer y))
+              (* (denom x) (denom y))))
+  
+  (defun div-rat (x y)
+    (make-rat (* (numer x) (denom y))
+              (* (denom x) (numer y))))
+  
+  (defun equal-rat-p (x y)
+    (= (* (numer x) (denom y))
+       (* (numer y) (denom x))))
+#+END_SRC
+我们可以采用 cons 来表示有理数，car表示分子，cdr表示分母
+#+BEGIN_SRC lisp -n
+  (defun make-rat (n d)
+    (cons n d))
+  
+  (defun numer (x)
+    (car x))
+  
+  (defun denom (x)
+    (cdr x))
+  
+  (defun print-rat (x)
+    (fresh-line)
+    (princ (numer x))
+    (princ "/")
+    (princ (denom x)))
+  ; (format t "~&~A/~A" (numer x) (denom x))
+#+END_SRC
+测试一下：
+: (print-rat (add-rat *one-third* *one-third*)) ==> 6/9
