@@ -1,13 +1,23 @@
 <div class="category">
+<!-- 
+     site.categories -> {"miscellany"==>[],"android"==>[]}
+     category -> miscellany [post]多个博客
+-->
 <ul>
   {% for category in site.categories %}
   <li>
-    {{ category[0] }}
+    {% if category[0] == 'miscellany' %}
+      杂记
+    {% else %}
+      {{ category[0] }}
+    {% endif %}
+
+<!-- 计算集合size -->
     {% for post in category[1] %}
         {% capture length %}{{ forloop.length }}{% endcapture %}
     {% endfor %}
 
-    {{ length }}
+    ({{ length }})
   </li>
   {% endfor %}
 </ul>
