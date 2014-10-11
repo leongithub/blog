@@ -6,12 +6,11 @@ layout: default
 <p class="post-date">{{ page.date|date:"%Y-%m-%d" }}</p>
 
 <!-- 前后文章导航 -->
-<span>
 {% if page.previous %}
 <a href="{{ site.baseurl }}{{ page.previous.url }}"><< {{ page.previous.title }}</a>
 {% endif %}
-</span>
-<span float="right">
+
+<span style="float:right">
 {% if page.next %}
 <a href="{{ site.baseurl }}{{ page.next.url }}">{{ page.next.title }} >></a>
 {% endif %}
