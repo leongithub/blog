@@ -1,6 +1,5 @@
 body {
     font-family: "微软雅黑","Arial","Helvetica","sans-serif";
-    background-color: #f0f0f0;    
 }
 
 a {
@@ -15,7 +14,6 @@ a:hover {
     line-height: 1.5em;
     width: 65em;
     margin: auto;
-    background-color: #fff;
 }
 
 .site .header {
