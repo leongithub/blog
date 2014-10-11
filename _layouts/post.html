@@ -6,16 +6,16 @@ layout: default
 <p class="post-date">{{ page.date|date:"%Y-%m-%d" }}</p>
 
 <!-- 前后文章导航 -->
-<div class="previous_post">
+<span>
 {% if page.previous %}
 <a href="{{ site.baseurl }}{{ page.previous.url }}"><< {{ page.previous.title }}</a>
 {% endif %}
-</div>
-<div class="next_post">
+</span>
+<span float="right">
 {% if page.next %}
 <a href="{{ site.baseurl }}{{ page.next.url }}">{{ page.next.title }} >></a>
 {% endif %}
-</div>
+</span>
 
 <!-- disqus评论 -->
 <div id="disqus_thread"></div>
