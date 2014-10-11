@@ -11,14 +11,15 @@ a:hover {
 }
 
 .site {
-	line-height: 1.5em;
-	width: 65em;
-	margin: auto;
+    line-height: 1.5em;
+    width: 65em;
+    margin: auto;
+    background-color: #f0f0f0;
 }
 
 .site .header {
-    padding-top: 2em;
-    padding-bottom: 2em;
+    padding-top: 20px;
+    padding-bottom: 20px;
     border-bottom: 1px solid gray;
 }
 
