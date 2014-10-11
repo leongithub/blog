@@ -41,8 +41,14 @@ a:hover {
     padding-bottom: 2em;
 }
 
-#post {
-    margin-bottom: 4em;
+#content {
+    width: 54em;
+}
+
+.category {
+    width: 10em;
+    float: right;
+    padding: 20px;
 }
 
 .post-date {
