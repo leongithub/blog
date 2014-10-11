@@ -58,3 +58,7 @@ a:hover {
     margin-right: 60px;
     font-size: 14px;
 }
+
+.next_post {
+    float: right;
+}
