@@ -1,0 +1,298 @@
+---
+layout: post
+title: git基础命令小记
+category: tool
+description: Git基础小记，以便快速查看
+---
+<head>
+<title>git基础命令小记</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta name="title" content="git基础命令小记"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2014-10-11T14:22+0800"/>
+<meta name="author" content="leon"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+
+<div id="preamble">
+
+</div>
+
+<div id="content">
+<h1 class="title">git基础命令小记</h1>
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 初次运行Git前的配置</a>
+<ul>
+<li><a href="#sec-1-1">1.1 Git配置文件</a></li>
+<li><a href="#sec-1-2">1.2 配置命令</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2 获取帮助</a></li>
+<li><a href="#sec-3">3 .gitignore</a></li>
+<li><a href="#sec-4">4 Git命令</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> 初次运行Git前的配置</h2>
+<div class="outline-text-2" id="text-1">
+
+
+
+</div>
+
+<div id="outline-container-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Git配置文件</h3>
+<div class="outline-text-3" id="text-1-1">
+
+<p>git config工具，三个Git配置文件:
+</p>
+
+
+<pre class="example"><span class="linenr">1:  </span>/etc/gitconfig 文件：系统中对所有用户都普遍适用的配置。若使用 git config 时用 --system 选项，读写的就是这个文件。
+<span class="linenr">2:  </span>~/.gitconfig 文件：用户目录下的配置文件只适用于该用户。若使用 git config 时用 --global 选项，读写的就是这个文件。
+<span class="linenr">3:  </span>当前项目的 Git 目录中的配置文件（也就是工作目录中的 .git/config 文件）：这里的配置仅仅针对当前项目有效。每一个级别的配置都会覆盖上层的相同配置，所以 .git/config 里的配置会覆盖 /etc/gitconfig 中的同名变量。
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> 配置命令</h3>
+<div class="outline-text-3" id="text-1-2">
+
+
+
+
+<pre class="src src-sh"><span style="color: #b22222;"># </span><span style="color: #b22222;">&#37197;&#32622;&#29992;&#25143;&#20449;&#24687;</span>
+git config --global user.name <span style="color: #8b2252;">"John Doe"</span>
+git config --global user.email johndoe@example.com
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#38024;&#23545;&#39033;&#30446;&#37197;&#32622;</span>
+git config user.name <span style="color: #8b2252;">"John Doe"</span>
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#37197;&#32622;&#25991;&#26412;&#32534;&#36753;&#22120;vi&#65292;vim&#65292;emacs</span>
+git config --global core.editor emacs
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#24046;&#24322;&#20998;&#26512;&#24037;&#20855;&#65292;&#35299;&#20915;&#21512;&#24182;&#20914;&#31361;&#26102;&#20351;&#29992;&#21738;&#31181;&#24037;&#20855;</span>
+git config --global merge.tool vimdiff
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#26597;&#30475;&#37197;&#32622;&#20449;&#24687;</span>
+git config --list
+git config user.name
+</pre>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> 获取帮助</h2>
+<div class="outline-text-2" id="text-2">
+
+<p>三种方法：
+</p>
+
+
+<pre class="src src-sh">git help &lt;verb&gt;
+git &lt;verb&gt; --help
+man git-&lt;verb&gt;
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> .gitignore</h2>
+<div class="outline-text-2" id="text-3">
+
+<p>.gitignore文件：
+</p>
+
+
+<pre class="example"># 此为注释 – 将被 Git 忽略
+# 忽略所有 .a 结尾的文件
+*.a
+# 但 lib.a 除外
+!lib.a
+# 仅仅忽略项目根目录下的 TODO 文件，不包括 subdir/TODO
+/TODO
+# 忽略 build/ 目录下的所有文件
+build/
+# 会忽略 doc/notes.txt 但不包括 doc/server/arch.txt
+doc/*.txt
+# ignore all .txt files in the doc/ directory
+doc/**/*.txt
+</pre>
+
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Git命令</h2>
+<div class="outline-text-2" id="text-4">
+
+
+
+
+<pre class="src src-sh">git init
+git clone [url]
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#26816;&#26597;&#24403;&#21069;&#25991;&#20214;&#29366;&#24577;</span>
+git status
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#36319;&#36394;&#25991;&#20214;</span>
+git add file
+git mv file
+git rm file
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#26597;&#30475;&#26410;&#26242;&#23384;&#30340;&#26356;&#26032;</span>
+git diff
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#26597;&#30475;&#24050;&#26242;&#23384;&#30340;&#26356;&#26032;</span>
+git diff --cached
+git diff --staged
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#25552;&#20132;&#26356;&#26032;</span>
+git commit -m <span style="color: #8b2252;">"&#25552;&#20132;&#35828;&#26126;"</span>
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#26597;&#30475;&#25552;&#20132;&#21382;&#21490;</span>
+git log
+git log -p -2 <span style="color: #b22222;"># </span><span style="color: #b22222;">&#26597;&#30475;&#26368;&#26032;&#30340;&#20004;&#27425;</span>
+git log --stat <span style="color: #b22222;"># </span><span style="color: #b22222;">&#25688;&#35201;</span>
+git log --pretty=oneline <span style="color: #b22222;"># </span><span style="color: #b22222;">&#20197;oneline&#26041;&#24335;&#23637;&#31034;&#25552;&#20132;&#21382;&#21490;&#65292;short,full,fuller</span>
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#25764;&#38144;&#25805;&#20316;&#65292;&#25552;&#20132;&#24819;&#35201;&#20462;&#25913;</span>
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#22914;&#65306;&#20462;&#25913;&#25552;&#20132;&#35828;&#26126;&#65292;&#24536;&#35760;&#26242;&#23384;&#26576;&#20123;&#20462;&#25913;&#31561;</span>
+git commit --amend <span style="color: #b22222;"># </span><span style="color: #b22222;">&#19978;&#27425;&#20462;&#25913;&#21518;&#65292;&#30452;&#25509;&#36816;&#34892;&#65292;&#20462;&#25913;&#25552;&#20132;&#35828;&#26126;</span>
+
+git commit -m <span style="color: #8b2252;">'initial commit'</span>
+git add forgotten_file
+git commit --amend <span style="color: #b22222;"># </span><span style="color: #b22222;">&#20462;&#25913;&#25552;&#20132;&#20869;&#23481;&#65292;&#21152;&#19978;forgotten_file</span>
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#21462;&#28040;&#24050;&#32463;&#26242;&#23384;&#30340;&#25991;&#20214;</span>
+git reset HEAD &lt;file&gt; ...
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#21462;&#28040;&#23545;&#25991;&#20214;&#30340;&#20462;&#25913;</span>
+git checkout -- &lt;file&gt;
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#26631;&#31614;</span>
+git tag <span style="color: #b22222;"># </span><span style="color: #b22222;">&#21015;&#20986;&#29616;&#26377;&#26631;&#31614;</span>
+git tag -l <span style="color: #8b2252;">'v1.4.2.*'</span> <span style="color: #b22222;"># </span><span style="color: #b22222;">&#21482;&#21015;&#20986;v1.4.2&#30456;&#20851;&#30340;</span>
+git tag -a v1.4 -m <span style="color: #8b2252;">'my version 1.4'</span> <span style="color: #b22222;"># </span><span style="color: #b22222;">&#21019;&#24314;&#19968;&#20010;&#21547;&#38468;&#27880;&#31867;&#22411;&#30340;&#26631;&#31614;</span>
+git show v1.4 <span style="color: #b22222;"># </span><span style="color: #b22222;">&#26597;&#30475;v1.4&#29256;&#26412;&#20449;&#24687;</span>
+git tag v1.4 <span style="color: #b22222;"># </span><span style="color: #b22222;">&#36731;&#37327;&#32423;&#26631;&#31614;</span>
+git tag -a v1.2 &lt;SHA-1&gt; <span style="color: #b22222;"># </span><span style="color: #b22222;">&#21518;&#26399;&#21152;&#27880;&#26631;&#31614;</span>
+git push origin [tagname] <span style="color: #b22222;"># </span><span style="color: #b22222;">&#25226;&#26631;&#31614;&#20256;&#36865;&#21040;&#36828;&#31471;&#26381;&#21153;&#22120;</span>
+git push origin --tags <span style="color: #b22222;"># </span><span style="color: #b22222;">&#26412;&#22320;&#25152;&#26377;&#26631;&#31614;&#20256;&#19978;&#21435;</span>
+</pre>
+
+</div>
+</div>
+</div>
+
+<div id="postamble">
+<p class="date">Date: 2014-10-11T14:22+0800</p>
+<p class="author">Author: leon</p>
+<p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
+<a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
+
+</div>
+</body>

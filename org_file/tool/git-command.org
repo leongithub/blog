@@ -1,0 +1,98 @@
+#+TITLE: git基础命令小记
+#+OPTIONS: ^:{}
+#+OPTIONS: *:nil
+
+* 初次运行Git前的配置
+
+** Git配置文件
+git config工具，三个Git配置文件:
+#+BEGIN_EXAMPLE -n
+  /etc/gitconfig 文件：系统中对所有用户都普遍适用的配置。若使用 git config 时用 --system 选项，读写的就是这个文件。
+  ~/.gitconfig 文件：用户目录下的配置文件只适用于该用户。若使用 git config 时用 --global 选项，读写的就是这个文件。
+  当前项目的 Git 目录中的配置文件（也就是工作目录中的 .git/config 文件）：这里的配置仅仅针对当前项目有效。每一个级别的配置都会覆盖上层的相同配置，所以 .git/config 里的配置会覆盖 /etc/gitconfig 中的同名变量。
+#+END_EXAMPLE
+
+** 配置命令
+#+BEGIN_SRC sh
+  # 配置用户信息
+  git config --global user.name "John Doe"
+  git config --global user.email johndoe@example.com
+  # 针对项目配置
+  git config user.name "John Doe"
+  # 配置文本编辑器vi，vim，emacs
+  git config --global core.editor emacs
+  # 差异分析工具，解决合并冲突时使用哪种工具
+  git config --global merge.tool vimdiff
+  # 查看配置信息
+  git config --list
+  git config user.name
+#+END_SRC
+
+* 获取帮助
+三种方法：
+#+BEGIN_SRC sh
+  git help <verb>
+  git <verb> --help
+  man git-<verb>
+#+END_SRC
+
+* .gitignore
+.gitignore文件：
+#+BEGIN_EXAMPLE
+  # 此为注释 – 将被 Git 忽略
+  # 忽略所有 .a 结尾的文件
+  ,*.a
+  # 但 lib.a 除外
+  !lib.a
+  # 仅仅忽略项目根目录下的 TODO 文件，不包括 subdir/TODO
+  /TODO
+  # 忽略 build/ 目录下的所有文件
+  build/
+  # 会忽略 doc/notes.txt 但不包括 doc/server/arch.txt
+  doc/*.txt
+  # ignore all .txt files in the doc/ directory
+  doc/**/*.txt
+#+END_EXAMPLE
+* Git命令
+#+BEGIN_SRC sh
+  git init
+  git clone [url]
+  # 检查当前文件状态
+  git status
+  # 跟踪文件
+  git add file
+  git mv file
+  git rm file
+  # 查看未暂存的更新
+  git diff
+  # 查看已暂存的更新
+  git diff --cached
+  git diff --staged
+  # 提交更新
+  git commit -m "提交说明"
+  # 查看提交历史
+  git log
+  git log -p -2 # 查看最新的两次
+  git log --stat # 摘要
+  git log --pretty=oneline # 以oneline方式展示提交历史，short,full,fuller
+  # 撤销操作，提交想要修改
+  # 如：修改提交说明，忘记暂存某些修改等
+  git commit --amend # 上次修改后，直接运行，修改提交说明
+  
+  git commit -m 'initial commit'
+  git add forgotten_file
+  git commit --amend # 修改提交内容，加上forgotten_file
+  # 取消已经暂存的文件
+  git reset HEAD <file> ...
+  # 取消对文件的修改
+  git checkout -- <file>
+  # 标签
+  git tag # 列出现有标签
+  git tag -l 'v1.4.2.*' # 只列出v1.4.2相关的
+  git tag -a v1.4 -m 'my version 1.4' # 创建一个含附注类型的标签
+  git show v1.4 # 查看v1.4版本信息
+  git tag v1.4 # 轻量级标签
+  git tag -a v1.2 <SHA-1> # 后期加注标签
+  git push origin [tagname] # 把标签传送到远端服务器
+  git push origin --tags # 本地所有标签传上去
+#+END_SRC
