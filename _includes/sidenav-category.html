@@ -4,7 +4,8 @@
      category -> miscellany [post]多个博客
 -->
 <ul>
-  {% for category in site.categories %}
+  {% assign cs = site.categories | sort %}
+  {% for category in cs %}
   <li>
     <a href="{{ site.baseurl }}/{{ category[0] }}/">
       {% if category[0] == 'miscellany' %}
