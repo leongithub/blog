@@ -4,7 +4,7 @@
      category -> miscellany [post]多个博客
 -->
 <ul>
-  {% assign cs = site.categories | sort:[0] %}
+  {% assign cs = site.categories | sort:0 %}
   {% for category in cs %}
   <li>
     <a href="{{ site.baseurl }}/{{ category[0] }}/">
