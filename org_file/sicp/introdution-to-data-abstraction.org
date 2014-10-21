@@ -71,6 +71,8 @@
 #+END_SRC
 测试：
 : (print-rat (add-rat *one-third* *one-third*)) ==> 2/3
+
+** 习题
 Exercise 2.1.  Define a better version of make-rat that handles both positive and negative arguments. Make-rat should normalize the sign so that if the rational number is positive, both the numerator and denominator are positive, and if the rational number is negative, only the numerator is negative.
 #+BEGIN_VERSE
 n/d -> n/d
@@ -114,6 +116,7 @@ n/-d -> -n/d
 
 这样把对于具体表示方式的依赖性限制到少数几个页面过程，不但对修改程序有帮助，同时也有助于程序的设计，因为这种做法将使我们能保留考虑不同实现方式的灵活性。假定现在我们正在设计有理数程序包，而且还无法决定究竟是在创建时执行gcd，还是应该将它推迟到选择的时候。数据抽象方法使我们能推迟决策的时间，而又不会阻碍系统其他部分的工作进展。
 
+** 习题
 Exercise 2.2.  Consider the problem of representing line segments in a plane. Each segment is represented as a pair of points: a starting point and an ending point. Define a constructor make-segment and selectors start-segment and end-segment that define the representation of segments in terms of points. Furthermore, a point can be represented as a pair of numbers: the x coordinate and the y coordinate. Accordingly, specify a constructor make-point and selectors x-point and y-point that define this representation. Finally, using your selectors and constructors, define a procedure midpoint-segment that takes a line segment as argument and returns its midpoint (the point whose coordinates are the average of the coordinates of the endpoints). To try your procedures, you'll need a way to print points:
 #+BEGIN_SRC scheme -n
   (define (print-point p)
@@ -292,6 +295,7 @@ What is the corresponding definition of cdr? (Hint: To verify that this works, m
 x
 #+END_EXAMPLE
 
+** 习题
 Exercise 2.5.  Show that we can represent pairs of nonnegative integers using only numbers and arithmetic operations if we represent the pair a and b as the integer that is the product 2^{a} 3^{b}. Give the corresponding definitions of the procedures cons, car, and cdr.
 
 2^{a}3^{b}   = 2*2*2*2*...*2    *  3*3* ... *3*3  
@@ -370,3 +374,219 @@ Define one and two directly (not in terms of zero and add-1). (Hint: Use substit
         (lambda (x)
           (rec (car ns) (cdr ns) f x)))))
 #+END_SRC
+* 扩展练习：区间算术
+电阻公式：
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-8.gif]]
+
+电阻一般都有一定的误差。Alyssa想实现一套“区间算术”，两个区间的加、减、乘、除的结果仍是一个区间，表示的是计算结果的范围。
+Alyssa假设有一种称为“区间”的抽象对象，这种对象有两个端点，下界和上界。
+Alyssa设计了加、乘、除函数：
+#+BEGIN_SRC lisp -n
+  (defun add-interval (x y)
+    (make-interval (+ (lower-bound x) (lower-bound y))
+                   (+ (upper-bound x) (upper-bound y))))
+  
+  (defun mul-interval (x y)
+    (let ((p1 (* (lower-bound x) (lower-bound y)))
+          (p2 (* (lower-bound x) (upper-bound y)))
+          (p3 (* (upper-bound x) (lower-bound y)))
+          (p4 (* (upper-bound x) (upper-bound y))))
+      (make-interval (min p1 p2 p3 p4)
+                     (max p1 p2 p3 p4))))
+  
+  (defun div-interval (x y)
+    (mul-interval x
+                  (make-interval (/ 1.0 (upper-bound y))
+                                 (/ 1.0 (lower-bound y)))))
+#+END_SRC
+
+** 习题
+Exercise 2.7.  Alyssa's program is incomplete because she has not specified the implementation of the interval abstraction. Here is a definition of the interval constructor:
+
+(define (make-interval a b) (cons a b))
+
+Define selectors upper-bound and lower-bound to complete the implementation.
+#+BEGIN_SRC lisp -n
+  (defun make-interval (a b) (cons a b))
+  (defun lower-bound (x) (car x))
+  (defun upper-bound (x) (cdr x))
+#+END_SRC
+
+Exercise 2.8.  Using reasoning analogous to Alyssa's, describe how the difference of two intervals may be computed. Define a corresponding subtraction procedure, called sub-interval.
+
+两个区间相减等于一个区间加上被减区间的负数。测试make-interval传递参数的时候注意：大小参数顺序不能乱
+#+BEGIN_SRC lisp -n
+  (defun sub-interval (x y)
+    (add-interval x
+                  (make-interval (- (upper-bound y))
+                                 (- (lower-bound y)))))
+#+END_SRC
+也可以直接做减运算，只要注意把被减的区间upper和lower调换一下
+#+BEGIN_SRC lisp -n
+  (defun sub-interval (x y)
+    (make-interval (- (lower-bound x) (upper-bound y))
+                   (- (upper-bound x) (lower-bound y))))
+#+END_SRC
+
+Exercise 2.9.  The width of an interval is half of the difference between its upper and lower bounds. The width is a measure of the uncertainty of the number specified by the interval. For some arithmetic operations the width of the result of combining two intervals is a function only of the widths of the argument intervals, whereas for others the width of the combination is not a function of the widths of the argument intervals. Show that the width of the sum (or difference) of two intervals is a function only of the widths of the intervals being added (or subtracted). Give examples to show that this is not true for multiplication or division.
+
+#+BEGIN_VERSE
+x=[x_{l},x_{u}] y=[y_{l},y_{u}]
+
+sum-width:
+1/2 * ((x_{u} + y_{u}) - (x_{l} + y_{l}))
+1/2 * ((x_{u} - x_{l}) + (y_{u} - y_{l}))
+width of interval x + width of interval y
+
+sub-width:
+1/2 * ((x_{u} - y_{l}) - (x_{l} - y_{u}))
+1/2 * ((x_{u} - x_{l}) + (y_{u} - y_{l}))
+width of interval x + width of interval y
+
+mul-width:
+[1,10] * [0,5] = [0,50] (width = 25)
+#+END_VERSE
+
+Exercise 2.10.  Ben Bitdiddle, an expert systems programmer, looks over Alyssa's shoulder and comments that it is not clear what it means to divide by an interval that spans zero. Modify Alyssa's code to check for this condition and to signal an error if it occurs.
+
+#+BEGIN_SRC lisp -n
+  (defun div-interval (x y)
+    (if (and (>= (upper-bound y) 0)
+             (<= (lower-bound y) 0))
+        (error "interval spans zero")
+        (mul-interval x
+                      (make-interval (/ 1.0 (upper-bound y))
+                                     (/ 1.0 (lower-bound y)))))
+#+END_SRC
+
+Exercise 2.11.  In passing, Ben also cryptically comments: ``By testing the signs of the endpoints of the intervals, it is possible to break mul-interval into nine cases, only one of which requires more than two multiplications.'' Rewrite this procedure using Ben's suggestion.
+
+#+BEGIN_SRC lisp -n
+  (defun mul-interval (x y)
+    (let ((xl (lower-bound x))
+          (xu (upper-bound x))
+          (yl (lower-bound y))
+          (yu (upper-bound y)))
+      ;; xl和xu与yl和yu 同号的四种情况
+      ;; x++ y++; x++ y--; x-- y++; x-- y--
+      (cond ((and (>= xl 0) ; x++ y++
+                  (>= yl 0))
+             (make-interval (* xl yl) (* xu yu)))
+            ((and (>= xl 0) ; x++ y--
+                  (<= yu 0))
+             (make-interval (* xu yl) (* xl yu)))
+            ((and (<= xu 0) ; x-- y++
+                  (>= yl 0))
+             (make-interval (* xl yu) (* xu yl)))
+            ((and (<= xu 0) ; x-- y--
+                  (<= yu 0))
+             (make-interval (* xl yl) (* xu yu)))
+      ;; 单异：xl和xu异号，y 同号。或者相反。四种情况
+      ;; x-+ y++; x-+ y--; x++ y-+; x-- y-+
+            ((and (<= xl 0) ; x-+ y++
+                  (>= xu 0)
+                  (>= yl 0))
+             (make-interval (* xl yu) (* xu yu)))
+            ((and (<= xl 0) ; x-+ y--
+                  (>= xu 0)
+                  (<= yu 0))
+             (make-interval (* xu yl) (* xl yl)))
+            ((and (>= xl 0) ; x++ y-+
+                  (<= yl 0)
+                  (>= yu 0))
+             (make-interval (* xu yl) (* xu yu)))
+            ((and (<= xu 0) ; x-- y-+
+                  (<= yl 0)
+                  (>= yu 0))
+             (make-interval (* xl yu) (* xl yl)))
+      ;; 双异，这种就是多余两次乘
+      ;; 话说中文翻译真水啊，居然翻译乘每种都不少于两次。
+            ((and (<= xl 0) ; x-+ y-+
+                  (>= xu 0)
+                  (<= yl 0)
+                  (>= yu 0))
+             (let ((p1 (* xl yl))
+                   (p2 (* xl yu))
+                   (p3 (* xu yl))
+                   (p4 (* xu yu)))
+               (make-interval (min p2 p3)
+                              (max p1 p4)))))))
+#+END_SRC
+
+Exercise 2.12.  After debugging her program, Alyssa shows it to a potential user, who complains that her program solves the wrong problem. He wants a program that can deal with numbers represented as a center value and an additive tolerance; for example, he wants to work with intervals such as 3.5± 0.15 rather than [3.35, 3.65]. Alyssa returns to her desk and fixes this problem by supplying an alternate constructor and alternate selectors:
+
+#+BEGIN_SRC scheme -n
+(define (make-center-width c w)
+  (make-interval (- c w) (+ c w)))
+(define (center i)
+  (/ (+ (lower-bound i) (upper-bound i)) 2))
+(define (width i)
+  (/ (- (upper-bound i) (lower-bound i)) 2))
+#+END_SRC
+
+Unfortunately, most of Alyssa's users are engineers. Real engineering situations usually involve measurements with only a small uncertainty, measured as the ratio of the width of the interval to the midpoint of the interval. Engineers usually specify percentage tolerances on the parameters of devices, as in the resistor specifications given earlier.
+
+Define a constructor make-center-percent that takes a center and a percentage tolerance and produces the desired interval. You must also define a selector percent that produces the percentage tolerance for a given interval. The center selector is the same as the one shown above.
+
+#+BEGIN_SRC lisp -n
+  (defun make-center-percent (c p)
+    (let ((tolerance (* c p)))
+      (make-interval (- c tolerance)
+                     (+ c tolerance))))
+  
+  (defun percent (i)
+    (/ (width i) (center i)))
+  
+  (defun make-center-width (c w)
+    (make-interval (- c w) (+ c w)))
+  (defun center (i)
+    (/ (+ (lower-bound i) (upper-bound i)) 2))
+  (defun width (i)
+    (/ (- (upper-bound i) (lower-bound i)) 2))
+#+END_SRC
+
+Exercise 2.13.  Show that under the assumption of small percentage tolerances there is a simple formula for the approximate percentage tolerance of the product of two intervals in terms of the tolerances of the factors. You may simplify the problem by assuming that all numbers are positive.
+
+#+BEGIN_VERSE
+有两个区间i_{1}和i_{2}，假设i_{3} = i_{1} * i_{2} （所有数都为正数）
+i_{1} = [c_{1} * (1 - p_{1}), c_{1} * (1 + p_{1})]
+i_{2} = [c_{2} * (1 - p_{2}), c_{2} * (1 + p_{2})]
+i_{3} = 
+[c_{1} * c_{2} * (1 - (p_{1} + p_{2}) + p_{1} * p_{2}),
+c_{1} * c_{2} * (1 + (p_{1} + p_{2}) + p_{1} * p_{2})]
+p_{1}和p_{2}都很小，那么p_{1} * p_{2}就可以忽略，那么p_{3} = p_{1} + p_{2}
+#+END_VERSE
+
+Exercise 2.14.  After considerable work, Alyssa P. Hacker delivers her finished system. Several years later, after she has forgotten all about it, she gets a frenzied call from an irate user, Lem E. Tweakit. It seems that Lem has noticed that the formula for parallel resistors can be written in two algebraically equivalent ways:
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-9.gif]]
+
+and
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-10.gif]]
+
+He has written the following two programs, each of which computes the parallel-resistors formula differently:
+
+#+BEGIN_SRC scheme -n
+(define (par1 r1 r2)
+  (div-interval (mul-interval r1 r2)
+                (add-interval r1 r2)))
+(define (par2 r1 r2)
+  (let ((one (make-interval 1 1))) 
+    (div-interval one
+                  (add-interval (div-interval one r1)
+                                (div-interval one r2)))))
+#+END_SRC
+
+Lem complains that Alyssa's program gives different answers for the two ways of computing. This is a serious complaint.
+
+Demonstrate that Lem is right. Investigate the behavior of the system on a variety of arithmetic expressions. Make some intervals A and B, and use them in computing the expressions A/A and A/B. You will get the most insight by using intervals whose width is a small percentage of the center value. Examine the results of the computation in center-percent form (see exercise 2.12).
+
+#+BEGIN_VERSE
+r1 = [r1_{L}, r1_{U}]，r2 = [r2_{L}, r2_{U}]
+par1 = (r1 * r2) / (r1 + r2)
+[r1_{L}r2_{L}, r1_{U}r2_{U}] / [r1_{L} + r2_{L}, r1_{U} + r2_{U}]
+[(r1_{L}r2_{L}) / (r1_{U} + r2_{U}), (r1_{U}r2_{U}) / (r1_{L} + r2_{L})]
+par2 = [(r1_{L}r2_{L}) / (r1_{L} + r2_{L}), (r1_{U}r2_{U}) / (r1_{U} + r2_{U})]
+par1与par2不相等，Lem is right
+#+END_VERSE
