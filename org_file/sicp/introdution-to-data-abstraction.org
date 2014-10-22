@@ -1,5 +1,5 @@
 #+TITLE: 2.1 数据抽象
-#+OPTIONS: ^:{}
+#+OPTIONS: ^:{} *:nil /:nil
 
 * 例子：有理数的算术运算
 假定我们做有理数上的算术，加减乘除和比较两个有理数是否相等，等等。
@@ -590,3 +590,20 @@ par1 = (r1 * r2) / (r1 + r2)
 par2 = [(r1_{L}r2_{L}) / (r1_{L} + r2_{L}), (r1_{U}r2_{U}) / (r1_{U} + r2_{U})]
 par1与par2不相等，Lem is right
 #+END_VERSE
+下面定义区间A，对于区间来说A/A并不等于1,而值还是在区间之间
+#+BEGIN_VERSE
+CL-USER> (defparameter *A* (make-center-percent 5 .03))
+*A*
+CL-USER> *A*
+(4.85 . 5.15)
+CL-USER> (div-interval *A* *A*)
+(0.94174755 . 1.0618557)
+#+END_VERSE
+所以对于区间来说：
+R_{1}R_{2}/(R_{1}+R_{2}) /= 1/(1/R_{1} + 1/R_{2})
+第二个公式分子分母都乘以R_{1}R_{2}，就是乘以了R_{1}R_{2}/R_{1}R_{2}，但它并不等于1,所以这么乘的时候已经使第二个公式变成另外一个值。
+
+Exercise 2.15.  Eva Lu Ator, another user, has also noticed the different intervals computed by different but algebraically equivalent expressions. She says that a formula to compute with intervals using Alyssa's system will produce tighter error bounds if it can be written in such a form that no variable that represents an uncertain number is repeated. Thus, she says, par2 is a ``better'' program for parallel resistances than par1. Is she right? Why?
+
+Eva Lu Ator is right。因为第一个公式中，R_{1}与R_{2}（另一个区间）做乘，做加，这样增加了这个区间的变化，增加了不确定性，不像第二个公式，与1做运算，区间变化较小
+
