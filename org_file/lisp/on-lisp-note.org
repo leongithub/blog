@@ -90,3 +90,43 @@ Common Lisp是词法作用域(lexically scope)的Lisp
 ** 闭包
 由于Common Lisp是词法作用域的，所以如果定义含有自由变量的函数（如上节中y），系统就必须在函数定义时保存那些变量的绑定。这种函数和一组变量绑定的组合称为闭包。
 ** 局部函数
+#+BEGIN_SRC lisp -n
+  (defun test-labels (x)
+    (labels ((name (parameters)
+               (body)))
+      (name parameters)))
+#+END_SRC
+** 尾递归
+如果这个函数调用自己之后不做其他工作，这种调用就称为尾递归（tail-recursive）。
+许多cl编译器都可以把尾递归转化成循环，这样就不必担心函数调用在运行期产生的系统开销。
+如果一个函数不是尾递归的话，常常可以把一个使用累积器（accumulator）的局部函数嵌入其中，用这种方法把它转换成尾递归形式。
+#+BEGIN_SRC lisp -n
+  (defun our-length (lst)
+    (labels ((rec (lst acc)
+               (if (null lst)
+                   acc
+                   (rec (cdr lst) (1+ acc)))))
+      (rec lst 0)))
+#+END_SRC
+许多cl编译器都能做尾递归优化，但这并不是所有编译器的默认行为。所以在编写尾递归函数时，应该把以下这句写在文件的最前面，确保编译器不会辜负你的苦心，进行期望的优化。
+: (proclaim '(optimize speed))
+如果提供尾递归和类型声明，现有的cl编译器就能生成运行速度能与c程序相媲美，甚至超过它的代码。下面代码从1累加到n：
+#+BEGIN_SRC lisp -n
+  (defun triangle (n)
+    (labels ((tri (c n)
+               (declare (type fixnum n c))
+               (if (zerop n)
+                   c
+                   (tri (the fixnum (+ n c))
+                        (the fixnum (- n 1))))))
+      (tri 0 n)))
+#+END_SRC
+这就是快速cl代码的典范，一开始就用这样写程序可能会觉得不太自然。更好的办法是先用自己最习惯的方式编写函数，然后在必要时把它转化成尾递归的等价形式。
+** 编译
+这节现在有很多不懂的，之后要返回来再看
+** 来自列表的函数
+
+* 函数式编程
+** 函数式设计
+函数式编程意味着利用返回值而不是副作用来写程序。副作用包括破坏性修改对象以及变量赋值。如果副作用很少并且局部化，程序就会容易阅读，测试和调试。
+

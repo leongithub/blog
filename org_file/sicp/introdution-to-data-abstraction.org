@@ -605,5 +605,11 @@ R_{1}R_{2}/(R_{1}+R_{2}) /= 1/(1/R_{1} + 1/R_{2})
 
 Exercise 2.15.  Eva Lu Ator, another user, has also noticed the different intervals computed by different but algebraically equivalent expressions. She says that a formula to compute with intervals using Alyssa's system will produce tighter error bounds if it can be written in such a form that no variable that represents an uncertain number is repeated. Thus, she says, par2 is a ``better'' program for parallel resistances than par1. Is she right? Why?
 
-Eva Lu Ator is right。因为第一个公式中，R_{1}与R_{2}（另一个区间）做乘，做加，这样增加了这个区间的变化，增加了不确定性，不像第二个公式，与1做运算，区间变化较小
+Eva Lu Ator is right。因为第一个公式中，R_{1}与R_{2}（另一个区间）做乘，做加，这样增加了这个区间的变化，增加了不确定性，不像第二个公式，与1做运算，区间变化较小，而且R_{1}与R_{2}只出现一次，相对第一个公式，不确定性减少。
+
+Exercise 2.16.  Explain, in general, why equivalent algebraic expressions may lead to different answers. Can you devise an interval-arithmetic package that does not have this shortcoming, or is this task impossible? (Warning: This problem is very difficult.)
+
+这个问题之前练习中有说道，对于数学上的R/R=1,但对于区间R/R是以1为中心带有偏差的区间，这就不是1了，所以在区间上乘以R/R本身就不是乘以1,自然公式转换就变了值。
+
+解决先算了，还是继续向下看把:)
 
