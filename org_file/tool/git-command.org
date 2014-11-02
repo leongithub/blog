@@ -1,10 +1,11 @@
-#+TITLE: git基础命令小记
+#+TITLE: git初级使用小记
 #+OPTIONS: ^:{}
 #+OPTIONS: *:nil
 
-* 初次运行Git前的配置
+* 使用Git
+** 初次运行Git前的配置
 
-** Git配置文件
+*** Git配置文件
 git config工具，三个Git配置文件:
 #+BEGIN_EXAMPLE -n
   /etc/gitconfig 文件：系统中对所有用户都普遍适用的配置。若使用 git config 时用 --system 选项，读写的就是这个文件。
@@ -12,7 +13,7 @@ git config工具，三个Git配置文件:
   当前项目的 Git 目录中的配置文件（也就是工作目录中的 .git/config 文件）：这里的配置仅仅针对当前项目有效。每一个级别的配置都会覆盖上层的相同配置，所以 .git/config 里的配置会覆盖 /etc/gitconfig 中的同名变量。
 #+END_EXAMPLE
 
-** 配置命令
+*** 配置命令
 #+BEGIN_SRC sh
   # 配置用户信息
   git config --global user.name "John Doe"
@@ -28,7 +29,7 @@ git config工具，三个Git配置文件:
   git config user.name
 #+END_SRC
 
-* 获取帮助
+** 获取帮助
 三种方法：
 #+BEGIN_SRC sh
   git help <verb>
@@ -36,7 +37,7 @@ git config工具，三个Git配置文件:
   man git-<verb>
 #+END_SRC
 
-* .gitignore
+** .gitignore
 .gitignore文件：
 #+BEGIN_EXAMPLE
   # 此为注释 – 将被 Git 忽略
@@ -53,7 +54,7 @@ git config工具，三个Git配置文件:
   # ignore all .txt files in the doc/ directory
   doc/**/*.txt
 #+END_EXAMPLE
-* Git命令
+* Git基本命令
 #+BEGIN_SRC sh
   git init
   git clone [url]
@@ -96,3 +97,65 @@ git config工具，三个Git配置文件:
   git push origin [tagname] # 把标签传送到远端服务器
   git push origin --tags # 本地所有标签传上去
 #+END_SRC
+* Git分支
+** 何为分支
+Git中的分支，其实本质上仅仅是个指向commit对象的可变指针。是存在.git/refs/heads/目录下的文件，如master分支为.git/refs/heads/master，文件里面包含了指向commit对象的SHA-1哈希字串。
+
+commit对象包含一个指向暂存内容快照的指针，包含本次提交的作者等相关附属信息，包含零个或多个指向该提交对象的父对象指针：首次提交是没有直接祖先的，普通提交有一个祖先，由两个或多个分支合并产生的提交则有多个祖先。
+
+暂存操作会对每一个文件计算校验和（即第一章中提到的 SHA-1 哈希字串），然后把当前版本的文件快照保存到 Git 仓库中（Git 使用 blob 类型的对象存储这些快照），并将校验和加入暂存区域
+
+当使用 git commit 新建一个提交对象前，Git 会先计算每一个子目录（本例中就是项目根目录）的校验和，然后在 Git 仓库中将这些目录保存为树（tree）对象。之后 Git 创建的提交对象，除了包含相关提交信息以外，还包含着指向这个树对象（项目根目录）的指针，如此它就可以在将来需要的时候，重现此次快照的内容了。
+
+[[http://git-scm.com/figures/18333fig0301-tn.png]]
+
+两次提交后仓库历史的样子
+
+[[http://git-scm.com/figures/18333fig0302-tn.png]]
+
+现在master的分支指向最后一次提交对象，它在每次提交的时候都会自动向前移动。
+
+[[http://git-scm.com/figures/18333fig0303-tn.png]]
+
+创建一个新的分支
+: git branch testing
+
+[[http://git-scm.com/figures/18333fig0304-tn.png]]
+
+
+Git是如何知道你当前在哪个分支上工作的呢？它保存一个名为HEAD的特别指针。其实就是.git/HEAD文件，文件中的内容：
+: ref: refs/heads/master
+
+[[http://git-scm.com/figures/18333fig0305-tn.png]]
+
+切换到其他分支: git checkout testing。这样HEAD就指向了testing分支
+
+[[http://git-scm.com/figures/18333fig0306-tn.png]]
+
+我们在testing分支提交一次，然后切换到master分支: git checkout master。这条命令做了两件事。它把 HEAD 指针移回到 master 分支，并把工作目录中的文件换成了 master 分支所指向的快照内容。
+
+由于 Git 中的分支实际上仅是一个包含所指对象校验和（40 个字符长度 SHA-1 字串）的文件（.git/heads/<branch-name>），所以创建和销毁一个分支就变得非常廉价
+
+** 分支命令
+#+BEGIN_SRC sh
+  git branch iss53 # 创建iss53分支
+  git checkout iss53 # 切换到iss53分支
+  git checkout -b iss53 # 创建并切换到iss53分支
+  
+  # 切换到master，把hotfix分支合并进来，然后删除hotfix分支
+  git checkout master
+  git merge hotfix
+  git branch -d hotfix
+  # 如果合并有冲突失败了，可以通过git status查看状态，手工合并有冲突的文件，然后加入暂存区域git add。就可以用git commit完成这次合并提交
+  
+  git branch # 列出当前分支，不包括远程分支
+  git branch -r # 列出远程分支
+  git branch -a # 列出全部分支，包括本地和远程
+  git branch -v # 查看各分支最后一次提交对象的信息
+  git branch --merged # 查看哪些分支已被并入当前分支（也就是说那些分支是当前分支的直接上游）
+  git branch --no-merged # 同上相反
+  git branch -d <branch> # 删除分支，如果删除no-merged的分支，会提示错误，因为会丢失数据。-D会强制删除
+  
+#+END_SRC
+
+

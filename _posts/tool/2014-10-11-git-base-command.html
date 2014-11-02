@@ -1,15 +1,20 @@
 ---
 layout: post
-title: git基础命令小记
+title: git初级使用小记
 category: tool
-description: Git基础小记，以便快速查看
+description: 记录一些基本，必要的初级命令，可以快速上手
 ---
+
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<title>git基础命令小记</title>
+<title>git初级使用小记</title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-<meta name="title" content="git基础命令小记"/>
+<meta name="title" content="git初级使用小记"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2014-10-11T14:22+0800"/>
+<meta name="generated" content="2014-11-02T15:41+0800"/>
 <meta name="author" content="leon"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -117,37 +122,54 @@ for the JavaScript code in this tag.
 </div>
 
 <div id="content">
-<h1 class="title">git基础命令小记</h1>
+<h1 class="title">git初级使用小记</h1>
 
 
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1 初次运行Git前的配置</a>
+<li><a href="#sec-1">1 使用Git</a>
 <ul>
-<li><a href="#sec-1-1">1.1 Git配置文件</a></li>
-<li><a href="#sec-1-2">1.2 配置命令</a></li>
+<li><a href="#sec-1-1">1.1 初次运行Git前的配置</a>
+<ul>
+<li><a href="#sec-1-1-1">1.1.1 Git配置文件</a></li>
+<li><a href="#sec-1-1-2">1.1.2 配置命令</a></li>
 </ul>
 </li>
-<li><a href="#sec-2">2 获取帮助</a></li>
-<li><a href="#sec-3">3 .gitignore</a></li>
-<li><a href="#sec-4">4 Git命令</a></li>
+<li><a href="#sec-1-2">1.2 获取帮助</a></li>
+<li><a href="#sec-1-3">1.3 .gitignore</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2 Git基本命令</a></li>
+<li><a href="#sec-3">3 Git分支</a>
+<ul>
+<li><a href="#sec-3-1">3.1 何为分支</a></li>
+<li><a href="#sec-3-2">3.2 分支命令</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
 
 <div id="outline-container-1" class="outline-2">
-<h2 id="sec-1"><span class="section-number-2">1</span> 初次运行Git前的配置</h2>
+<h2 id="sec-1"><span class="section-number-2">1</span> 使用Git</h2>
 <div class="outline-text-2" id="text-1">
-
 
 
 </div>
 
 <div id="outline-container-1-1" class="outline-3">
-<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Git配置文件</h3>
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> 初次运行Git前的配置</h3>
 <div class="outline-text-3" id="text-1-1">
+
+
+
+</div>
+
+<div id="outline-container-1-1-1" class="outline-4">
+<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> Git配置文件</h4>
+<div class="outline-text-4" id="text-1-1-1">
 
 <p>git config工具，三个Git配置文件:
 </p>
@@ -163,9 +185,9 @@ for the JavaScript code in this tag.
 
 </div>
 
-<div id="outline-container-1-2" class="outline-3">
-<h3 id="sec-1-2"><span class="section-number-3">1.2</span> 配置命令</h3>
-<div class="outline-text-3" id="text-1-2">
+<div id="outline-container-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2"><span class="section-number-4">1.1.2</span> 配置命令</h4>
+<div class="outline-text-4" id="text-1-1-2">
 
 
 
@@ -190,9 +212,9 @@ git config user.name
 
 </div>
 
-<div id="outline-container-2" class="outline-2">
-<h2 id="sec-2"><span class="section-number-2">2</span> 获取帮助</h2>
-<div class="outline-text-2" id="text-2">
+<div id="outline-container-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> 获取帮助</h3>
+<div class="outline-text-3" id="text-1-2">
 
 <p>三种方法：
 </p>
@@ -208,9 +230,9 @@ man git-&lt;verb&gt;
 
 </div>
 
-<div id="outline-container-3" class="outline-2">
-<h2 id="sec-3"><span class="section-number-2">3</span> .gitignore</h2>
-<div class="outline-text-2" id="text-3">
+<div id="outline-container-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> .gitignore</h3>
+<div class="outline-text-3" id="text-1-3">
 
 <p>.gitignore文件：
 </p>
@@ -232,12 +254,13 @@ doc/**/*.txt
 </pre>
 
 </div>
+</div>
 
 </div>
 
-<div id="outline-container-4" class="outline-2">
-<h2 id="sec-4"><span class="section-number-2">4</span> Git命令</h2>
-<div class="outline-text-2" id="text-4">
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Git基本命令</h2>
+<div class="outline-text-2" id="text-2">
 
 
 
@@ -285,14 +308,123 @@ git push origin --tags <span style="color: #b22222;"># </span><span style="color
 </pre>
 
 </div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Git分支</h2>
+<div class="outline-text-2" id="text-3">
+
+
+</div>
+
+<div id="outline-container-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> 何为分支</h3>
+<div class="outline-text-3" id="text-3-1">
+
+<p>Git中的分支，其实本质上仅仅是个指向commit对象的可变指针。是存在.git/refs/heads/目录下的文件，如master分支为.git/refs/heads/master，文件里面包含了指向commit对象的SHA-1哈希字串。
+</p>
+<p>
+commit对象包含一个指向暂存内容快照的指针，包含本次提交的作者等相关附属信息，包含零个或多个指向该提交对象的父对象指针：首次提交是没有直接祖先的，普通提交有一个祖先，由两个或多个分支合并产生的提交则有多个祖先。
+</p>
+<p>
+暂存操作会对每一个文件计算校验和（即第一章中提到的 SHA-1 哈希字串），然后把当前版本的文件快照保存到 Git 仓库中（Git 使用 blob 类型的对象存储这些快照），并将校验和加入暂存区域
+</p>
+<p>
+当使用 git commit 新建一个提交对象前，Git 会先计算每一个子目录（本例中就是项目根目录）的校验和，然后在 Git 仓库中将这些目录保存为树（tree）对象。之后 Git 创建的提交对象，除了包含相关提交信息以外，还包含着指向这个树对象（项目根目录）的指针，如此它就可以在将来需要的时候，重现此次快照的内容了。
+</p>
+<p>
+<img src="http://git-scm.com/figures/18333fig0301-tn.png"  alt="http://git-scm.com/figures/18333fig0301-tn.png" />
+</p>
+<p>
+两次提交后仓库历史的样子
+</p>
+<p>
+<img src="http://git-scm.com/figures/18333fig0302-tn.png"  alt="http://git-scm.com/figures/18333fig0302-tn.png" />
+</p>
+<p>
+现在master的分支指向最后一次提交对象，它在每次提交的时候都会自动向前移动。
+</p>
+<p>
+<img src="http://git-scm.com/figures/18333fig0303-tn.png"  alt="http://git-scm.com/figures/18333fig0303-tn.png" />
+</p>
+<p>
+创建一个新的分支
+</p><pre class="example">
+git branch testing
+</pre>
+
+
+<p>
+<img src="http://git-scm.com/figures/18333fig0304-tn.png"  alt="http://git-scm.com/figures/18333fig0304-tn.png" />
+</p>
+
+<p>
+Git是如何知道你当前在哪个分支上工作的呢？它保存一个名为HEAD的特别指针。其实就是.git/HEAD文件，文件中的内容：
+</p><pre class="example">
+ref: refs/heads/master
+</pre>
+
+
+<p>
+<img src="http://git-scm.com/figures/18333fig0305-tn.png"  alt="http://git-scm.com/figures/18333fig0305-tn.png" />
+</p>
+<p>
+切换到其他分支: git checkout testing。这样HEAD就指向了testing分支
+</p>
+<p>
+<img src="http://git-scm.com/figures/18333fig0306-tn.png"  alt="http://git-scm.com/figures/18333fig0306-tn.png" />
+</p>
+<p>
+我们在testing分支提交一次，然后切换到master分支: git checkout master。这条命令做了两件事。它把 HEAD 指针移回到 master 分支，并把工作目录中的文件换成了 master 分支所指向的快照内容。
+</p>
+<p>
+由于 Git 中的分支实际上仅是一个包含所指对象校验和（40 个字符长度 SHA-1 字串）的文件（.git/heads/&lt;branch-name&gt;），所以创建和销毁一个分支就变得非常廉价
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> 分支命令</h3>
+<div class="outline-text-3" id="text-3-2">
+
+
+
+
+<pre class="src src-sh">git branch iss53 <span style="color: #b22222;"># </span><span style="color: #b22222;">&#21019;&#24314;iss53&#20998;&#25903;</span>
+git checkout iss53 <span style="color: #b22222;"># </span><span style="color: #b22222;">&#20999;&#25442;&#21040;iss53&#20998;&#25903;</span>
+git checkout -b iss53 <span style="color: #b22222;"># </span><span style="color: #b22222;">&#21019;&#24314;&#24182;&#20999;&#25442;&#21040;iss53&#20998;&#25903;</span>
+
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#20999;&#25442;&#21040;master&#65292;&#25226;hotfix&#20998;&#25903;&#21512;&#24182;&#36827;&#26469;&#65292;&#28982;&#21518;&#21024;&#38500;hotfix&#20998;&#25903;</span>
+git checkout master
+git merge hotfix
+git branch -d hotfix
+<span style="color: #b22222;"># </span><span style="color: #b22222;">&#22914;&#26524;&#21512;&#24182;&#26377;&#20914;&#31361;&#22833;&#36133;&#20102;&#65292;&#21487;&#20197;&#36890;&#36807;git status&#26597;&#30475;&#29366;&#24577;&#65292;&#25163;&#24037;&#21512;&#24182;&#26377;&#20914;&#31361;&#30340;&#25991;&#20214;&#65292;&#28982;&#21518;&#21152;&#20837;&#26242;&#23384;&#21306;&#22495;git add&#12290;&#23601;&#21487;&#20197;&#29992;git commit&#23436;&#25104;&#36825;&#27425;&#21512;&#24182;&#25552;&#20132;</span>
+
+git branch <span style="color: #b22222;"># </span><span style="color: #b22222;">&#21015;&#20986;&#24403;&#21069;&#20998;&#25903;&#65292;&#19981;&#21253;&#25324;&#36828;&#31243;&#20998;&#25903;</span>
+git branch -r <span style="color: #b22222;"># </span><span style="color: #b22222;">&#21015;&#20986;&#36828;&#31243;&#20998;&#25903;</span>
+git branch -a <span style="color: #b22222;"># </span><span style="color: #b22222;">&#21015;&#20986;&#20840;&#37096;&#20998;&#25903;&#65292;&#21253;&#25324;&#26412;&#22320;&#21644;&#36828;&#31243;</span>
+git branch -v <span style="color: #b22222;"># </span><span style="color: #b22222;">&#26597;&#30475;&#21508;&#20998;&#25903;&#26368;&#21518;&#19968;&#27425;&#25552;&#20132;&#23545;&#35937;&#30340;&#20449;&#24687;</span>
+git branch --merged <span style="color: #b22222;"># </span><span style="color: #b22222;">&#26597;&#30475;&#21738;&#20123;&#20998;&#25903;&#24050;&#34987;&#24182;&#20837;&#24403;&#21069;&#20998;&#25903;&#65288;&#20063;&#23601;&#26159;&#35828;&#37027;&#20123;&#20998;&#25903;&#26159;&#24403;&#21069;&#20998;&#25903;&#30340;&#30452;&#25509;&#19978;&#28216;&#65289;</span>
+git branch --no-merged <span style="color: #b22222;"># </span><span style="color: #b22222;">&#21516;&#19978;&#30456;&#21453;</span>
+git branch -d &lt;branch&gt; <span style="color: #b22222;"># </span><span style="color: #b22222;">&#21024;&#38500;&#20998;&#25903;&#65292;&#22914;&#26524;&#21024;&#38500;no-merged&#30340;&#20998;&#25903;&#65292;&#20250;&#25552;&#31034;&#38169;&#35823;&#65292;&#22240;&#20026;&#20250;&#20002;&#22833;&#25968;&#25454;&#12290;-D&#20250;&#24378;&#21046;&#21024;&#38500;</span>
+
+</pre>
+
+
+
+</div>
+</div>
 </div>
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2014-10-11T14:22+0800</p>
+<p class="date">Date: 2014-11-02T15:41+0800</p>
 <p class="author">Author: leon</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
 
 </div>
 </body>
+</html>
