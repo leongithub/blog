@@ -5,7 +5,7 @@
 
 我是来自黑龙江省的杨际国，英文名yangjiguo，不对，应该是Leon。
 
-Email : mailto:yjg.2016@gmail.com
+Email : [[mailto:yjg.2016@gmail.com][yjg.2016@gmail.com]]
 Github : [[https://github.com/leongithub]]
 新浪微博 : [[http://weibo.com/u/2108636420]]
 
