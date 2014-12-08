@@ -1,5 +1,12 @@
-#+TITLE: On Lisp 笔记
+#+TITLE: On Lisp 笔记 - 有关函数（1-6章）
 #+OPTIONS: ^:{}
+
+#+BEGIN_COMMENT
+1-6 有关函数的
+7-10 宏技术的完整教程
+11-18 展示一些可以用宏来构造的强有力的抽象机制
+19-24 嵌入式语言
+#+END_COMMENT
 
 自底向上的编程方法：一个自底向上的程序由一系列的层写成，每一层都作为更高一层的编程语言。自底向上的编程方法是lisp与生俱来的强项。
 
@@ -130,3 +137,677 @@ Common Lisp是词法作用域(lexically scope)的Lisp
 ** 函数式设计
 函数式编程意味着利用返回值而不是副作用来写程序。副作用包括破坏性修改对象以及变量赋值。如果副作用很少并且局部化，程序就会容易阅读，测试和调试。
 
+** 内外颠倒的命令式
+函数式程序代码的用意相比命令式程序可能显得更加明确一些，函数式程序告诉你它想要什么;而命令式程序告诉你它要做什么。
+#+BEGIN_SRC lisp -n
+  ; 函数式程序说“返回一个由a和x的第一个元素的平方所组成的列表”
+  (defun fun (x)
+    (list 'a (expt (car x) 2)))
+  ; 命令式程序会说“取得x的第一个元素，把它平方，然后返回由a及其平方组成的列表”
+  (defun imp (x)
+    (let (y sqr)
+      (setf y (car x))
+      (setf sqr (expt y 2))
+      (list 'a sqr)))
+#+END_SRC
+不过这个是否可以理解为，函数式只是把命令式的代码写成一行，以以前的思想，第一种写法应该是不清晰的，就是把代码都写在一行，不好理解。这里说法正相反。以后有了更多的编码经验再回看这里吧，是否只是对lisp来说更加清晰呢，如果对Java来说用函数式编程会什么样子，以下为Java伪代码：
+: return (new ArrayList()).add('a').add(square(x.get(0)));
+函数式编程和Lisp在一起让你写出更优雅的程序，事半功倍。
+
+** 函数式接口
+#+BEGIN_SRC lisp -n
+  (defun anything (x)
+    (+ x *anything*))
+#+END_SRC
+虽然上边函数没有副作用，但它的返回值依赖于全局变量*anything*，因此，如果任何其他函数可以改变这个变量的值，那么anything就可能返回任意值。
+要是把代码写成让每次调用都只修改它自己拥有的东西的话，那这样的代码就基本上就可以和纯函数式代码媲美了。
+
+函数式接口：如果用同一参数调用它两次，你应当会得到同样的结果。这是自底向上程序设计最重要的组成部分。
+
+函数应当避免写那些返回包含引用对象的函数：
+#+BEGIN_SRC lisp -n
+  ; 返回值包含一个引用列表
+  (defun exclaim (expression)
+    (append expression '(oh my)))
+  
+  ; 那么任何后续的对返回值的破坏性修改
+  (exclaim '(lions and tigers and bears)) ; (LIONS AND TIGERS AND BEARS OH MY)
+  (nconc * '(goodness)) ; (LIONS AND TIGERS AND BEARS OH MY GOODNESS)
+  
+  ; 将替换函数里的列表
+  (exclaim '(test)) ; (TEST OH MY GOODNESS)
+  
+  ; 为了避免exclaim的这个问题，应该写成：
+  (defun exclaim (expression)
+    (append expression (list 'oh 'my)))
+#+END_SRC
+函数不应返回引用列表，但也有例外，即生成宏展开的函数。宏展开器可以安全地在它们的展开式里包含引用列表，只要这些展开式是直接送到编译器那里的。
+
+** 交互式编程
+有经验的Lisp程序员会尽量让它们的程序易于测试：
+1. 他们试图把副作用分离到个别函数里，以便程序中更多的部分可以写成纯函数式风格。
+2. 如果一个函数必须产生副作用，他们至少会想出办法给它设计一个函数式的接口
+3. 他们给每个函数赋予一个单一的，定义良好的功能。
+如果你所编写的函数影响外面世界的唯一渠道是它的返回值，那么只要返回值是你期望的，你就完全可以信任返回它的代码。
+
+在自底向上的设计是一个进化的过程。在这个过程中，你在写程序的同时也就是在构造一门语言。这一方法只有当你信赖底层代码时才可行。如果你真的想把这一层作为语言使用，你就必须假设，如同使用其他语言时那样，任何遇到的bug都是你程序里的bug，而不是语言本身。难道你的新抽象有能力承担这一重任，同时还能按照新的需求随机应变？没错，在Lisp里你可以两不误。当以函数式风格编写程序，并且进行增量测试时，你可以得到随心所欲的灵活性，加上人们认为只有仔细计划才能确保的可靠性。
+
+* 实用函数
+本章将讲用函数来扩展Lisp的技术。关于这些函数，重要的不是知道怎样写，而是要知道它们从何而来。编写Lisp扩展的难点并不在于代码怎么写，而在于决定写什么。
+** 实用工具的诞生
+在编写Lisp程序时，同时也在为Lisp增加那些可以让你程序更容易编写的新操作符。这些操作符被称为实用工具。
+“实用工具”这一术语并无明确的定义。有那么一段代码，如果把它看成独立的程序，感觉小了点，要是把它作为特定程序的一部分的话，这段代码又太通用了，这时就可以称之为实用工具。举例来说，数据库不能称为实用工具，但是对列表进行单一操作的函数就可以。大多数实用工具和Lisp已有的函数和宏很相似。事实上，许多Common Lisp内置的操作符就源自实用工具。用于收集列表中所有满足条件元素的remove-if-not函数，在它成为CL的一部分以前，就被程序员们私下里各自定义了多年。
+
+学习编写实用工具与其说是学习编写的技术，不如说是养成编写实用工具的习惯。必须培养出一种能看出程序中缺少何种操作符的洞察力。你必须能够在看到一个程序时说，“啊，其实你真正的意思是这个。”
+
+举个例子，假设nicknames是这样一个函数，它接受一个名字，然后构造出一个列表，列表由这个名字的所有昵称组成。有了这个函数，我们怎样收集一个名字列表对应的所有昵称呢？Lisp的初学者可能会写出类似的函数：
+#+BEGIN_SRC lisp -n
+  (defun all-nicknames (names)
+    (if (null names)
+        nil
+        (nconc (nicknames (car names))
+               (all-nicknames (cdr names)))))
+#+END_SRC
+而更有经验的Lisp程序员可能一看到这样的函数就会说“啊，其实你真正想要的是mapcan。”然后，不再被迫定义并调用一个新函数来找出一组人的所有昵称，现在只要一个表达式就够了：
+#+BEGIN_SRC lisp
+  (mapcan #'nicknames people)
+#+END_SRC
+定义all-nicknames完全是在重复地发明轮子。它的问题还不只于此：它同时也葬送了一个机会：本可以用通用操作符来直接完成某件事，却使用了专用的函数来实现它。对这个例子来说，操作符mapcan是现成的。任何知道mapcan的人在看到all-nicknames时都会觉得有点不太舒服。要想在自底向上程序设计方面做得好，就要在缺少的操作符还没有写出来的时候，同样觉得不舒服。
+
+Lisp编程的要求之一，就是一旦有需要，就应该构思出新的实用工具。本章就是揭示这些工具是如何从无到有的。
+
+** 投资抽象
+简洁和效率同是优秀软件的本质特征。编写和维护一个程序的开销与其长度成正比。同等条件下，程序越短越好。从这一角度来看，编写实用工具可以被视为一种投资。实用工具可以放在单独的文件里;它们既不会在我们编写程序时分散我们的精力，也不会在事后我们修改遗留代码时被牵连进去。实用工具的质量必须过关。由于它们要被多次使用，所以任何不正确或者低效率之处都会成倍地偿还。一个新的实用工具必须为通用场合而作。
+** 列表上的操作
+一个高度优化的CL程序里可能根本就没有列表的踪影。最专业的程序，在运行期很少使用列表，相反可能会在编译期生成宏展开式时大量使用列表。所以尽管列表的角色在现代Lisp方言里被淡化了，但是针对列表的各种操作仍然是Lisp程序的重要组成部分。
+
+*** 列表实用工具
+一些list最小实用工具，为了满足效率的需要，应该把它们全部声明成inline。
+#+BEGIN_SRC lisp -n
+  (proclaim ’(inline last1 single append1 conc1 mklist))
+  ;; 返回列表的最后一个元素，last返回最后一个cons
+  (defun last1 (lst)
+    (car (last lst)))
+  ;; 判断是否为单元素的列表，(= (length lst) 1)这样写太低效
+  (defun single (lst)
+    (and (consp lst) (not (cdr lst))))
+  ;; 在列表结尾追加一个新元素
+  (defun append1 (lst obj)
+    (append lst (list obj)))
+  ;; 破坏性版本
+  (defun conc1 (lst obj)
+    (nconc lst (list obj)))
+  ;; 确保某个东西是列表
+  (defun mklist (obj)
+    (if (listp obj) obj (list obj)))
+#+END_SRC
+一些较大的列表实用工具
+#+BEGIN_SRC lisp -n
+  ;; 比较两个列表，前一个列表更长的时候才返回真
+  ;; (> (length x) (length y)) 低效，完全遍历两个表
+  (defun longer (x y)
+    (labels ((compare (x y)
+               (and (consp x)
+                    (or (null y)
+                        (compare (cdr x) (cdr y))))))
+      (if (and (listp x) (listp y))
+          (compare x y)
+          (> (length x) (length y)))))
+  ;; 把一个函数作用在列表元素上返回的值不为空，就把这样的返回值收集起来，构成列表
+  (defun filter (fn lst)
+    (let ((acc nil))
+      (dolist (x lst)
+        (let ((val (funcall fn x)))
+          (if val (push val acc))))
+      (nreverse acc)))
+  ;; 返回一个由原列表元素按长度为n的子列表组成。
+  ;; (group '(1 2 3 4 5) 2) ==> ((1 2) (3 4) 5)
+  (defun group (source n)
+    (if (zerop n) (error ”zero length”))
+    (labels ((rec (source acc)
+               (let ((rest (nthcdr n source)))
+                 (if (consp rest)
+                     (rec rest (cons (subseq source 0 n) acc))
+                     (nreverse (cons source acc))))))
+      (if source (rec source nil) nil)))
+#+END_SRC
+: (group '(a b c d e f g) 2) ==> ((A B) (C D) (E F) (G))
+使用双递归的列表实用工具
+#+BEGIN_SRC lisp -n
+  ;; 返回由列表中的所有原子（atom）所组成的列表
+  (defun flatten (x)
+    (labels ((rec (x acc)
+               (cond ((null x) acc)
+                     ((atom x) (cons x acc))
+                     (t (rec (car x) (rec (cdr x) acc))))))
+      (rec x nil)))
+  ;; 它对remove-if的意义就相当于copy-tree之于copy-list
+  ;; (prune #’evenp ’(1 2 (3 (4 5) 6) 7 8 (9))) == >(1 (3 (5)) 7 (9))
+  (defun prune (test tree)
+    (labels ((rec (tree acc)
+               (cond ((null tree) (nreverse acc))
+                     ((consp (car tree))
+                      (rec (cdr tree)
+                           (cons (rec (car tree) nil) acc)))
+                     (t (rec (cdr tree)
+                             (if (funcall test (car tree))
+                                 acc
+                                 (cons (car tree) acc)))))))
+      (rec tree nil)))
+#+END_SRC
+** 搜索
+搜索列表函数
+#+BEGIN_SRC lisp -n
+  ;; 查找把fn应用于lst中元素第一个返回值不为空的，返回此元素和fn返回值
+  (defun find2 (fn lst)
+    (if (null lst)
+        nil
+        (let ((val (funcall fn (car lst))))
+          (if val
+              (values (car lst) val)
+              (find2 fn (cdr lst))))))
+  ;; 在lst中一个对象x是否在另一个对象y前面
+  (defun before (x y lst &key (test #’eql))
+    (and lst
+         (let ((first (car lst)))
+           (cond ((funcall test y first) nil)
+                 ((funcall test x first) lst)
+                 (t (before x y (cdr lst) :test test))))))
+  ;; 与上面相反，比before更为细致的测试，要求两个参数都出现在列表里
+  (defun after (x y lst &key (test #’eql))
+    (let ((rest (before y x lst :test test)))
+      (and rest (member x rest :test test))))
+  ;; 判断obj在lst中是否重复出现
+  (defun duplicate (obj lst &key (test #’eql))
+    (member obj (cdr (member obj lst :test test))
+            :test test))
+  ;; 返回以把函数fn应用在列表lst元素返回不为nil的元素为分割的两个列表
+  ;; 主要用于已经按照某种规则排好序的列表
+  (defun split-if (fn lst)
+    (let ((acc nil))
+      (do ((src lst (cdr src)))
+          ((or (null src) (funcall fn (car src)))
+           (values (nreverse acc) src))
+        (push (car src) acc))))
+#+END_SRC
+带有列表元素比较的搜索函数
+#+BEGIN_SRC lisp -n
+  ;; 接受一个列表和一个用来打分的函数，返回分数最高的元素
+  (defun most (fn lst)
+    (if (null lst)
+        (values nil nil)
+        (let* ((wins (car lst))
+               (max (funcall fn wins)))
+          (dolist (obj (cdr lst))
+            (let ((score (funcall fn obj)))
+              (when (> score max)
+                (setq wins obj
+                      max score))))
+          (values wins max))))
+  ;; 用一个接受两个参数的谓词函数比较列表中元素，返回在该谓词下胜出的元素
+  (defun best (fn lst)
+    (if (null lst)
+        nil
+        (let ((wins (car lst)))
+          (dolist (obj (cdr lst))
+            (if (funcall fn obj wins)
+                (setq wins obj)))
+          wins)))
+  ;; 与most类似，返回一个由获得最高分的所有元素和最高分组成的列表
+  (defun mostn (fn lst)
+    (if (null lst)
+        (values nil nil)
+        (let ((result (list (car lst)))
+              (max (funcall fn (car lst))))
+          (dolist (obj (cdr lst))
+            (let ((score (funcall fn obj)))
+              (cond ((> score max)
+                     (setq max score
+                           result (list obj)))
+                    ((= score max)
+                     (push obj result)))))
+          (values (nreverse result) max))))
+#+END_SRC
+** 映射
+映射函数
+#+BEGIN_SRC lisp -n
+  ;; (map0-n #’1+ 5) ==> (1 2 3 4 5 6)
+  (defun map0-n (fn n)
+    (mapa-b fn 0 n))
+  ;; (map1-n #’1+ 5) ==> (2 3 4 5 6)
+  (defun map1-n (fn n)
+    (mapa-b fn 1 n))
+  ;; (mapa-b #’1+ -2 0 .5) ==> (-1 -0.5 0.0 0.5 1.0)
+  (defun mapa-b (fn a b &optional (step 1))
+    (do ((i a (+ i step))
+         (result nil))
+        ((> i b) (nreverse result))
+      (push (funcall fn i) result)))
+  ;; 比mapa-b更加通用，借助map->不仅能遍历整数序列，还可以遍历任何一种数据结构
+  ;; map->我没太看明白什么地方用...
+  (defun map-> (fn start test-fn succ-fn)
+    (do ((i start (funcall succ-fn i))
+         (result nil))
+        ((funcall test-fn i) (nreverse result))
+      (push (funcall fn i) result)))
+  ;; mapa-b可以用map->定义
+  (defun mapa-b (fn a b &optional (step 1))
+    (map-> fn
+           a
+           #’(lambda (x) (> x b))
+           #’(lambda (x) (+ x step))))
+  ;; mapcan的非破坏性版本
+  (defun mappend (fn &rest lsts)
+    (apply #’append (apply #’mapcar fn lsts)))
+  ;; mapcan也可用下列代码表达
+  (defun our-mapcan (fn &rest lsts)
+    (apply #’nconc (apply #’mapcar fn lsts)))
+  ;; 对多个列表 mapcar 某个函数
+  (defun mapcars (fn &rest lsts)
+    (let ((result nil))
+      (dolist (lst lsts)
+        (dolist (obj lst)
+          (push (funcall fn obj) result)))
+      (nreverse result)))
+  ;; 适用于树的 mapcar 版本。它的名字 rmapcar 是 “recursive mapcar ” 的缩写
+  (defun rmapcar (fn &rest args)
+    (if (some #’atom args)
+        (apply fn args)
+        (apply #’mapcar
+                  #’(lambda (&rest args)
+                       (apply #’rmapcar fn args))
+                     args)))
+#+END_SRC
+
+** I/O
+I/O函数
+#+BEGIN_SRC lisp -n
+  ;; 读入一行并以列表形式返回，调用values是为了只得到一个返回值
+  ;; > (readlist)
+  ;; Call me ”Ed”
+  ;; (CALL ME ”Ed”)
+  (defun readlist (&rest args)
+    (values (read-from-string
+             (concatenate ’string ”(”
+                                  (apply #’read-line args)
+                                  ”)”))))
+  ;; 函数 prompt 把打印问题和读取答案结合了起来
+  ;; > (prompt ”Enter a number between ~A and ~A.~%>> ” 1 10)
+  ;; Enter a number between 1 and 10.
+  ;; >> 3
+  ;; 3
+  (defun prompt (&rest args)
+    (apply #’format *query-io* args)
+    (read *query-io*))
+  ;; 接受两个函数和一个 &rest 参数,后者一次又一次地作为参数传给 prompt
+  (defun break-loop (fn quit &rest args)
+    (format *query-io* ”Entering break-loop.’~%”)
+    (loop
+       (let ((in (apply #’prompt args)))
+         (if (funcall quit in)
+             (return)
+             (format *query-io* ”~A~%” (funcall fn in))))))
+  ;; 可以像这样来模仿真正的 Lisp toplevel 环境
+  ;; > (break-loop #’eval #’(lambda (x) (eq x :q)) ”>> ”)
+  ;; Enter break-loop.
+  ;; >> (+ 2 3)
+  ;; 5
+  ;; >> :q
+  ;; :Q
+#+END_SRC
+
+** 符号和字符串
+操作符号和字符串的函数
+#+BEGIN_SRC lisp -n
+  ;; 接受任意数量的参数,并将它们的打印形式连起来,形成一个字符串
+  (defun mkstr (&rest args)
+    (with-output-to-string (s)
+      (dolist (a args) (princ a s))))
+  ;; 构造符号。它接受一个或多个参数,并返回一个符号 ( 若需要的话,则会新建一个 ) ,使其打印名称等于所有参数连接在一起的字符串
+  ;; > (symb ’ar ”Madi” #\L #\L 0) ==> |ARMadiLL0|
+  (defun symb (&rest args)
+    (values (intern (apply #’mkstr args))))
+  ;; 是symb的通用化版本，没太理解此函数，对符号理解不深...
+  (defun reread (&rest args)
+    (values (read-from-string (apply #’mkstr args))))
+  ;; 返回符号名称里的字符所组成的列表
+  ;; > (explode ’bomb) ==> (B O M B)
+  (defun explode (sym)
+    (map ’list #’(lambda (c)
+                     (intern (make-string 1
+                                          :initial-element c)))
+           (symbol-name sym)))
+#+END_SRC
+
+** 紧凑性
+人们抱怨说使用实用工具使得你的代码难于阅读了,他们很可能根本没有意识到,如果你不
+使用这些实用工具的话代码看起来将是什么样子。自底向上程序设计让本来规模很大的程序看起来短小简单。给人的感觉就是,这程序并没有做很多事,所以应该很好懂。当缺乏经验的读者们更仔细地阅读程序,结果发现事情并没有想象的那么简单,他们就会灰心丧气。
+自底向上的程序有种感官上的紧密性。阅读这种程序可能需要花一些力气,但如果不是这样写的话,你会需要花更多的精力来读懂它们。
+
+有一种情况下,你应该有意地避免使用实用工具,即 : 如果你需要写一个小程序,它将独立于其余部分的代码发布。一个实用工具通常至少要被使用两到三次才值得引入,但在小程序里 , 如果一个实用工具用得太少的话,可能就没有必要包含它了。
+
+* 函数作为返回值
+
+** Common Lisp 的演化
+Common Lisp 最初提供了几组互补的函数。 remove-if 和 remove-if-not 就是这样的一对，
+
+(remove-if-not #’pred lst) == (remove-if #’(lambda (x) (not (pred x))) lst)
+
+Cltl2里提供了一个新的函数，complemen需要一个谓词 p 作为参数,它返回一个函数,这个函数的返回值总是和谓词得到的返回值相反。
+
+(remove-if-not #’pred lst) == (remove-if (complement #’pred) lst)
+
+有了 complement ,就没有什么理由再用那些 -if-not 函数了。
+
+如果想一想 complement 是怎么写的,也可以推知它返回的必定也是一个闭包 :
+#+BEGIN_SRC lisp -n
+  (defun complement (fn)
+    #’(lambda (&rest args) (not (apply fn args))))
+#+END_SRC
+在进行抽象时,把函数作为参数的能力不啻为一个强有力的工具。而能够编写返回函数的函数,让我们可以把这个能力发挥到极致。
+
+** 正交性
+正交 的语言让我们只需运用多种方式对数量有限的操作符加以组合,就能获得强大的表达能力。
+
+在 complement 出现之前, Common Lisp 曾有成对的函数,如 remove-if 和 remove-if-not 、 subst-if 和 subst-if-not ,等等。自从有了 complement ,我们可以只用一半数量的函数就完成全部的功能。同样, setf 宏也增强了 Lisp 的正交性。 Lisp 的早期方言常会用成对的函数分别实现读数据和写数据的功能。举例来说,对于属性列表 (property-list) ,就用一个函数设置属性,而用另一个函数来查询属性。在 Common Lisp 里面,我们只有后者,即 get 。为了加入一个属性,我们把 get 和 setf 一同使用 :(setf (get ’ball ’color) ’red)
+
+** 记住过去
+如果某些函数的计算量非常大,而且我们有时会对它们执行相同的调用,这时 “ 记住过去 ” 就有用了 : 就是让函数把所有以往调用的返回值都缓存下来 , 以后每次调用时,都先在缓存里找一下,看看返回值是不是以前算过。
+#+BEGIN_SRC lisp -n
+  ;; 这函数牛B啊，这不就是在SICP里树形递归时说的优化方法的实现嘛！哈哈
+  ;; 我们传给 memoize 一个函数,它就能返回对应的有记忆的版本即一个闭包,该闭包含有存储以往调用结果的哈希表。
+  (defun memoize (fn)
+    (let ((cache (make-hash-table :test #’equal)))
+      #’(lambda (&rest args)
+           (multiple-value-bind (val win) (gethash args cache)
+             (if win
+                 val
+                 (setf (gethash args cache)
+                       (apply fn args)))))))
+#+END_SRC
+
+** 复合函数
+常见的函数操作是复合,它被记作 ◦ 。如果 f 和 g 是两个函数,那么 f ◦ g 也是函数,并且 f ◦ g(x) = f (g(x)) 。通过使用闭包的方式,也可以把 ◦ 定义为一个 Lisp 函数。
+#+BEGIN_SRC lisp -n
+  ;; 所有传给 compose 作为参数的函数都必须只接受一个参数,不过最后一个函数参数可以例外
+  (defun compose (&rest fns)
+    (if fns
+        (let ((fn1 (car (last fns)))
+              (fns (butlast fns)))
+          #’(lambda (&rest args)
+               (reduce #’funcall fns
+                          :from-end t
+                          :initial-value (apply fn1 args))))
+        #’identity))
+  ;; (mapcar #’(lambda (x)
+  ;;           (if (slave x)
+  ;;               (owner x)
+  ;;               (employer x)))
+  ;;         people)
+  ;; 也可以定义操作符
+  ;; (mapcar (fif #’slave #’owner #’employer)
+  ;;         people)
+  (defun fif (if then &optional else)
+    #’(lambda (x)
+         (if (funcall if x)
+             (funcall then x)
+             (if else (funcall else x)))))
+  ;; (find-if #’(lambda (x)
+  ;;            (and (signed x) (sealed x) (delivered x)))
+  ;;          docs)
+  ;; 作为第二个参数传给 find-if 的谓词函数定义了一个由三个谓词确定的交集,这三个谓词将会在这
+  ;; 个谓词函数里被调用。 fint 的名字取意 “function intersection”, 借助它,可以把代码写成这样 :
+  ;; (find-if (fint #’signed #’sealed #’delivered) docs)
+  (defun fint (fn &rest fns)
+    (if (null fns)
+        fn
+        (let ((chain (apply #’fint fns)))
+          #’(lambda (x)
+               (and (funcall fn x) (funcall chain x))))))
+  ;; 上面用and，这个用or。fun - function union set
+  (defun fun (fn &rest fns)
+    (if (null fns)
+        fn
+        (let ((chain (apply #’fun fns)))
+          #’(lambda (x)
+               (or (funcall fn x) (funcall chain x))))))
+#+END_SRC
+
+** 在cdr上递归
+由于递归函数对于 Lisp 程序非常之重要,因此有必要设计一些实用工具来构造它。本节和下一节将会介绍一些函数,它们能构造两种最常用的递归函数。 *在 Common Lisp 里使用这些函数会显得有f些不自然。一旦我们接触到宏的内容,就可以了解如何把这个机制包装得更优雅一些。* 第 15.2 节和 15.3节将会介绍那些用来生成递归函数的宏。
+
+如果同一个模式在程序里频频出现,这就是一个标志,它意味着这个程序应该用更高层次的抽象改写。在 Lisp 程序里,有什么模式比下面这个函数更常见的呢 :
+#+BEGIN_SRC lisp -n
+  (defun our-length (lst)
+    (if (null lst)
+        0
+        (1+ (our-length (cdr lst)))))
+#+END_SRC
+或者比这个函数更眼熟 :
+#+BEGIN_SRC lisp -n
+  (defun our-every (fn lst)
+    (if (null lst)
+        t
+        (and (funcall fn (car lst))
+             (our-every fn (cdr lst)))))
+#+END_SRC
+我们不应再直接手写这些函数,而该转而设计一个新的函数,由它代劳生成函数的工作。图 5.5 中的函数构造器名叫 lrec (“list recurser”) ,它可以满足那些在列表上对其 cdr 进行递归操作的绝大多数需要。
+#+BEGIN_SRC lisp -n
+  (defun lrec (rec &optional base)
+    (labels ((self (lst)
+               (if (null lst)
+                   (if (functionp base)
+                       (funcall base)
+                       base)
+                   (funcall rec (car lst)
+                            #’(lambda ()
+                                 (self (cdr lst)))))))
+      #’self))
+  
+  ; our-length
+  (lrec #’(lambda (x f) (1+ (funcall f))) 0)
+  ; our-every
+  (lrec #’(lambda (x f) (and (oddp x) (funcall f))) t)
+  ; copy-list
+  (lrec #’(lambda (x f) (cons x (funcall f))))
+  ; remove-duplicates
+  (lrec #’(lambda (x f) (adjoin x (funcall f))))
+  ; find-if , for some function fn
+  (lrec #’(lambda (x f) (if (fn x) x (funcall f))))
+  ; some , for some function fn
+  (lrec #’(lambda (x f) (or (fn x) (funcall f))))
+#+END_SRC
+*用 lrec 定义的函数,其效率并不一定会最理想。事实上,用 lrec 和其它本章将要定义的其它递归函数生成器的方法来实现函数的办法,是与尾递归的思想背道而驰的。鉴于这个原因,这些生成器最适合在程序的最初版本里使用,或者用在那些速度不太关键的地方。*
+
+** 在子树上递归
+看下面这几个函数
+#+BEGIN_SRC lisp -n
+  (defun our-copy-tree (tree)
+    (if (atom tree)
+        tree
+        (cons (our-copy-tree (car tree))
+              (if (cdr tree) (our-copy-tree (cdr tree))))))
+  
+  (defun count-leaves (tree)
+    (if (atom tree)
+        1
+        (1+ (count-leaves (car tree))
+            (or (if (cdr tree) (count-leaves (cdr tree)))
+                1))))
+  ; flatten也可以像下面这样定义（尽管效率有点低）
+  (defun flatten (tree)
+    (if (atom tree)
+        (mklist tree)
+        (nconc (flatten (car tree))
+               (if (cdr tree) (flatten (cdr tree))))))
+  
+  (defun rfind-if (fn tree)
+    (if (atom tree)
+        (and (funcall fn tree) tree)
+        (or (rfind-if fn (car tree))
+            (if (cdr tree) (rfind-if fn (cdr tree))))))
+#+END_SRC
+copy-tree , count-leaves , flatten 和 rfind-if ,这四个函数的形式竟然如此相似。我们抽象出下面这个函数
+#+BEGIN_SRC lisp -n
+  (defun ttrav (rec &optional (base #’identity))
+    (labels ((self (tree)
+               (if (atom tree)
+                   (if (functionp base)
+                       (funcall base tree)
+                       base)
+                   (funcall rec (self (car tree))
+                            (if (cdr tree)
+                                (self (cdr tree)))))))
+      #’self))
+  
+  ; our-copy-tree
+  (ttrav #’cons)
+  ; count-leaves
+  (ttrav #’(lambda (l r) (+ l (or r 1))) 1)
+  ; flatten
+  (ttrav #’nconc #’mklist)
+#+END_SRC
+但rfind-if不太一样，要定义 rfind-if ,需要更通用的树结构递归操作函数的生成器 , 这种函数生成器能让我们控制递归调用发生的时机,以及是否继续递归。用ttrav实现的函数通常会遍历整棵树，我们需要rfind-if一发现它所要找的元素就停止遍历。
+#+BEGIN_SRC lisp -n
+  (defun trec (rec &optional (base #’identiy))
+    (labels
+        ((self (tree)
+           (if (atom tree)
+               (if (functionp base)
+                   (funcall base tree)
+                   base)
+               (funcall rec tree
+                        #’(lambda ()
+                             (self (car tree)))
+                        #’(lambda ()
+                             (if (cdr tree)
+                                 (self (cdr tree))))))))
+      #’self))
+  
+  ; 使用 trec 我们可以这样定义 flatten :
+  (trec #’(lambda (o l r) (nconc (funcall l) (funcall r)))
+  ; 现在,我们同样可以把 rfind-if 写成这样 ( 下面的例子用了 oddp ):
+  (trec #’(lambda (o l r) (or (funcall l) (funcall r)))
+        #’(lambda (tree) (and (oddp tree) tree)))
+#+END_SRC
+
+** 何时构造函数
+   很不幸，如果用构造函数，而非#'的lambda表达式来表示函数会在运行时让程序做一些不必要的工作。虽然sharp-quoted 的 λ– 表达式是一个常量,但是对构造函数的调用将会在运行时求值。如果你真的必须在运行时执行这个调用,可能使用构造函数并非上策。不过,至少有的时候我们可以在事前就调用这个构造函数。通过使用 #. ,即 sharp-dot 读取宏,我们可以让函数在读取期 (read-time) 就被构造出来。假设 compose 和它的参数在下面的表达式被读取时已经被定义了,那么我们可以这样写,举例如下:
+
+(find-if #.(compose #’oddp #’truncate) lst)
+
+这样做的话, reader 就会对 compose 的调用进行求值,求值得到的函数则被作为常量安插在我们的代码之中。由于 oddp 和 truncate 两者都是内置函数,所以在读取时对 compose 进行估值可以被认为是安全可行的,当然,前提是那个时候 compose 自己已经加载了。
+
+一般而言,由宏来完成函数复合或者合并,既简单容易,又提高了程序的性能。这一点对函数拥有具有单独名字空间的 Common Lisp 来说尤其如此。在介绍了宏的相关知识后,我们会在第 15 章故地重游,再次回到这一章中曾走到过的大多数山山水水,所不同的是,到那时候你会骑上更纯种的宝马,配上更奢华的鞍具。
+
+* 函数作为表达方式
+  如果把闭包来表示我们以往用静态数据结构表示的对象，就往往可能得到更为优雅，效率更好的程序。在sicp中就讲到用函数来作为cons对的表示。
+
+** 网络
+   闭包有三个有用的特性：它是动态的，拥有局部状态，而且我们可以创建闭包的多个实例。那么带有局部状态的动态对象的多个拷贝能在什么地方一展身手呢?答案是:和网络有关的程序。许多情况下,我们可以把网络中的节点表示成闭包。闭包在拥有其局部状态的同时,它还能引用其它闭包。因而,一个表示网络中节点的闭包是能够知道作为它发送数据目的地的其他几个节点 ( 闭包 ) 的。换句话说,我们有能力把网络结构直接翻译成代码。
+
+   下面我们先看一个文字游戏：
+#+BEGIN_EXAMPLE
+  > (run-node ’people)
+  Is the person a man?
+  >> yes
+  Is he living?
+  >> no
+  Was he American?
+  >> yes
+  Is he on a coin?
+  >> yes
+  Is the coin a penny?
+  >> yes
+  LINCOLN
+#+END_EXAMPLE
+   在这里我们的网络将会是一颗二叉树。先从习惯的办法着手，先定义某种数据结构来表示节点。
+#+BEGIN_SRC lisp -n
+  (defstruct node contents yes no)
+  (defvar *nodes* (make-hash-table))
+  (defun defnode (name conts &optional yes no)
+    (setf (gethash name *nodes*)
+          (make-node :contents conts
+                     :yes      yes
+                     :no       no)))
+#+END_SRC
+   为了完成上面的游戏：
+#+BEGIN_SRC lisp -n
+  (defnode ’people ”Is the person a man?” ’male ’female)
+  (defnode ’male ”Is he living?” ’liveman ’deadman)
+  (defnode ’deadman ”Was he American?” ’us ’them)
+  (defnode ’us ”Is he on a coin?” ’coin ’cidence)
+  (defnode ’coin ”Is the coin a penny?” ’penny ’coins)
+  (defnode ’penny ’lincoln)
+#+END_SRC
+   最后定义一个能遍历这个网络的函数了：
+#+BEGIN_SRC lisp -n
+  (defun run-node (name)
+    (let ((n (gethash name *nodes*)))
+      (cond ((node-yes n)
+             (format t ”~A~%>> ” (node-contents n))
+             (case (read)
+               (yes (run-node (node-yes n)))
+               (t (run-node (node-no n)))))
+            (t (node-contents n)))))
+#+END_SRC
+
+** 编译后的网络
+   我们把上面的程序改造一下，变成闭包形式
+#+BEGIN_SRC lisp -n
+  (defvar *nodes* (make-hash-table))
+  (defun defnode (name conts &optional yes no)
+    (setf (gethash name *nodes*)
+          (if yes
+              #’(lambda ()
+                   (format t ”~A~%>> ” conts)
+                   (case (read)
+                     (yes (funcall (gethash yes *nodes*)))
+                     (t   (funcall (gethash no *nodes*)))))
+                 #’(lambda () conts))))
+#+END_SRC
+   现在我们只需要调用funcall下起始的那个节点就行了：
+#+BEGIN_EXAMPLE
+  (funcall (gethash ’people *nodes*))
+  Is the person a man
+  >>
+#+END_EXAMPLE
+   借助把节点都表示成闭包的方式,我们得以将 twenty questions 网络完全转化成代码 ( 而非数据 ) 。正如我们所看到的,程序代码必须在运行时按照名字来查找节点函数。然而,如果我们确信网络在运行的时候不会重新定义,那就可以更进一步:让节点函数直接调用它们的下一站目标函数,而不必再动用哈希表了。
+
+   使用静态引用的编译过程
+#+BEGIN_SRC lisp -n
+  (defvar *nodes* nil)
+  (defun defnode (&rest args)
+    (push args *nodes*)
+    args)
+  (defun compile-net (root)
+    (let ((node (assoc root *nodes*)))
+      (if (null node)
+          nil
+          (let ((conts (second node))
+                (yes (third node))
+                (no (fourth node)))
+            (if yes
+                (let ((yes-fn (compile-net yes))
+                      (no-fn (compile-net no)))
+                  #’(lambda ()
+                       (format t ”~A~%>> ” conts)
+                       (funcall (if (eq (read) ’yes)
+                                    yes-fn
+                                    no-fn))))
+                #’(lambda () conts))))))
+#+END_SRC
+   我们就调用compile-net来一次性地编译整个网络
+#+BEGIN_EXAMPLE
+  > (setq n (compile-net ’people))
+  #<Compiled-Function BF3C06>
+  > (funcall n)
+  Is the person a man?
+  >>
+#+END_EXAMPLE
+   注意到, compile-net 进行的编译有两层含义。按照通常编译的含义,它把网络的抽象表示翻译成了代码。更进一层,如果 compile-net 自身被编译的话,那它就会返回编译后的函数。
+
+   在编译好网络之后,由 defnode 构造的列表就没用了。如果切断列表与程序的联系 ( 例如将 *nodes* 设为 nil ) ,垃圾收集器就会回收它。
+
+** 展望
+   有许多涉及网络的程序都能通过把节点编译成闭包的形式来实现。闭包作为数据对象,和各种数据结构一样能用来表现事物的属性。这样做需要一些和习惯相左的思考方式,但是作为回报的是更为迅速,更为优雅的程序。

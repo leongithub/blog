@@ -1,0 +1,735 @@
+#+TITLE: 2.2 层次性数据和闭包性质
+#+DATE: 2014-11-25
+#+OPTIONS: ^:{} *:nil
+
+闭包（这里和Lisp中另一个闭包概念不一样）：一般来讲，组合数据对象的操作满足闭包性质，就是说,通过它组合起数据对象得到的结果本身还可以通过同样的操作再进行组合。
+
+* 序列的表示
+The word nil is a contraction of the Latin word nihil, which means ``nothing.''
+
+** 练习
+Exercise 2.17.  Define a procedure last-pair that returns the list that contains only the last element of a given (nonempty) list:
+
+(last-pair (list 23 72 149 34)) ==> (34)
+
+#+BEGIN_SRC lisp -n
+  (defun last-pair (lst)
+    (let ((rest (cdr lst)))
+      (if (null rest)
+          lst
+          (last-pair rest))))
+#+END_SRC
+
+Exercise 2.18.  Define a procedure reverse that takes a list as argument and returns a list of the same elements in reverse order:
+
+(reverse (list 1 4 9 16 25)) ==> (25 16 9 4 1)
+#+BEGIN_SRC lisp -n
+  ;; 递归
+  (defun our-reverse (lst)
+    (if (null lst)
+        nil
+        (append (our-reverse (cdr lst))
+                (list (car lst)))))
+  ;; 尾递归
+  (defun our-reverse (lst)
+    (labels ((iter (lst result)
+               (if (null lst)
+                   result
+                   (iter (cdr lst)
+                         (cons (car lst)
+                               result)))))
+      (iter lst nil)))
+#+END_SRC
+
+Exercise 2.19.  Consider the change-counting program of section 1.2.2. It would be nice to be able to easily change the currency used by the program, so that we could compute the number of ways to change a British pound, for example. As the program is written, the knowledge of the currency is distributed partly into the procedure first-denomination and partly into the procedure count-change (which knows that there are five kinds of U.S. coins). It would be nicer to be able to supply a list of coins to be used for making change.
+
+We want to rewrite the procedure cc so that its second argument is a list of the values of the coins to use rather than an integer specifying which coins to use. We could then have lists that defined each kind of currency:
+#+BEGIN_SRC lisp -n
+  (defparameter *us-coins* (list 50 25 10 5 1))
+  (defparameter *uk-coins* (list 100 50 20 10 5 2 1 .5))
+#+END_SRC
+We could then call cc as follows:
+
+(cc 100 us-coins) ==> 292
+
+To do this will require changing the program cc somewhat. It will still have the same form, but it will access its second argument differently, as follows:
+#+BEGIN_SRC lisp -n
+  (defun cc (amount coin-values)
+    (cond ((= amount 0) 1)
+          ((or (< amount 0) (no-more-p coin-values)) 0)
+          (t (+ (cc amount
+                    (except-first-denomination coin-values))
+                (cc (- amount
+                       (first-denomination coin-values))
+                    coin-values)))))
+#+END_SRC
+Define the procedures first-denomination, except-first-denomination, and no-more? in terms of primitive operations on list structures. Does the order of the list coin-values affect the answer produced by cc? Why or why not?
+#+BEGIN_SRC lisp -n
+  (defun no-more-p (lst) (null lst))
+  
+  (defun except-first-denomination (lst) (cdr lst))
+  
+  (defun first-denomination (lst) (car lst))
+#+END_SRC
+对于coin-values顺序的改变不会影响cc的结果
+
+Exercise 2.20.  The procedures +, *, and list take arbitrary numbers of arguments. One way to define such procedures is to use define with dotted-tail notation. In a procedure definition, a parameter list that has a dot before the last parameter name indicates that, when the procedure is called, the initial parameters (if any) will have as values the initial arguments, as usual, but the final parameter's value will be a list of any remaining arguments. For instance, given the definition
+
+(define (f x y . z) <body>)
+
+the procedure f can be called with two or more arguments. If we evaluate
+
+(f 1 2 3 4 5 6)
+
+then in the body of f, x will be 1, y will be 2, and z will be the list (3 4 5 6). Given the definition
+
+(define (g . w) <body>)
+
+the procedure g can be called with zero or more arguments. If we evaluate
+
+(g 1 2 3 4 5 6)
+
+then in the body of g, w will be the list (1 2 3 4 5 6).
+
+Use this notation to write a procedure same-parity that takes one or more integers and returns a list of all the arguments that have the same even-odd parity as the first argument. For example,
+
+(same-parity 1 2 3 4 5 6 7)
+(1 3 5 7)
+
+(same-parity 2 3 4 5 6 7)
+(2 4 6)
+
+#+BEGIN_SRC lisp -n
+  ;; 迭代
+  (defun same-parity (elem &rest args)
+    (labels ((iter (predicate lst result)
+               (if (null lst)
+                   (nreverse result)
+                   (iter predicate
+                         (cdr lst)
+                         (if (funcall predicate (car lst))
+                             (cons (car lst) result)
+                             result)))))
+      (cons elem
+            (iter (if (oddp elem)
+                      #'oddp
+                      #'evenp)
+                  args
+                  nil))))
+  ;; 递归
+  (defun same-parity (elem &rest args)
+    (labels ((rec (predicate lst)
+               (if (null lst)
+                   nil
+                   (if (funcall predicate (car lst))
+                       (cons (car lst) (rec predicate (cdr lst)))
+                       (rec predicate (cdr lst))))))
+      (cons elem
+            (rec (if (oddp elem)
+                     #'oddp
+                     #'evenp)
+                 args))))
+#+END_SRC
+
+** 对表的映射
+这里讲的函数的抽象和OnLisp里的实用工具是一个意思。只不过mapcar这个实用工具已经内置在CL里。
+#+BEGIN_SRC lisp -n
+  ;; 如：编写一个函数，接收一个列表和因子参数，对列表的每一项都乘以因子，最后返回新的列表。
+  (defun scale-list (items factor)
+    (if (null items)
+        nil
+        (cons (* (car items) factor)
+              (scale-list (cdr items) factor))))
+  ;; 我们可以抽象出更通用的高阶程序，从scale-list抽象出：把一个函数应用到这个列表的每一项，返回最终的列表。就是CL中的mapcar
+  (defun mapcar1 (proc items)
+    (if (null items)
+        nil
+        (cons (funcall proc (car items))
+              (mapcar1 proc (cdr items)))))
+  ;; 那么scale-list就可以写成下面这样
+  (defun scale-list (items factor)
+    (mapcar1 #'(lambda (x) (* x factor))
+             items))
+#+END_SRC
+*** 练习
+Exercise 2.21.  The procedure square-list takes a list of numbers as argument and returns a list of the squares of those numbers.
+
+(square-list (list 1 2 3 4)) ==> (1 4 9 16)
+
+Here are two different definitions of square-list. Complete both of them by filling in the missing expressions:
+#+BEGIN_SRC scheme
+  (define (square-list items)
+    (if (null? items)
+        nil
+        (cons <??> <??>)))
+  (define (square-list items)
+    (map <??> <??>))
+#+END_SRC
+
+#+BEGIN_SRC lisp -n
+  (defun square-list (items)
+    (if (null items)
+        nil
+        (cons (square (car items))
+              (square-list (cdr items)))))
+  (defun square-list (items)
+    (mapcar1 #'square items))
+#+END_SRC
+
+Exercise 2.22.  Louis Reasoner tries to rewrite the first square-list procedure of exercise 2.21 so that it evolves an iterative process:
+#+BEGIN_SRC scheme
+(define (square-list items)
+  (define (iter things answer)
+    (if (null? things)
+        answer
+        (iter (cdr things) 
+              (cons (square (car things))
+                    answer))))
+  (iter items nil))
+#+END_SRC
+Unfortunately, defining square-list this way produces the answer list in the reverse order of the one desired. Why?
+
+Louis then tries to fix his bug by interchanging the arguments to cons:
+#+BEGIN_SRC scheme
+(define (square-list items)
+  (define (iter things answer)
+    (if (null? things)
+        answer
+        (iter (cdr things)
+              (cons answer
+                    (square (car things))))))
+  (iter items nil))
+#+END_SRC
+This doesn't work either. Explain.
+
+这阵子总写列表递归，对于cons这种真是一看就知道该怎么改。
+第一个，(cons last ... (cons 3 (cons 2 (cons 1 nil))))。最后需要反转
+第二个，顺序根本就错了
+
+Exercise 2.23.  The procedure for-each is similar to map. It takes as arguments a procedure and a list of elements. However, rather than forming a list of the results, for-each just applies the procedure to each of the elements in turn, from left to right. The values returned by applying the procedure to the elements are not used at all -- for-each is used with procedures that perform an action, such as printing. For example,
+#+BEGIN_EXAMPLE
+(for-each (lambda (x) (newline) (display x))
+          (list 57 321 88))
+57
+321
+88
+#+END_EXAMPLE
+The value returned by the call to for-each (not illustrated above) can be something arbitrary, such as true. Give an implementation of for-each.
+#+BEGIN_SRC lisp -n
+  (defun for-each (proc items)
+    (if (null items)
+        nil
+        (progn
+          (funcall proc (car items))
+          (for-each proc (cdr items)))))
+  
+  ;; 写一个dolist循环的版本把，因为太适合用dolist了
+  (defun for-each (proc items)
+    (dolist (item items)
+      (funcall proc item)))
+#+END_SRC
+* 层级结构
+考虑两个程序length和count-leaves，count-leaves返回tree的叶子总数。
+#+BEGIN_EXAMPLE
+(defparamter *x* ((1 2) 3 4))
+(length *x*) ==> 3
+(count-leaves x) ==> 4
+#+END_EXAMPLE
+length的递归：
++ 列表x的长度为 1 加上 x 的 cdr 的长度
++ 空表的长度为 0
+count-leaves的递归类似：
++ 空表的叶子数为 0
++ tree x的叶子数是 x 的 car 的叶子数 加上 x 的 cdr 的叶子数
++ 一个叶子为 1
+#+BEGIN_SRC lisp -n
+  (defun count-leaves (x)
+    (cond ((null x) 0)
+          ((atom x) 1)
+          (t (+ (count-leaves (car x))
+                (count-leaves (cdr x))))))
+#+END_SRC
+不得不说，递归的思考方式真tm优雅。由于这几天总写尾递归，加上对性能的小情节...写个尾递归的
+#+BEGIN_SRC lisp -n
+  (defun count-leaves-iter (x)
+    (labels ((iter (tree acc)
+               (cond ((null tree) acc)
+                     ((atom tree) (1+ acc))
+                     (t (iter (car tree) 
+                              (iter (cdr tree) acc))))))
+      (iter x 0)))
+  ;; 对代码做点小改动（car和cdr换个位置），使函数递归层级变少一点
+  (defun count-leaves-iter1 (x)
+    (labels ((iter (tree acc)
+               (cond ((null tree) acc)
+                     ((atom tree) (1+ acc))
+                     (t (iter (cdr tree) 
+                              (iter (car tree) acc))))))
+      (iter x 0)))
+#+END_SRC
+改动后简单测试一下是否有用，从结果上看，确实要好一丢丢:)
+#+BEGIN_EXAMPLE
+  CL-USER> (let ((result 1))
+             (defun nest-lst-creator ()
+               (dotimes (i 27 result)
+                 (setf result (list result result)))))
+  
+  NEST-LST-CREATOR
+  CL-USER> (defparameter *test-lst* (nest-lst-creator))
+  ,*TEST-LST*
+  CL-USER> (time (count-leaves-iter *test-lst*))
+  Evaluation took:
+    1.585 seconds of real time
+    1.588479 seconds of total run time (1.588479 user, 0.000000 system)
+    100.19% CPU
+    5,060,917,290 processor cycles
+    11,776 bytes consed
+    
+  134217728
+  CL-USER> (time (count-leaves-iter1 *test-lst*))
+  Evaluation took:
+    1.548 seconds of real time
+    1.550104 seconds of total run time (1.550104 user, 0.000000 system)
+    100.13% CPU
+    4,941,946,482 processor cycles
+    0 bytes consed
+    
+  134217728
+#+END_EXAMPLE
+
+** 练习
+Exercise 2.25.  Give combinations of cars and cdrs that will pick 7 from each of the following lists:
+
+(1 3 (5 7) 9) ==> (car (cdr (car (cdr (cdr lst)))))
+
+((7)) ==> (car (car lst))
+
+(1 (2 (3 (4 (5 (6 7)))))) ==> (cadr (cadr (cadr (cadr (cadr (cadr '(1 (2 (3 (4 (5 (6 7))))))))))))
+
+Exercise 2.26.  Suppose we define x and y to be two lists:
+
+(define x (list 1 2 3))
+
+(define y (list 4 5 6))
+
+What result is printed by the interpreter in response to evaluating each of the following expressions:
+
+(append x y) ==> (1 2 3 4 5 6)
+
+(cons x y) ==> ((1 2 3) 4 5 6)
+
+(list x y) ==> ((1 2 3) (4 5 6))
+
+Exercise 2.27.  Modify your reverse procedure of exercise 2.18 to produce a deep-reverse procedure that takes a list as argument and returns as its value the list with its elements reversed and with all sublists deep-reversed as well. For example,
+
+(define x (list (list 1 2) (list 3 4)))
+
+x ==> ((1 2) (3 4))
+
+(reverse x) ==> ((3 4) (1 2))
+
+(deep-reverse x) ==> ((4 3) (2 1))
+
+根据2.18写的两个程序，分别写出deep-reverse。之前的主要是把car放在列表后，deep-reverse也没有改这个流程，只是判断了car是否为cons，如果是cons就把这个car反转返回
+#+BEGIN_SRC lisp -n
+  (defun deep-reverse (lst)
+    (labels ((iter (lst result)
+               (if (null lst)
+                   result
+                   (iter (cdr lst)
+                         (cons
+                          (if (consp (car lst))
+                              (deep-reverse (car lst))
+                              (car lst))
+                          result)))))
+      (iter lst nil)))
+  
+  (defun deep-reverse (lst)
+    (if (null lst)
+        nil
+        (append (deep-reverse (cdr lst))
+                (list 
+                 (if (consp (car lst))
+                     (deep-reverse (car lst))
+                     (car lst))))))
+#+END_SRC
+
+Exercise 2.28.  Write a procedure fringe that takes as argument a tree (represented as a list) and returns a list whose elements are all the leaves of the tree arranged in left-to-right order. For example,
+
+(define x (list (list 1 2) (list 3 4)))
+
+(fringe x) ==> (1 2 3 4)
+
+(fringe (list x x)) ==> (1 2 3 4 1 2 3 4)
+
+递归（要学会用递归方式思考，问题变得简单，先得出一般形式，再修改下临界情况。如果性能不好，再考虑优化成尾递归形式）：
++ tree的fringe等于(append (fringe (car tree)) (fringe (cdr tree)))
++ tree为空时，返回nil
++ tree为原子时，返回(list tree)
+#+BEGIN_SRC lisp -n
+  (defun fringe (tree)
+    (cond ((null tree) nil)
+          ((atom tree) (list tree))
+          (t (append (fringe (car tree))
+                     (fringe (cdr tree))))))
+  ;; 性能好些的双递归形式
+  (defun fringe (tree)
+    (labels ((rec (x acc)
+               (cond ((null x) acc)
+                     ((atom x) (cons x acc))
+                     (t (rec (car x)
+                             (rec (cdr x) acc))))))
+      (rec tree nil)))
+#+END_SRC
+
+Exercise 2.29.  A binary mobile consists of two branches, a left branch and a right branch. Each branch is a rod of a certain length, from which hangs either a weight or another binary mobile. We can represent a binary mobile using compound data by constructing it from two branches (for example, using list):
+
+#+BEGIN_SRC lisp -n
+  (defun make-mobile (left right)
+    (list left right))
+#+END_SRC
+
+A branch is constructed from a length (which must be a number) together with a structure, which may be either a number (representing a simple weight) or another mobile:
+
+#+BEGIN_SRC lisp -n
+  (defun make-branch (length structure)
+    (list length structure))
+#+END_SRC
+
+a.  Write the corresponding selectors left-branch and right-branch, which return the branches of a mobile, and branch-length and branch-structure, which return the components of a branch.
+
+b.  Using your selectors, define a procedure total-weight that returns the total weight of a mobile.
+
+c.  A mobile is said to be balanced if the torque applied by its top-left branch is equal to that applied by its top-right branch (that is, if the length of the left rod multiplied by the weight hanging from that rod is equal to the corresponding product for the right side) and if each of the submobiles hanging off its branches is balanced. Design a predicate that tests whether a binary mobile is balanced.
+
+d.  Suppose we change the representation of mobiles so that the constructors are
+
+#+BEGIN_SRC lisp -n
+  (defun make-mobile (left right)
+    (cons left right))
+  (defun make-branch (length structure)
+    (cons length structure))
+#+END_SRC
+
+How much do you need to change your programs to convert to the new representation?
+
+#+BEGIN_SRC lisp -n
+  ;; a
+  (defun left-branch (mobile)
+    (car mobile))
+  
+  (defun right-branch (mobile)
+    (car (cdr mobile)))
+  
+  (defun branch-length (branch)
+    (car branch))
+  
+  (defun branch-structure (branch)
+    (car (cdr branch)))
+  
+  ;; b 
+  ;; 树形递归
+  (defun total-weight (mobile)
+    (labels ((branch-weight (branch)
+               (total-weight (branch-structure branch))))
+      (if (numberp mobile)
+          mobile
+          (+ (branch-weight (left-branch mobile))
+             (branch-weight (right-branch mobile))))))
+  ;; 双递归，效率高些
+  (defun total-weight (mobile)
+    (labels ((rec (m acc)
+               (if (numberp m)
+                   (+ m acc)
+                   (rec (branch-structure (left-branch m))
+                        (rec (branch-structure (right-branch m))
+                             acc)))))
+      (rec mobile 0)))
+  
+  ;; c
+  ;; 利用total-weight，有重复计算
+  (defun mobile-balanced-p (mobile)
+    (or (numberp mobile)
+        (and (= (* (branch-length (left-branch mobile))
+                   (total-weight (branch-structure (left-branch mobile))))
+                (* (branch-length (right-branch mobile))
+                   (total-weight (branch-structure (right-branch mobile)))))
+             (mobile-balanced-p (branch-structure (left-branch mobile)))
+             (mobile-balanced-p (branch-structure (right-branch mobile))))))
+  ;; 树形递归，递归到叶子，计算并返回weight，然后逐层返回weight和。比上面效率高些
+  (defun mobile-balanced-p (mobile)
+    (if (numberp mobile)
+        mobile
+        (let* ((lbw (mobile-balanced-p (branch-structure (left-branch mobile))))
+               (rbw (and lbw
+                         (mobile-balanced-p (branch-structure (right-branch mobile))))))
+          (and rbw
+               (= (* (branch-length (left-branch mobile)) lbw)
+                  (* (branch-length (right-branch mobile)) rbw))
+               (+ lbw rbw)))))
+  
+  ;; d
+  ;; 只需要改下面这两个函数即可
+  (defun right-branch (mobile) (cdr mobile))
+  (defun branch-structure (branch) (cdr branch))
+#+END_SRC
+
+** 对树的映射
+mapcar是处理序列的一种强有力抽象，与此类似，mapcar与递归的结合也是处理树的一种强有力抽象。可以有与2.2.1节的scale-list类似的scale-tree过程，以一个数值因子和一颗叶子为数值的树作为参数，返回一颗具有同样形状的树，树中的每个数值都乘以了这个因子。对于scale-tree的递归方案也与count-leaves的类似：
+#+BEGIN_SRC lisp -n
+  (defun scale-tree (tree factor)
+    (cond ((null tree) nil)
+          ((not (consp tree)) (* tree factor))
+          (t (cons (scale-tree (car tree) factor)
+                   (scale-tree (cdr tree) factor)))))
+#+END_SRC
+实现scale-tree的另一种方法是将树看成子树的序列，并对它使用mapcar。我们在这种序列上做映射，依次对各棵子树做缩放，并返回结果的表。对于基础情况，也就是当被处理的树是树叶时，就直接用因子去乘它：
+#+BEGIN_SRC lisp -n
+  (defun scale-tree (tree factor)
+    (mapcar1 #'(lambda (sub-tree)
+                 (if (consp sub-tree)
+                     (scale-tree sub-tree factor)
+                     (* sub-tree factor)))
+             tree))
+#+END_SRC
+对于树的许多操作可以采用类似方式，通过序列操作和递归的组合实现。
+** 练习
+Exercise 2.30.  Define a procedure square-tree analogous to the square-list procedure of exercise 2.21. That is, square-list should behave as follows:
+
+(square-tree
+ (list 1
+       (list 2 (list 3 4) 5)
+       (list 6 7)))
+ ==> 
+(1 (4 (9 16) 25) (36 49))
+
+Define square-tree both directly (i.e., without using any higher-order procedures) and also by using map and recursion.
+#+BEGIN_SRC lisp -n
+  ;; directly
+  (defun square-tree (tree)
+    (cond ((null tree) nil)
+          ((atom tree) (* tree tree))
+          (t (cons (square-tree (car tree))
+                   (square-tree (cdr tree))))))
+  ;; map and recursion
+  (defun square-tree (tree)
+    (mapcar1 #'(lambda (sub-tree)
+                 (if (consp sub-tree)
+                     (square-tree sub-tree)
+                     (* sub-tree sub-tree)))
+             tree))
+#+END_SRC
+
+Exercise 2.31.  Abstract your answer to exercise 2.30 to produce a procedure tree-map with the property that square-tree could be defined as
+
+(define (square-tree tree) (tree-map square tree))
+
+#+BEGIN_SRC lisp -n
+  (defun square-tree (tree)
+    (tree-map #'(lambda (x) (* x x))
+              tree))
+  
+  (defun tree-map (fn tree)
+    (mapcar1 #'(lambda (sub-tree)
+                 (if (consp sub-tree)
+                     (tree-map fn sub-tree)
+                     (funcall fn sub-tree)))
+             tree))
+#+END_SRC
+
+Exercise 2.32.  We can represent a set as a list of distinct elements, and we can represent the set of all subsets of the set as a list of lists. For example, if the set is (1 2 3), then the set of all subsets is (() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3)). Complete the following definition of a procedure that generates the set of subsets of a set and give a clear explanation of why it works:
+#+BEGIN_SRC scheme -n
+(define (subsets s)
+  (if (null? s)
+      (list nil)
+      (let ((rest (subsets (cdr s))))
+        (append rest (map <??> rest)))))
+#+END_SRC
+
+#+BEGIN_SRC lisp -n
+  (defun subsets (s)
+    (if (null s)
+        (list nil)
+        (let ((rest (subsets (cdr s))))
+          (append rest 
+                  (mapcar1 #'(lambda (x)
+                               (cons (car s) x))
+                           rest)))))
+#+END_SRC
+首先理解程序，subsets是求出一个集合的子集的组合，用递归的思想：
++ 集合的子集组合，等于 除了第一个集合元素的集合的子集 加上
++ 第一个集合元素 与 除了第一个集合元素的集合的子集 的组合
++ 边界条件就是当集合为空的时候，返回'(())
+理解了程序整体，那么我们要填补的部分就对应于 “第一个集合元素 与 除了第一个集合元素的集合的子集 的组合”，这样我们就很容易通过mapcar1把rest中每一元素与第一个集合元素来组合，最终完成subsets
+
+* 序列作为约定的接口
+  在使用复合数据工作时，我们强调数据抽象怎样使得我们设计程序而不被数据表示细节所困，并且保持在不同数据表示上的灵活性。这一节我们介绍另一种强大的设计原则--使用约定的接口。
+
+  下面是两个表面看起来不太一样的函数
+#+BEGIN_SRC lisp -n
+  (defun sum-odd-squares (tree)
+    (cond ((null tree) 0)  
+          ((not (consp tree))
+           (if (oddp tree) (square tree) 0))
+          (t (+ (sum-odd-squares (car tree))
+                (sum-odd-squares (cdr tree))))))
+  
+  (defun even-fibs (n)
+    (labels ((next (k)
+               (if (> k n)
+                   nil
+                   (let ((f (fib k)))
+                     (if (evenp f)
+                         (cons f (next (+ k 1)))
+                         (next (+ k 1)))))))
+      (next 0)))
+#+END_SRC
+  尽管两个函数在结构上很不同，但对于两个计算的抽象描述却会揭示出它们之间极大的相似性。first：
++ enumerates the leaves of a tree;
++ filters them, selecting the odd ones;
++ squares each of the selected ones; and
++ accumulates the results using +, starting with 0.
+  The second program
++ enumerates the integers from 0 to n;
++ computes the Fibonacci number for each integer;
++ filters them, selecting the even ones; and
++ accumulates the results using cons, starting with the empty list.
+  信号处理工程师们可能会发现，这种过程可以很自然地用流过一些级联的处理步骤的信号方式描述。
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-17.gif]]
+
+  遗憾的是，上面的两个过程定义并没有展现出这种信号结构。譬如说，如果仔细考察sum-odd-squares过程，就会发现其中的枚举工作部分地由检查null?和pair?实现，部分地由过程的树形递归结构实现。与此类似，在那些检查中也可以看到一部分累积工作，另一部分是用在递归中的加法。一般而言，在这两个过程里，没有一个部分正好对应于信号流描述中的某一要素。我们的两个过程采用不同的方式分解了这个计算，将枚举工作散布在程序中各处，并将它与map、fillter和accumulates混在一起。如果我们能够重新组织这一程序，使得信号流结构明显表现在写出的过程中，将会大大提高结果代码的清晰性。
+
+** 序列操作
+   要组织好这些程序，使之能够更清晰地反应上面信号流的结构，最关键的一点就是将注意力集中在处理过程中从一个步骤流向下一个步骤的“信号”，下面定义一些处理信号的函数。
+#+BEGIN_SRC lisp -n
+  ; 映射 (mapcar1 #'square '(1 2 3)) ==> (1 4 9)
+  (defun mapcar1 (proc items)
+    (if (null items)
+        nil
+        (cons (funcall proc (car items))
+              (mapcar1 proc (cdr items)))))
+  ; 过滤 (filter #'oddp '(1 2 3)) ==> (1 3)
+  (defun filter (predicate lst)
+    (cond ((null lst) nil)
+          ((funcall predicate (car lst))
+           (cons (car lst) (filter predicate (cdr lst))))
+          (t (filter predicate (cdr lst)))))
+  ; 累积 (accumulate #'+ 0 '(1 2 3)) ==> 6  是CL中的reduce特例
+  (defun accumulate (fn initial lst)
+    (if (null lst)
+        initial
+        (funcall fn (car lst)
+                 (accumulate fn initial (cdr lst)))))
+  ; 枚举区间 (enumerate-interval 2 5) ==> (2 3 4 5)
+  (defun enumerate-interval (low high)
+    (if (> low high)
+        nil
+        (cons low (enumerate-interval (1+ low) high))))
+  ; 枚举树叶 (enumerate-tree (1 (2 (3 4)) 5)) ==> (1 2 3 4 5)
+  (defun enumerate-tree (tree)
+    (cond ((null tree) nil)
+          ((atom tree) (list tree))
+          (t (append (enumerate-tree (car tree))
+                     (enumerate-tree (cdr tree))))))
+#+END_SRC
+用以上的函数就可以重新构造sum-odd-squares和even-fibs了
+#+BEGIN_SRC lisp -n
+  (defun sum-odd-squares (tree)
+    (accumulate #'+
+                0
+                (mapcar1 #'square
+                         (filter #'oddp
+                                 (enumerate-tree tree)))))
+  
+  (defun even-fibs (n)
+    (accumulate #'cons
+                nil
+                (filter #'evenp
+                        (mapcar1 #'fib
+                                 (enumerate-interval 0 n)))))
+  ; 一些其他例子
+  ; 找出薪水最高的程序员的工资数额
+  (defun salary-of-highest-paid-programmer (records)
+    (accumulate #'max
+                0
+                (mapcar1 #'salary
+                         (filter #'programmerp records))))
+  ; (product-of-squares-of-odd-elements (list 1 2 3 4 5)) ==> 225
+  (defun product-of-squares-of-odd-elements (sequence)
+    (accumulate #'*
+                1
+                (mapcar1 #'square
+                         (filter #'oddp sequence))))
+  ; (list-fib-squares 10) ==> (0 1 1 4 9 25 64 169 441 1156 3025)
+  (defun list-fib-squares (n)
+    (accumulate #'cons
+                nil
+                (mapcar1 #'square
+                         (mapcar1 #'fib
+                                  (enumerate-interval 0 n)))))
+#+END_SRC
+将程序表示为一些针对序列的操作，这样做的价值就在于能帮助我们得到模块化的程序设计。在工程设计中，模块化结构是控制复杂性的一种威力强大的策略。
+
+在这里序列的实现为列表，被作为一种方便的接口，我们可以利用这种接口去组合各种处理模块。如果以序列作为所用的统一表示结构，我们就能将程序对于数据结构的依赖性局限到不多的几个序列操作上。通过修改这些操作，就可以在序列的不同表示之间转换，并保持程序的整个设计不变。
+
+
+Exercise 2.33.  Fill in the missing expressions to complete the following definitions of some basic list-manipulation operations as accumulations:
+#+BEGIN_SRC scheme -n
+  (define (map p sequence)
+    (accumulate (lambda (x y) <??>) nil sequence))
+  (define (append seq1 seq2)
+    (accumulate cons <??> <??>))
+  (define (length sequence)
+    (accumulate <??> 0 sequence))
+#+END_SRC
+
+#+BEGIN_SRC lisp -n
+  (defun mapcar1 (p sequence)
+    (accumulate #'(lambda (x y) 
+                    (cons (funcall p x) y)) 
+                nil 
+                sequence))
+  (defun append1 (seq1 seq2)
+    (accumulate #'cons seq2 seq1))
+  (defun length1 (sequence)
+    (accumulate #'(lambda (x y)
+                    (1+ y))
+                0 
+                sequence))
+#+END_SRC
+
+Exercise 2.34.  Evaluating a polynomial in x at a given value of x can be formulated as an accumulation. We evaluate the polynomial
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-18.gif]]
+
+using a well-known algorithm called Horner's rule, which structures the computation as
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-19.gif]]
+
+In other words, we start with an, multiply by x, add an-1, multiply by x, and so on, until we reach a0.16 Fill in the following template to produce a procedure that evaluates a polynomial using Horner's rule. Assume that the coefficients of the polynomial are arranged in a sequence, from a0 through an.
+
+#+BEGIN_SRC scheme -n
+  (define (horner-eval x coefficient-sequence)
+    (accumulate (lambda (this-coeff higher-terms) <??>)
+                0
+                coefficient-sequence))
+#+END_SRC
+For example, to compute 1 + 3x + 5x3 + x5 at x = 2 you would evaluate
+
+(horner-eval 2 (list 1 3 0 5 0 1))
+
+有算法就是好
+#+BEGIN_SRC lisp -n
+  (defun horner-eval (x coefficient-sequence)
+    (accumulate #'(lambda (this-coeff higher-terms)
+                    (+ (* x higher-terms) this-coeff))
+                0
+                coefficient-sequence))
+#+END_SRC
+
+Exercise 2.35.  Redefine count-leaves from section 2.2.2 as an accumulation:
+#+BEGIN_SRC scheme -n
+  (define (count-leaves t)
+    (accumulate <??> <??> (map <??> <??>)))
+#+END_SRC
