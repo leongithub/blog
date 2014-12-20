@@ -1,0 +1,93 @@
+#+TITLE: On Lisp 笔记 - 宏教程（7-10章）
+#+DATE: 2014-12-39
+#+OPTIONS: ^:{}
+#+OPTIONS: author:nil timestamp:nil creator:nil
+#+OPTIONS: \n:t
+
+#+BEGIN_COMMENT
+1-6 有关函数的
+7-10 宏技术的完整教程
+11-18 展示一些可以用宏来构造的强有力的抽象机制
+19-24 嵌入式语言
+#+END_COMMENT
+
+* 宏
+  宏定义在本质上,是能生成 Lisp 代码的函数————一个能写程序的程序。
+
+** 宏是如何工作的
+   一个函数只产生结果,而宏却产生表达式————当它被求值时，才会产生结果。我们先定义一个宏。
+   #+BEGIN_SRC lisp -n
+     (defmacro nil! (var)
+       (list 'setq var nil))
+   #+END_SRC
+   我们把宏调用 (nil! x) 输入到 toplevel 的时候发生了什么 ? Lisp 首先会发觉 nil! 是个宏的名字,然后：
+1. 按照上述定义的要求构造表达式,接着
+2. 在调用宏的地方求值该表达式。
+   构造新表达式的那一步被称为宏展开 (macroexpansion)。宏展开之后是第二步: 求值 (evaluation) 。 Lisp 求值宏展开式 (setq x nil) 时就好像是你原本就写在那儿的一样。
+   有些宏的展开过程比 nil! 的情况更复杂。 nil! 的展开式只是调用了一下内置的 special form ,但往往一个宏的展开式可能会是另一个宏调用,就好像是一层套一层的俄罗斯套娃。在这种情况下,宏展开就会继续抽丝剥茧直到获得一个没有宏的表达式。这一步骤中可以经过任意多次的展开操作,一直到最终停下来。
+
+** 反引用 (backquote)
+   `(backquote)  ,(comma)  ,@(comma-at)
+#+BEGIN_EXAMPLE
+  (setq b '(1 2 3)) ==> (1 2 3)
+  `(a ,b c) ==> (A (1 2 3) C)
+  `(a ,@b c) ==> (A 1 2 3 C)
+#+END_EXAMPLE
+   一个逗号能抵消一个反引用的效果,所以逗号在数量上必须和反引用匹配。逗号不能出现在反引用的表达式的外面。
+1. 为了确保其参数可以被拼接, comma-at 必须出现在序列 (sequence) 3 中。形如 ‘,@b 的说法是错误的,因为无处可供 b 的值进行拼接。
+2. 要进行拼接的对象必须是个列表,除非它出现在列表最后。表达式 ‘(a ,@1) 将被求值成 (a .1) ,但如果尝试将原子 4 (atom) 拼接到列表的中间位置,例如 ‘(a ,@1 b) ,将导致一个错误。
+   关于反引用的最后一件要记住的事情,是它有自己存在的意义,这跟它在宏定义中的角色无关。你可以在任何需要构造序列的场合使用反引用:
+#+BEGIN_SRC lisp -n
+  (defun greet (name)
+    ‘(hello ,name))
+#+END_SRC
+
+** 定义简单的宏
+** 测试宏展开
+#+BEGIN_EXAMPLE
+  (defmacro while (test &body body)
+    `(do ()
+         ((not ,test))
+       ,@body))
+  CL-USER> (macroexpand '(while (able) (laugh)))
+  (BLOCK NIL
+    (LET ()
+      (TAGBODY
+        (GO #:G1004)
+       #:G1003
+        (TAGBODY (LAUGH))
+        (PSETQ)
+       #:G1004
+        (UNLESS (NOT (ABLE)) (GO #:G1003))
+        (RETURN-FROM NIL (PROGN)))))
+  T
+  CL-USER> (macroexpand-1 '(while (able) (laugh)))
+  (DO () ((NOT (ABLE))) (LAUGH))
+  T
+#+END_EXAMPLE
+   内置函数 macroexpand 的参数是个表达式,它返回这个表达式的宏展开式。把一个宏调用传给 macroexpand ,就能看到宏调用在求值之前最终展开的样子,但是当你测试宏的时候,并不是总想看到彻底展开后的展开式。如果有宏依赖于其他宏,被依赖的宏也会一并展开,所以完全展开后的宏有时是不利于阅读的。而macroexpand-1 只做一次宏展开就停手。
+
+** 参数列表的解构
+** 宏的工作模式
+   一个 defmacro 的 *草稿* 。
+#+BEGIN_SRC lisp -n
+  (defmacro our-expander (name) ‘(get ,name ’expander))
+  
+  (defmacro our-defmacro (name parms &body body)
+    (let ((g (gensym)))
+      ‘(progn
+          (setf (our-expander ’,name)
+                #’(lambda (,g)
+                     (block ,name
+                       (destructuring-bind ,parms (cdr ,g)
+                         ,@body))))
+          ’,name)))
+  
+  (defun our-macroexpand-1 (expr)
+    (if (and (consp expr) (our-expander (car expr)))
+        (funcall (our-expander (car expr)) expr)
+        expr))
+#+END_SRC
+   定义相当准确地再现了宏的行为,但就像任何草稿一样,它远非十全十美。它不能正确地处理 &whole 关键字。而且,真正的 defmacro 为它第一个参数的 macro-function 保存的是一个有 两个 参数的函数,两个参数分别为:宏调用本身,和其发生时的词法环境。还好,只有最刁钻的宏才会用到这些特性。就算你以为宏就是像上面那样实现的,在实际使用宏的时候,也基本上不会出错。例如,在这个实现下,本书定义的每一个宏都能正常运行。
+
+** 作为程序的宏

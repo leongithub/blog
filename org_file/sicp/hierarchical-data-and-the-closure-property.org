@@ -733,3 +733,227 @@ Exercise 2.35.  Redefine count-leaves from section 2.2.2 as an accumulation:
   (define (count-leaves t)
     (accumulate <??> <??> (map <??> <??>)))
 #+END_SRC
+不用mapcar1也可以，但是题给了就配合一下。这里主要用mapcar1和enumerate把tree编程类似'((1) (***) (**))，然后用length来加每一个子列表。(如果用递归的话主旨不符！)
+#+BEGIN_SRC lisp -n
+  (defun count-leaves (tree)
+    (accumulate #'(lambda (x y)
+                    (+ (length x) y))
+                0
+                (mapcar1 #'enumerate-tree tree)))
+#+END_SRC
+
+Exercise 2.36.  The procedure accumulate-n is similar to accumulate except that it takes as its third argument a sequence of sequences, which are all assumed to have the same number of elements. It applies the designated accumulation procedure to combine all the first elements of the sequences, all the second elements of the sequences, and so on, and returns a sequence of the results. For instance, if s is a sequence containing four sequences, ((1 2 3) (4 5 6) (7 8 9) (10 11 12)), then the value of (accumulate-n + 0 s) should be the sequence (22 26 30). Fill in the missing expressions in the following definition of accumulate-n:
+#+BEGIN_SRC scheme -n
+  (define (accumulate-n op init seqs)
+    (if (null? (car seqs))
+        nil
+        (cons (accumulate op init <??>)
+              (accumulate-n op init <??>))))
+#+END_SRC
+
+#+BEGIN_SRC lisp -n
+  (defun accumulate-n (op init seqs)
+    (if (null (car seqs))
+        nil
+        (cons (accumulate op init (mapcar1 #'(lambda (x) (car x)) seqs))
+              (accumulate-n op init (mapcar1 #'(lambda (x) (cdr x)) seqs)))))
+#+END_SRC
+
+Exercise 2.37.  Suppose we represent vectors v = (vi) as sequences of numbers, and matrices m = (mij) as sequences of vectors (the rows of the matrix). For example, the matrix
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-20.gif]]
+
+is represented as the sequence ((1 2 3 4) (4 5 6 6) (6 7 8 9)). With this representation, we can use sequence operations to concisely express the basic matrix and vector operations. These operations (which are described in any book on matrix algebra) are the following:
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-21.gif]]
+
+We can define the dot product as17
+#+BEGIN_SRC scheme -n
+  (define (dot-product v w)
+    (accumulate + 0 (map * v w)))
+#+END_SRC
+Fill in the missing expressions in the following procedures for computing the other matrix operations. (The procedure accumulate-n is defined in exercise 2.36.)
+#+BEGIN_SRC scheme -n
+  (define (matrix-*-vector m v)
+    (map <??> m))
+  (define (transpose mat)
+    (accumulate-n <??> <??> mat))
+  (define (matrix-*-matrix m n)
+    (let ((cols (transpose n)))
+      (map <??> m)))
+#+END_SRC
+
+#+BEGIN_SRC lisp -n
+  ; 这里使用到cl自带的mapcar
+  (defun dot-product (v w)
+    (accumulate #'+ 0 (mapcar #'* v w)))
+  
+  (defun matrix-*-vector (m v)
+    (mapcar1 #'(lambda (row)
+                 (dot-product row v))
+             m))
+  
+  (defun transpose (mat)
+    (accumulate-n #'cons nil mat))
+  
+  (defun matrix-*-matrix (m n)
+    (let ((cols (transpose n)))
+      (mapcar1 #'(lambda (row)
+                   (matrix-*-vector cols row))
+               m)))
+#+END_SRC
+
+Exercise 2.38.  The accumulate procedure is also known as fold-right, because it combines the first element of the sequence with the result of combining all the elements to the right. There is also a fold-left, which is similar to fold-right, except that it combines elements working in the opposite direction:
+#+BEGIN_SRC scheme -n
+  (define (fold-left op initial sequence)
+    (define (iter result rest)
+      (if (null? rest)
+          result
+          (iter (op result (car rest))
+                (cdr rest))))
+    (iter initial sequence))
+#+END_SRC
+What are the values of
+#+BEGIN_EXAMPLE
+  (fold-right / 1 (list 1 2 3)) ==> 2/3
+  (fold-left / 1 (list 1 2 3)) ==> 1/6
+  (fold-right list nil (list 1 2 3)) ==> (1 (2 (3 nil)))
+  (fold-left list nil (list 1 2 3)) ==> (((nil 1) 2) 3)
+#+END_EXAMPLE
+Give a property that op should satisfy to guarantee that fold-right and fold-left will produce the same values for any sequence.
+
+如果序列元素都是数字的话，那么+，max，min就可以一样。
+
+Exercise 2.39.   Complete the following definitions of reverse (exercise 2.18) in terms of fold-right and fold-left from exercise 2.38:
+#+BEGIN_SRC scheme -n
+  (define (reverse sequence)
+    (fold-right (lambda (x y) <??>) nil sequence))
+  (define (reverse sequence)
+    (fold-left (lambda (x y) <??>) nil sequence))
+#+END_SRC
+
+#+BEGIN_SRC lisp -n
+  (defun our-reverse (sequence)
+    (fold-right #'(lambda (x y) 
+                    (append y (list x))) 
+                nil 
+                sequence))
+  
+  (defun our-reverse (sequence)
+    (fold-left #'(lambda (x y) 
+                   (cons y x)) 
+               nil 
+               sequence))
+  
+  (defun fold-right (op initial sequence)
+    (accumulate op initial sequence))
+  
+  (defun fold-left (op initial sequence)
+    (labels ((iter (result rest)
+               (if (null rest)
+                   result
+                   (iter (funcall op result (car rest))
+                         (cdr rest)))))
+      (iter initial sequence)))
+#+END_SRC
+
+** 嵌套映射
+
+#+BEGIN_SRC lisp -n
+  (defun flatmap (proc seq)
+    (accumulate #'append nil (mapcar1 proc seq)))
+  
+  (defun prime-sum-p (pair)
+    (primep (+ (car pair) (cadr pair))))
+  
+  (defun make-pair-sum (pair)
+    (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+  
+  (defun prime-sum-pairs (n)
+    (mapcar1 #'make-pair-sum
+             (filter #'prime-sum-p
+                     (flatmap
+                      #'(lambda (i)
+                          (mapcar1 #'(lambda (j) (list i j))
+                                   (enumerate-interval 1 (- i 1))))
+                      (enumerate-interval 1 n)))))
+  
+  (defun permutations (s)
+    (if (null s)                    ; empty set?
+        (list nil)                   ; sequence containing empty set
+        (flatmap #'(lambda (x)
+                     (mapcar1 #'(lambda (p) (cons x p))
+                              (permutations (our-remove x s))))
+                 s)))
+  
+  (defun our-remove (item sequence)
+    (filter #'(lambda (x) (not (= x item)))
+            sequence))
+  
+  ;; 素数检测
+  (defun primep (n)
+    (= n (smallest-divisor n)))
+  
+  (defun smallest-divisor (n)
+    (find-divisor n 2))
+  
+  (defun find-divisor (n test-divisor)
+    (cond ((> (square test-divisor) n) n)
+          ((dividesp test-divisor n) test-divisor)
+          (t (find-divisor n (1+ test-divisor)))))
+  
+  (defun dividesp (a b)
+    (zerop (rem b a)))
+  
+  ;; 素数检测，费马检查
+  (defun fast-prime-p (n times)
+    (cond ((= times 0) t)
+          ((fermat-test n) (fast-prime-p n (1- times)))
+          (t nil)))
+  
+  (defun fermat-test (n)
+    (labels ((try-it (a)
+               (= (expmod a n n) a)))
+      (try-it (1+ (random (1- n))))))
+  
+  (defun expmod (base exp m)
+    (cond ((= exp 0) 1)
+          ((evenp exp) (rem (square (expmod base (/ exp 2) m)) m))
+          (t (rem (* base (expmod base (- exp 1) m)) m))))
+#+END_SRC
+
+Exercise 2.40.  Define a procedure unique-pairs that, given an integer n, generates the sequence of pairs (i,j) with 1< j< i< n. Use unique-pairs to simplify the definition of prime-sum-pairs given above.
+#+BEGIN_SRC lisp -n
+  (defun unique-pairs (n)
+    (flatmap
+     #'(lambda (i)
+         (mapcar1 #'(lambda (j) (list i j))
+                  (enumerate-interval 1 (- i 1))))
+     (enumerate-interval 1 n)))
+  
+  (defun prime-sum-pairs (n)
+    (mapcar1 #'make-pair-sum
+             (filter #'prime-sum-p
+                     (unique-pairs n))))
+#+END_SRC
+
+Exercise 2.41.  Write a procedure to find all ordered triples of distinct positive integers i, j, and k less than or equal to a given integer n that sum to a given integer s.
+#+BEGIN_SRC lisp -n
+  (defun s-sum-triples (n s)
+    (filter #'(lambda (lst)
+                (= (accumulate #'+ 0 lst) s))
+            (unique-triples n)))
+  
+  (defun unique-triples (n)
+    (permutations-n (enumerate-interval 1 n) 3))
+  
+  ;; 对于给的s 生成 含有n个元素的排列
+  (defun permutations-n (s n)
+    (if (or (null s) (zerop n))
+        (list nil)
+        (flatmap #'(lambda (x)
+                     (mapcar1 #'(lambda (p) (cons x p))
+                              (permutations-n (our-remove x s)
+                                              (1- n))))
+                 s)))
+#+END_SRC
