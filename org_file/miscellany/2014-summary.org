@@ -1,6 +1,6 @@
 #+TITLE: 2014 年终总结
 #+OPTIONS: author:nil timestamp:nil creator:nil
-#+OPTIONS: \n:t
+#+OPTIONS: \n:t num:nil
 
 时间真是过得越来越快，这一年匆匆而过，年初的目标到年底早已不再是目标。记得年初的时候还在开淘宝店，那时候的目标是年底营业额达到****，到了后半年就从北京来到了深圳，找了新工作，淘宝店也没时间弄了，老板娘也没有了。。。
 
