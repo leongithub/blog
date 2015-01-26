@@ -1,5 +1,4 @@
 #+TITLE: On Lisp 笔记 - 宏教程（7-10章）
-#+DATE: 2014-12-39
 #+OPTIONS: ^:{}
 #+OPTIONS: author:nil timestamp:nil creator:nil
 #+OPTIONS: \n:t
@@ -34,12 +33,12 @@
   `(a ,@b c) ==> (A 1 2 3 C)
 #+END_EXAMPLE
    一个逗号能抵消一个反引用的效果,所以逗号在数量上必须和反引用匹配。逗号不能出现在反引用的表达式的外面。
-1. 为了确保其参数可以被拼接, comma-at 必须出现在序列 (sequence) 3 中。形如 ‘,@b 的说法是错误的,因为无处可供 b 的值进行拼接。
-2. 要进行拼接的对象必须是个列表,除非它出现在列表最后。表达式 ‘(a ,@1) 将被求值成 (a .1) ,但如果尝试将原子 4 (atom) 拼接到列表的中间位置,例如 ‘(a ,@1 b) ,将导致一个错误。
+1. 为了确保其参数可以被拼接, comma-at 必须出现在序列 (sequence) 3中。形如 ‘,@b 的说法是错误的,因为无处可供 b 的值进行拼接。
+2. 要进行拼接的对象必须是个列表,除非它出现在列表最后。表达式 ‘(a ,@1) 将被求值成 (a . 1) ,但如果尝试将原子 4 (atom) 拼接到列表的中间位置,例如 ‘(a ,@1 b) ,将导致一个错误。
    关于反引用的最后一件要记住的事情,是它有自己存在的意义,这跟它在宏定义中的角色无关。你可以在任何需要构造序列的场合使用反引用:
 #+BEGIN_SRC lisp -n
   (defun greet (name)
-    ‘(hello ,name))
+    `(hello ,name))
 #+END_SRC
 
 ** 定义简单的宏
@@ -71,17 +70,17 @@
 ** 宏的工作模式
    一个 defmacro 的 *草稿* 。
 #+BEGIN_SRC lisp -n
-  (defmacro our-expander (name) ‘(get ,name ’expander))
+  (defmacro our-expander (name) `(get ,name 'expander))
   
   (defmacro our-defmacro (name parms &body body)
     (let ((g (gensym)))
-      ‘(progn
-          (setf (our-expander ’,name)
-                #’(lambda (,g)
+      `(progn
+          (setf (our-expander ',name)
+                #'(lambda (,g)
                      (block ,name
                        (destructuring-bind ,parms (cdr ,g)
                          ,@body))))
-          ’,name)))
+          ',name)))
   
   (defun our-macroexpand-1 (expr)
     (if (and (consp expr) (our-expander (car expr)))
@@ -91,4 +90,130 @@
    定义相当准确地再现了宏的行为,但就像任何草稿一样,它远非十全十美。它不能正确地处理 &whole 关键字。而且,真正的 defmacro 为它第一个参数的 macro-function 保存的是一个有 两个 参数的函数,两个参数分别为:宏调用本身,和其发生时的词法环境。还好,只有最刁钻的宏才会用到这些特性。就算你以为宏就是像上面那样实现的,在实际使用宏的时候,也基本上不会出错。例如,在这个实现下,本书定义的每一个宏都能正常运行。
 
 ** 作为程序的宏
-reinstall OS test
+   关于编写宏,有个更通用的方法:先想想你想要使用的是哪种表达式,再设想一下它应该展开成的模样,最后写出能把前者变换成后者的程序。
+   下面看一个do表达式和它应该展开成的模样
+#+BEGIN_SRC lisp -n
+  (do ((w 3)
+       (x 1 (1+ x))
+       (y 2 (1+ y))
+       (z))
+      ((> x 10) (princ z) y)
+    (princ x)
+    (princ y))
+  应该被展开成如下的样子:
+  (prog ((w 3) (x 1) (y 2) (z nil))
+   foo
+   (if (> x 10)
+       (return (progn (princ z) y)))
+   (princ x)
+   (princ y)
+   (psetq x (1+ x) y (1+ y)) ; parallel setq，原文中有psetq的介绍
+   (go foo))
+#+END_SRC
+   下面我们来写一个do的实现
+#+BEGIN_SRC lisp -n
+  (defmacro our-do (bindforms (test &rest result) &body body)
+    (let ((label (gensym)))
+      ‘(prog ,(make-initforms bindforms)
+           ,label
+           (if ,test
+               (return (progn ,@result)))
+           ,@body
+           (psetq ,@(make-stepforms bindforms))
+           (go ,label))))
+  
+  (defun make-initforms (bindforms)
+    (mapcar #’(lambda (b)
+                 (if (consp b)
+                     (list (car b) (cadr b))
+                     (list b nil)))
+               bindforms))
+  
+  (defun make-stepforms (bindforms)
+    (mapcan #’(lambda (b)
+                 (if (and (consp b) (third b))
+                     (list (car b) (third b))
+                     nil))
+               bindforms))
+#+END_SRC
+** 宏风格
+   宏定义涉及到两类不同的代码，分别是：展开器代码，宏用它来生成其展开式，以及展开式代码。通常，好的编码风格要求程序清晰并且高效。两类代码在这两点侧重的方面截然相反：展开器代码更重视代码的结构清晰可读，而展开式代码对效率要求更高一些。
+   下面是and宏的两个版本
+#+BEGIN_SRC lisp -n
+  (defmacro our-anda (&rest args)
+    (case (length args)
+      (0 t)
+      (1 (car args))
+      (t ‘(if ,(car args)
+               (our-and ,@(cdr args))))))
+  
+  (defmacro our-andb (&rest args)
+    (if (null args)
+        t
+        (labels ((expander (rest)
+                   (if (cdr rest)
+                       ‘(if ,(car rest)
+                             ,(expander (cdr rest)))
+                         (car rest))))
+          (expander args))))
+#+END_SRC
+   尽管anda每次都展开args剩余部分，还每次调用length，但只是增加点编译时间，且可读性比andb好，我们应该选择anda
+
+** 宏的依赖关系
+   如果你重定义了一个函数,调用它的函数会自动用上新的版本。（内联函数除外）不过这个说法对于宏来说就不一定成立了。如果我们在主调函数编译以后,重定义那个宏会发生什么呢?由于对最初的宏调用的无迹可寻,所以函数里的展开式无法更新。该函数的行为将继续反映出宏的原来的定义:
+#+BEGIN_SRC lisp -n
+  (defmacro mac (x) `(1+ ,x))
+  
+  (setq fn (compile nil '(lambda (y) (mac y))))
+  
+  (defmacro mac (x) `(+ ,x 100))
+  
+  (funcall fn 1) ==> 2
+#+END_SRC
+   如果在定义宏之前,就已经编译了宏的调用代码,也会发生类似的问题。 CLTL2 这样要求,“宏定义必须在其首次使用之前被编译器看到”。如果能满足下面两个条件,你就永远不会因为过时或者不存在的宏定义而烦心:
+   1. 在调用宏之前，先定义它
+   2. 一旦重定义一个宏，就重新编译所有直接（或通过宏间接）调用它的函数（或宏）。
+
+** 来自函数的宏
+   本节将说明把函数转化成宏的方法。
+   由于对于编写宏没有经验，所以对这里所说也没什么较深理解。以后可以回看
+
+** 符号宏(symbol-macro)
+   CLTL2 为 Common Lisp 引入了一种新型宏,即符号宏 (symbol-macro)。
+#+BEGIN_EXAMPLE
+  > (symbol-macrolet ((hi (progn (print ”Howdy”)
+                                 1)))
+       (+ hi 2))
+  ”Howdy”
+  3
+#+END_EXAMPLE
+   符号宏只能在局部定义。
+   从理论上讲,符号宏就像不带参数的宏。在没有参数的时候,宏就成为了简单的字面上的缩写。不过,这并非是说符号宏一无是处。它们在第 15 章 ( 第 139 页 ) 和第 18 章 ( 第 159 页 ) 都用到了,而且在以后的例子中同样不可或缺。
+
+* 何时使用宏
+  我们如何知道一个给定的函数是否真的应该是函数,而不是宏呢?多数时候,会很容易分清楚在哪种情况下需要用到宏,哪种情况不需要。缺省情况下,我们应该用函数,因为如果函数能解决问题,而偏要用上宏的话,会让程序变得不优雅。我们应当只有在宏能带来特别的好处时才使用它们。
+
+** 当别无他法时
+   宏有两点是函数无法做到的:宏可以控制 ( 或阻止 ) 对其参数的求值,并且它可以展开进入到主调方的上下文中。任何需要宏的应用,归根到底都是要用上述两个属性中的至少一个。
+
+** 宏还是函数
+   一个操作符,倘若在参数被求值前就需要访问它,那么这个操作符就应该写成宏,因为别无他法。那么,如果有操作符用两种写法都能实现,那该怎么办呢?比如说操作符 avg ,它返回参数的平均值。
+#+BEGIN_SRC lisp -n
+  ; 它可以定义成函数
+  (defun avg (&rest args)
+    (/ (apply #’+ args) (length args)))
+  ; 但把它定义成宏也不错:
+  (defmacro avg (&rest args)
+    ‘(/ (+ ,@args) ,(length args)))
+#+END_SRC
+   因为每次调用 avg 的函数版本时,都毫无必要地调用了一次 length 。在编译期我们可能不清楚这些参数的值,但却知道参数的个数,所以那是调用 length 最佳的时机。当我们面临这样的选择时,可以考虑下列几点（123优点，4-7缺点）:
+   1. 编译期计算。宏在编译期展开时可以进行计算
+   2. 和Lisp的集成。常常可以使程序变得更短小，也更高效：更小是因为 Lisp 代劳了一部分工作,更高效则是因为产品级 Lisp 系统通常比用户程序做了更多的优化
+   3. 免除函数调用。在Common Lisp里，这个差事该由声明成inline类型的函数接手了。但理想和现实还是有距离的，CLTL2说“编译器可以随意地忽略该声明”，而且某些Common Lisp编译器确实也是这样做的。
+   4. 函数即数据，而宏在编译器看来，更像是一些指令。函数可以当成参数传递，被函数返回，或者保存在数据结构里。但这些宏都做不到。
+   5. 源代码清晰。宏定义和等价的函数定义相比更难阅读。所以如果将某个功能写成宏只能稍微改善程序，那么最好还是改成使用函数。
+   6. 运行期清晰。宏有时比函数更难调试
+   7. 递归。在宏里递归更难写。
+
+** 宏的应用场合
+   

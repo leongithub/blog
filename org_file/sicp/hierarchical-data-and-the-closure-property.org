@@ -957,3 +957,162 @@ Exercise 2.41.  Write a procedure to find all ordered triples of distinct positi
                                               (1- n))))
                  s)))
 #+END_SRC
+
+Exercise 2.42.
+
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-23.gif]]
+
+Figure 2.8:  A solution to the eight-queens puzzle.
+
+The ``eight-queens puzzle'' asks how to place eight queens on a chessboard so that no queen is in check from any other (i.e., no two queens are in the same row, column, or diagonal). One possible solution is shown in figure 2.8. One way to solve the puzzle is to work across the board, placing a queen in each column. Once we have placed k - 1 queens, we must place the kth queen in a position where it does not check any of the queens already on the board. We can formulate this approach recursively: Assume that we have already generated the sequence of all possible ways to place k - 1 queens in the first k - 1 columns of the board. For each of these ways, generate an extended set of positions by placing a queen in each row of the kth column. Now filter these, keeping only the positions for which the queen in the kth column is safe with respect to the other queens. This produces the sequence of all ways to place k queens in the first k columns. By continuing this process, we will produce not only one solution, but all solutions to the puzzle.
+
+We implement this solution as a procedure queens, which returns a sequence of all solutions to the problem of placing n queens on an n× n chessboard. Queens has an internal procedure queen-cols that returns the sequence of all ways to place queens in the first k columns of the board.
+
+#+BEGIN_SRC scheme -n
+  (define (queens board-size)
+    (define (queen-cols k)  
+      (if (= k 0)
+          (list empty-board)
+          (filter
+           (lambda (positions) (safe? k positions))
+           (flatmap
+            (lambda (rest-of-queens)
+              (map (lambda (new-row)
+                     (adjoin-position new-row k rest-of-queens))
+                   (enumerate-interval 1 board-size)))
+            (queen-cols (- k 1))))))
+    (queen-cols board-size))
+#+END_SRC
+
+In this procedure rest-of-queens is a way to place k - 1 queens in the first k - 1 columns, and new-row is a proposed row in which to place the queen for the kth column. Complete the program by implementing the representation for sets of board positions, including the procedure adjoin-position, which adjoins a new row-column position to a set of positions, and empty-board, which represents an empty set of positions. You must also write the procedure safe?, which determines for a set of positions, whether the queen in the kth column is safe with respect to the others. (Note that we need only check whether the new queen is safe -- the other queens are already guaranteed safe with respect to each other.) 
+
+#+BEGIN_SRC lisp -n
+  (defun queens (board-size)
+    (labels ((queen-cols (k)
+               (if (= k 0)
+                   (list *empty-board*)
+                   (filter
+                    #'(lambda (positions) (safep k positions))
+                    (flatmap
+                     #'(lambda (rest-of-queens)
+                         (mapcar1 #'(lambda (new-row)
+                                      (adjoin-position new-row k rest-of-queens))
+                                  (enumerate-interval 1 board-size)))
+                     (queen-cols (- k 1)))))))
+      (queen-cols board-size)))
+  
+  (defparameter *empty-board* nil)
+  
+  ; 简单的把new-row加入到列表尾部，没有用到k
+  (defun adjoin-position (new-row k rest-of-queens)
+    (append rest-of-queens (list new-row)))
+  
+  ; 判断同行和对角线是否safe
+  (defun safep (k positions)
+    (let* ((k-value (car (last positions)))
+           (lst (remove k-value positions :from-end t :count 1)))
+      (labels ((iter (rest i)
+                 (let ((item (car rest)))
+                   (cond ((null rest) t)
+                         ((or (= item k-value) ; 判断同一行和对角线
+                              (= item (- k-value (- k i)))
+                              (= item (+ k-value (- k i))))
+                          nil)
+                         (t (iter (cdr rest) (1+ i)))))))
+        (iter lst 1))))
+#+END_SRC
+
+Exercise 2.43.  Louis Reasoner is having a terrible time doing exercise 2.42. His queens procedure seems to work, but it runs extremely slowly. (Louis never does manage to wait long enough for it to solve even the 6× 6 case.) When Louis asks Eva Lu Ator for help, she points out that he has interchanged the order of the nested mappings in the flatmap, writing it as
+#+BEGIN_SRC scheme -n
+  (flatmap
+   (lambda (new-row)
+     (map (lambda (rest-of-queens)
+            (adjoin-position new-row k rest-of-queens))
+          (queen-cols (- k 1))))
+   (enumerate-interval 1 board-size))
+#+END_SRC
+Explain why this interchange makes the program run slowly. Estimate how long it will take Louis's program to solve the eight-queens puzzle, assuming that the program in exercise 2.42 solves the puzzle in time T. 
+
+慢的原因：举例来说，如果两个程序分别都调用(queen-cols 3) 来做对比，那么2.42的程序会分别运行(qc 3),(qc 2),(qc 1),(qc 0)。那么2.43呢：(qc 3), 3(qc 2), 3*3(qc 1), 3*3*3(qc 0)。（这里说运行(qc 3)是指排除调用(qc 2)的部分）
+但要估算时间，我就有点力不从心了，呜呜。分别调用(qc 0),(qc 1),(qc 2),(qc 3)所花时间递增，因为列表规模不断增大，不能简单的把(qc n)调用时间看成相等
+
+
+* 实例：一个图形语言
+  本节将介绍一种用于画图形的简单语言，以展示数据抽象和闭包的威力，其中也以一种非常本质的方式使用了高阶过程。
+
+** 图形语言
+   在1.1节里开始研究程序设计时我们就强调说，在描述一种语言时，应该将注意力集中到语言的基本原语，它的组合手段以及它的抽象手段。
+   这一图形语言只有一种元素，称为painter。一个painter将画出一个图像，这种图像可以变形或者改变大小，以便能正好放到某个指定的平行四边形框架里。举例来说，这里有个称为wave的基本画家，它能作出如下图所示的折线画，而所做出图画的实际形状依赖于具体的框架。还有称为rogers的基本画家能画出MIT创始人的画像。
+
+https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-26.gif
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-27.gif]]
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-28.gif]]
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-29.gif]]
+
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-30.gif]]
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-31.gif]]
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-32.gif]]
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-33.gif]]
+
+(define wave2 (beside wave (flip-vert wave)))
+
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-34.gif]]
+
+(define wave4 (below wave2 wave2))
+
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-35.gif]]
+
+抽象wave4：
+#+BEGIN_SRC scheme -n
+  (define (flipped-pairs painter)
+    (let ((painter2 (beside painter (flip-vert painter))))
+      (below painter2 painter2)))
+#+END_SRC
+and define wave4 as an instance of this pattern:
+
+(define wave4 (flipped-pairs wave))
+
+我们也可以定义递归操作
+#+BEGIN_SRC scheme -n
+  (define (right-split painter n)
+    (if (= n 0)
+        painter
+        (let ((smaller (right-split painter (- n 1))))
+          (beside painter (below smaller smaller)))))
+#+END_SRC
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-38.gif]]
+(right-split wave 4) 
+
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-39.gif]]
+(right-split rogers 4)
+
+#+BEGIN_SRC scheme -n
+  (define (corner-split painter n)
+    (if (= n 0)
+        painter
+        (let ((up (up-split painter (- n 1)))
+              (right (right-split painter (- n 1))))
+          (let ((top-left (beside up up))
+                (bottom-right (below right right))
+                (corner (corner-split painter (- n 1))))
+            (beside (below painter top-left)
+                    (below bottom-right corner))))))
+#+END_SRC
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-40.gif]]
+(corner-split wave 4)
+
+https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-41.gif
+(corner-split rogers 4)
+
+#+BEGIN_SRC lisp -n
+  (define (square-limit painter n)
+    (let ((quarter (corner-split painter n)))
+      (let ((half (beside (flip-horiz quarter) quarter)))
+        (below (flip-vert half) half))))
+#+END_SRC
+https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-24.gif
+https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-25.gif
+
+Exercise 2.44.  Define the procedure up-split used by corner-split. It is similar to right-split, except that it switches the roles of below and beside.
+
+
