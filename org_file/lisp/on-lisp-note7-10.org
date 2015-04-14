@@ -287,3 +287,87 @@
    在 Common Lisp 中,习惯上会给全局变量取一个两头都是星号的名字。
 
 ** 通过预先求值避免捕捉
+
+** 通过gensym避免捕捉
+#+BEGIN_SRC lisp -n
+  ;; 易于被捕捉的:
+  (defmacro for ((var start stop) &body body)
+    ‘(do ((,var ,start (1+ ,var))
+          (limit ,stop))
+         ((> ,var limit))
+       ,@body))
+
+  ;; 一个正确的版本:
+  (defmacro for ((var start stop) &body body)
+    (let ((gstop (gensym)))
+      ‘(do ((,var ,start (1+ ,var))
+            (,gstop ,stop))
+           ((> ,var ,gstop))
+         ,@body)))
+#+END_SRC
+   函数gensym返回唯一的符号。在Common Lisp 中,每个包都维护着一个列表,用于保存这个包 知道的所有符号。(关于包 (package) 的介绍,可见 265 页。) 一个符号,只要出现在这个列表上,我们就说它被约束 (intern) 在这个包里。每次调用 gensym 都会返回唯一,未约束的符号。而 read 每见到一个符号,都会把它约束,所以没人能输入和 gensym 相同的东西。也就是说,如果你有个表达式是这样开头的 (eq (gensym) ... 那么将无法让这个表达式返回真。
+   在 CLTL2 Common Lisp 里,gensym 的打印形式中的数字来自 *gensym-counter*,这个全局变量总是绑定到某个整数。如果重置这个计数器,我们就可以让两个 gensym 的打印输出一模一样
+> (setq x (gensym))
+#:G48
+> (setq *gensym-counter* 48 y (gensym))
+#:G48
+> (eq x y)
+NIL
+但它们不是一回事。
+
+** 通过包避免捕捉
+   如果把for最初的版本定义在自己创建的macros包中，这样就可以毫无顾忌地从其他任何包调用它。如果你从另一个包,比方说 mycode,里调用 for,就 算把 limit 作为第一个参数,它也是 mycode::limit 这和 macros::limit 是两回事,后者才是出现在宏框架中的符号。
+   然而,包还是没能为捕捉问题提供面面俱到的通用解决方案。首先,宏是某些程序不可或缺的组成部分,将它们从自己的包里分离出来会很不方便。其次,这种方法无法为 macros 包里的其他代码提供任何捕捉保护。
+
+** 其他名字空间里的捕捉
+
+** 为何要庸人自扰
+
+* 其他的宏陷阱
+  编写宏需要格外小心。函数被隔离在它自己的词法世界中,但是宏就另当别论了,因为它要被展开进调用方的代码,所以除非仔细编写,否则它将会给用户带来意料之外的不便。第 9 章详细说明了变量捕捉,它是这些不速之客中最常见的一个。本章将讨论在编写宏时需要避免的另外四个问题。
+
+** 求值的次数
+#+BEGIN_SRC lisp -n
+  ;; 正确的版本:
+  (defmacro for ((var start stop) &body body)
+    (let ((gstop (gensym)))
+      ‘(do ((,var ,start (1+ ,var))
+            (,gstop ,stop))
+           ((> ,var ,gstop))
+         ,@body)))
+  ;; 导致多重求值:
+  (defmacro for ((var start stop) &body body)
+    ‘(do ((,var ,start (1+ ,var)))
+         ((> ,var ,stop))
+       ,@body))
+  ;; 错误的求值顺序:
+  (defmacro for ((var start stop) &body body)
+    (let ((gstop (gensym)))
+      ‘(do ((,gstop ,stop)
+            (,var ,start (1+ ,var)))
+    ((> ,var ,gstop))
+  ,@body)))
+#+END_SRC
+   第二个for使得stop form多次求值，这个循环将永不终止。
+#+BEGIN_SRC lisp -n
+  (let ((x 2))
+      (for (i 1 (incf x))
+        (princ i)))
+  ;; 12345678910111213...
+#+END_SRC
+   在编写类似 for 的宏的时候,必须牢记:宏的参数是 form,而非值。
+
+** 求值的顺序
+   第三个版本的 for 同样有个难以觉察的 bug。参数 stop 将会在 start 前被求值。
+#+BEGIN_SRC lisp -n
+  > (let ((x 1))
+      (for (i x (setq x 13))
+        (princ i)))
+  13
+  NIL
+#+END_SRC
+
+** 非函数式的展开器
+
+** 递归
+
