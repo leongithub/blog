@@ -1115,4 +1115,236 @@ https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-25.gif
 
 Exercise 2.44.  Define the procedure up-split used by corner-split. It is similar to right-split, except that it switches the roles of below and beside.
 
+#+BEGIN_SRC lisp -n
+  (defun up-split (painter n)
+    (if (= n 0)
+        painter
+        (let ((smaller (up-split painter (- n 1))))
+          (below painter (beside smaller smaller)))))
+#+END_SRC
 
+** 高阶操作
+   抽象来了，flipped-pairs和square-limit两者都将一个painter的四个copies安排在一个正方形的模式中，它们之间的差异仅仅在这些copies的旋转角度。
+#+BEGIN_SRC lisp -n
+  (defun square-of-four (tl tr bl br)
+    #'(lambda (painter)
+        (let ((top (beside (funcall tl painter) (funcall tr painter)))
+              (bottom (beside (funcall bl painter) (funcall br painter))))
+          (below bottom top))))
+
+  ;; Then flipped-pairs can be defined in terms of square-of-four as follows:
+  (defun flipped-pairs (painter)
+    (let ((combine4 (square-of-four #'identity #'flip-vert
+                                    #'identity #'flip-vert)))
+      (funcall combine4 painter)))
+
+  ;; and square-limit can be expressed as
+  (defun square-limit (painter n)
+    (let ((combine4 (square-of-four #'flip-horiz #'identity
+                                    #'rotate180 #'flip-vert)))
+      (funcall combine4 (corner-split painter n))))
+#+END_SRC
+
+Exercise 2.45.  Right-split and up-split can be expressed as instances of a general splitting operation. Define a procedure split with the property that evaluating
+
+(define right-split (split beside below))
+(define up-split (split below beside))
+
+produces procedures right-split and up-split with the same behaviors as the ones already defined.
+
+#+BEGIN_SRC lisp -n
+  (defun split (combine-main combine-smaller)
+    (labels ((rec (painter n)
+               (if (= n 0)
+                   painter
+                   (let ((smaller (rec painter (- n 1))))
+                     (funcall combine-main
+                              (funcall combine-smaller smaller smaller))))))
+      #'rec))
+#+END_SRC
+
+** 框架
+
+Exercise 2.46.  A two-dimensional vector v running from the origin to a point can be represented as a pair consisting of an x-coordinate and a y-coordinate. Implement a data abstraction for vectors by giving a constructor make-vect and corresponding selectors xcor-vect and ycor-vect. In terms of your selectors and constructor, implement procedures add-vect, sub-vect, and scale-vect that perform the operations vector addition, vector subtraction, and multiplying a vector by a scalar:
+
+[[http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-44.gif]]
+
+#+BEGIN_SRC lisp -n
+  (defun add-vect (v1 v2)
+    (make-vect (+ (xcor-vect v1)
+                  (xcor-vect v2))
+               (+ (ycor-vect v1)
+                  (ycor-vect v2))))
+
+  (defun sub-vect (v1 v2)
+    (make-vect (- (xcor-vect v1)
+                  (xcor-vect v2))
+               (- (ycor-vect v1)
+                  (ycor-vect v2))))
+
+  (defun scale-vect (v s)
+    (make-vect (* s (xcor-vect v))
+               (* s (ycor-vect v))))
+
+  (defun make-vect (x y)
+    (cons x y))
+
+  (defun xcor-vect (v)
+    (car v))
+
+  (defun ycor-vect (v)
+    (cdr v))
+#+END_SRC
+
+Exercise 2.47.  Here are two possible constructors for frames:
+
+(define (make-frame origin edge1 edge2)
+  (list origin edge1 edge2))
+
+(define (make-frame origin edge1 edge2)
+  (cons origin (cons edge1 edge2)))
+
+For each constructor supply the appropriate selectors to produce an implementation for frames.
+
+#+BEGIN_SRC lisp -n
+  (defun origin-frame (frame)
+    (car frame))
+
+  (defun edge1-frame (frame)
+    (cadr frame))
+
+  (defun edge2-frame (frame)
+    (caddr frame))
+
+  (defun make-frame (origin edge1 edge2)
+    (list origin edge1 edge2))
+
+  (defun origin-frame (frame)
+    (car frame))
+
+  (defun edge1-frame (frame)
+    (cadr frame))
+
+  (defun edge2-frame (frame)
+    (cddr frame))
+
+  (defun make-frame (origin edge1 edge2)
+    (cons origin (cons edge1 edge2)))
+#+END_SRC
+
+** 画家
+Exercise 2.48.  A directed line segment in the plane can be represented as a pair of vectors -- the vector running from the origin to the start-point of the segment, and the vector running from the origin to the end-point of the segment. Use your vector representation from exercise 2.46 to define a representation for segments with a constructor make-segment and selectors start-segment and end-segment.
+
+Exercise 2.49.  Use segments->painter to define the following primitive painters:
+
+a.  The painter that draws the outline of the designated frame.
+
+b.  The painter that draws an ``X'' by connecting opposite corners of the frame.
+
+c.  The painter that draws a diamond shape by connecting the midpoints of the sides of the frame.
+
+d.  The wave painter.
+
+#+BEGIN_SRC lisp -n
+  ;; a outline
+  (let ((bl (make-vect 0 0))
+        (br (make-vect 1 0))
+        (tl (make-vect 0 1))
+        (tr (make-vect 1 1)))
+    ;; a outline
+    (segments->painter (list
+                        (make-segment bl tl)
+                        (make-segment tl tr)
+                        (make-segment tr br)
+                        (make-segment br bl)))
+    ;; b corner
+    (segments->painter (list
+                        (make-segment bl tr)
+                        (make-segment br tl))))
+
+  ;; c diamond
+  (let ((lm (make-vect 0 .5))
+        (tm (make-vect .5 1))
+        (rm (make-vect 1 .5))
+        (bm (make-vect .5 0)))
+    (segments->painter (list
+                        (make-segment lm tm)
+                        (make-segment tm rm)
+                        (make-segment rm bm)
+                        (make-segment bm lm))))
+
+  ;; d wave
+#+END_SRC
+
+** 画家的变换和组合
+Exercise 2.50.  Define the transformation flip-horiz, which flips painters horizontally, and transformations that rotate painters counterclockwise by 180 degrees and 270 degrees.
+
+#+BEGIN_SRC lisp -n
+  (defun flip-horiz (painter)
+    (transform-painter painter
+                       (make-vect 1.0 0.0)
+                       (make-vect 0.0 0.0)
+                       (make-vect 1.0 1.0)))
+
+  (defun rotate270 (painter)
+    (transform-painter painter
+                       (make-vect 0.0 1.0)
+                       (make-vect 0.0 0.0)
+                       (make-vect 1.0 1.0)))
+
+  (defun rotate180 (painter)
+    (transform-painter painter
+                       (make-vect 1.0 1.0)
+                       (make-vect 0.0 1.0)
+                       (make-vect 1.0 0.0)))
+
+  (defun flip-vert (painter)
+    (transform-painter painter
+                       (make-vect 0.0 1.0)   ; new origin
+                       (make-vect 1.0 1.0)   ; new end of edge1
+                       (make-vect 0.0 0.0))) ; new end of edge2
+
+  (defun rotate90 (painter)
+    (transform-painter painter
+                       (make-vect 1.0 0.0)
+                       (make-vect 1.0 1.0)
+                       (make-vect 0.0 0.0)))
+
+  (defun transform-painter (painter origin corner1 corner2)
+    #'(lambda (frame)
+        (let ((m (frame-coord-map frame)))
+          (let ((new-origin (funcall #'m origin)))
+            (funcall
+             painter
+             (make-frame new-origin
+                         (sub-vect (funcall #'m corner1) new-origin)
+                         (sub-vect (funcall #'m corner2) new-origin)))))))
+#+END_SRC
+
+
+Exercise 2.51.  Define the below operation for painters. Below takes two painters as arguments. The resulting painter, given a frame, draws with the first painter in the bottom of the frame and with the second painter in the top. Define below in two different ways -- first by writing a procedure that is analogous to the beside procedure given above, and again in terms of beside and suitable rotation operations (from exercise 2.50).
+#+BEGIN_SRC lisp -n
+  (defun below (painter1 painter2)
+    (let ((split-point (make-vect 0.0 0.5)))
+      (let ((paint-bottom
+             (transform-painter painter1
+                                (make-vect 0.0 0.0)
+                                (make-vect 1.0 0.0)
+                                split-point))
+            (paint-top
+             (transform-painter painter2
+                                split-point
+                                (make-vect 1.0 0.5)
+                                (make-vect 0.0 1.0))))
+        (lambda (frame)
+          (funcall paint-bottom frame)
+          (funcall paint-top frame)))))
+
+  (defun below (painter1 painter2)
+    (rotate90
+     (beside
+      (rotate270 painter1)
+      (rotate270 painter2))))
+#+END_SRC
+
+** 强健设计的语言层次

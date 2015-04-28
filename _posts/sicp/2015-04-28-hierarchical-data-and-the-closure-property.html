@@ -1,0 +1,2100 @@
+---
+layout: post
+title: 2.2 层次性数据和闭包性质
+category: sicp
+description: sicp 2.2节 习题，少量笔记
+---
+
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>2.2 层次性数据和闭包性质</title>
+<!-- 2015-04-28 Tue 08:04 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Leon" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">2.2 层次性数据和闭包性质</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. 序列的表示</a>
+<ul>
+<li><a href="#sec-1-1">1.1. 练习</a></li>
+<li><a href="#sec-1-2">1.2. 对表的映射</a>
+<ul>
+<li><a href="#sec-1-2-1">1.2.1. 练习</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#sec-2">2. 层级结构</a>
+<ul>
+<li><a href="#sec-2-1">2.1. 练习</a></li>
+<li><a href="#sec-2-2">2.2. 对树的映射</a></li>
+<li><a href="#sec-2-3">2.3. 练习</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3. 序列作为约定的接口</a>
+<ul>
+<li><a href="#sec-3-1">3.1. 序列操作</a></li>
+<li><a href="#sec-3-2">3.2. 嵌套映射</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">4. 实例：一个图形语言</a>
+<ul>
+<li><a href="#sec-4-1">4.1. 图形语言</a></li>
+<li><a href="#sec-4-2">4.2. 高阶操作</a></li>
+<li><a href="#sec-4-3">4.3. 框架</a></li>
+<li><a href="#sec-4-4">4.4. 画家</a></li>
+<li><a href="#sec-4-5">4.5. 画家的变换和组合</a></li>
+<li><a href="#sec-4-6">4.6. 强健设计的语言层次</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<p>
+闭包（这里和Lisp中另一个闭包概念不一样）：一般来讲，组合数据对象的操作满足闭包性质，就是说,通过它组合起数据对象得到的结果本身还可以通过同样的操作再进行组合。
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> 序列的表示</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+The word nil is a contraction of the Latin word nihil, which means ``nothing.''
+</p>
+</div>
+
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> 练习</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Exercise 2.17.  Define a procedure last-pair that returns the list that contains only the last element of a given (nonempty) list:
+</p>
+
+<p>
+(last-pair (list 23 72 149 34)) ==&gt; (34)
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">last-pair</span> (lst)
+<span class="linenr">2: </span>  (<span style="color: #859900;">let</span> ((rest (cdr lst)))
+<span class="linenr">3: </span>    (<span style="color: #859900;">if</span> (null rest)
+<span class="linenr">4: </span>        lst
+<span class="linenr">5: </span>        (last-pair rest))))
+</pre>
+</div>
+
+<p>
+Exercise 2.18.  Define a procedure reverse that takes a list as argument and returns a list of the same elements in reverse order:
+</p>
+
+<p>
+(reverse (list 1 4 9 16 25)) ==&gt; (25 16 9 4 1)
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#36882;&#24402;</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">our-reverse</span> (lst)
+<span class="linenr"> 3: </span>  (<span style="color: #859900;">if</span> (null lst)
+<span class="linenr"> 4: </span>      nil
+<span class="linenr"> 5: </span>      (append (our-reverse (cdr lst))
+<span class="linenr"> 6: </span>              (list (car lst)))))
+<span class="linenr"> 7: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#23614;&#36882;&#24402;</span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">our-reverse</span> (lst)
+<span class="linenr"> 9: </span>  (<span style="color: #859900;">labels</span> ((iter (lst result)
+<span class="linenr">10: </span>             (<span style="color: #859900;">if</span> (null lst)
+<span class="linenr">11: </span>                 result
+<span class="linenr">12: </span>                 (iter (cdr lst)
+<span class="linenr">13: </span>                       (cons (car lst)
+<span class="linenr">14: </span>                             result)))))
+<span class="linenr">15: </span>    (iter lst nil)))
+</pre>
+</div>
+
+<p>
+Exercise 2.19.  Consider the change-counting program of section 1.2.2. It would be nice to be able to easily change the currency used by the program, so that we could compute the number of ways to change a British pound, for example. As the program is written, the knowledge of the currency is distributed partly into the procedure first-denomination and partly into the procedure count-change (which knows that there are five kinds of U.S. coins). It would be nicer to be able to supply a list of coins to be used for making change.
+</p>
+
+<p>
+We want to rewrite the procedure cc so that its second argument is a list of the values of the coins to use rather than an integer specifying which coins to use. We could then have lists that defined each kind of currency:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defparameter</span> <span style="color: #268bd2;">*us-coins*</span> (list 50 25 10 5 1))
+<span class="linenr">2: </span>(<span style="color: #859900;">defparameter</span> <span style="color: #268bd2;">*uk-coins*</span> (list 100 50 20 10 5 2 1 .5))
+</pre>
+</div>
+<p>
+We could then call cc as follows:
+</p>
+
+<p>
+(cc 100 us-coins) ==&gt; 292
+</p>
+
+<p>
+To do this will require changing the program cc somewhat. It will still have the same form, but it will access its second argument differently, as follows:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">cc</span> (amount coin-values)
+<span class="linenr">2: </span>  (<span style="color: #859900;">cond</span> ((= amount 0) 1)
+<span class="linenr">3: </span>        ((or (&lt; amount 0) (no-more-p coin-values)) 0)
+<span class="linenr">4: </span>        (t (+ (cc amount
+<span class="linenr">5: </span>                  (except-first-denomination coin-values))
+<span class="linenr">6: </span>              (cc (- amount
+<span class="linenr">7: </span>                     (first-denomination coin-values))
+<span class="linenr">8: </span>                  coin-values)))))
+</pre>
+</div>
+<p>
+Define the procedures first-denomination, except-first-denomination, and no-more? in terms of primitive operations on list structures. Does the order of the list coin-values affect the answer produced by cc? Why or why not?
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">no-more-p</span> (lst) (null lst))
+<span class="linenr">2: </span>
+<span class="linenr">3: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">except-first-denomination</span> (lst) (cdr lst))
+<span class="linenr">4: </span>
+<span class="linenr">5: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">first-denomination</span> (lst) (car lst))
+</pre>
+</div>
+<p>
+对于coin-values顺序的改变不会影响cc的结果
+</p>
+
+<p>
+Exercise 2.20.  The procedures +, *, and list take arbitrary numbers of arguments. One way to define such procedures is to use define with dotted-tail notation. In a procedure definition, a parameter list that has a dot before the last parameter name indicates that, when the procedure is called, the initial parameters (if any) will have as values the initial arguments, as usual, but the final parameter's value will be a list of any remaining arguments. For instance, given the definition
+</p>
+
+<p>
+(define (f x y . z) &lt;body&gt;)
+</p>
+
+<p>
+the procedure f can be called with two or more arguments. If we evaluate
+</p>
+
+<p>
+(f 1 2 3 4 5 6)
+</p>
+
+<p>
+then in the body of f, x will be 1, y will be 2, and z will be the list (3 4 5 6). Given the definition
+</p>
+
+<p>
+(define (g . w) &lt;body&gt;)
+</p>
+
+<p>
+the procedure g can be called with zero or more arguments. If we evaluate
+</p>
+
+<p>
+(g 1 2 3 4 5 6)
+</p>
+
+<p>
+then in the body of g, w will be the list (1 2 3 4 5 6).
+</p>
+
+<p>
+Use this notation to write a procedure same-parity that takes one or more integers and returns a list of all the arguments that have the same even-odd parity as the first argument. For example,
+</p>
+
+<p>
+(same-parity 1 2 3 4 5 6 7)
+(1 3 5 7)
+</p>
+
+<p>
+(same-parity 2 3 4 5 6 7)
+(2 4 6)
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#36845;&#20195;</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">same-parity</span> (elem <span style="color: #b58900;">&amp;rest</span> args)
+<span class="linenr"> 3: </span>  (<span style="color: #859900;">labels</span> ((iter (predicate lst result)
+<span class="linenr"> 4: </span>             (<span style="color: #859900;">if</span> (null lst)
+<span class="linenr"> 5: </span>                 (nreverse result)
+<span class="linenr"> 6: </span>                 (iter predicate
+<span class="linenr"> 7: </span>                       (cdr lst)
+<span class="linenr"> 8: </span>                       (<span style="color: #859900;">if</span> (funcall predicate (car lst))
+<span class="linenr"> 9: </span>                           (cons (car lst) result)
+<span class="linenr">10: </span>                           result)))))
+<span class="linenr">11: </span>    (cons elem
+<span class="linenr">12: </span>          (iter (<span style="color: #859900;">if</span> (oddp elem)
+<span class="linenr">13: </span>                    #'oddp
+<span class="linenr">14: </span>                    #'evenp)
+<span class="linenr">15: </span>                args
+<span class="linenr">16: </span>                nil))))
+<span class="linenr">17: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#36882;&#24402;</span>
+<span class="linenr">18: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">same-parity</span> (elem <span style="color: #b58900;">&amp;rest</span> args)
+<span class="linenr">19: </span>  (<span style="color: #859900;">labels</span> ((rec (predicate lst)
+<span class="linenr">20: </span>             (<span style="color: #859900;">if</span> (null lst)
+<span class="linenr">21: </span>                 nil
+<span class="linenr">22: </span>                 (<span style="color: #859900;">if</span> (funcall predicate (car lst))
+<span class="linenr">23: </span>                     (cons (car lst) (rec predicate (cdr lst)))
+<span class="linenr">24: </span>                     (rec predicate (cdr lst))))))
+<span class="linenr">25: </span>    (cons elem
+<span class="linenr">26: </span>          (rec (<span style="color: #859900;">if</span> (oddp elem)
+<span class="linenr">27: </span>                   #'oddp
+<span class="linenr">28: </span>                   #'evenp)
+<span class="linenr">29: </span>               args))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> 对表的映射</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+这里讲的函数的抽象和OnLisp里的实用工具是一个意思。只不过mapcar这个实用工具已经内置在CL里。
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#22914;&#65306;&#32534;&#20889;&#19968;&#20010;&#20989;&#25968;&#65292;&#25509;&#25910;&#19968;&#20010;&#21015;&#34920;&#21644;&#22240;&#23376;&#21442;&#25968;&#65292;&#23545;&#21015;&#34920;&#30340;&#27599;&#19968;&#39033;&#37117;&#20056;&#20197;&#22240;&#23376;&#65292;&#26368;&#21518;&#36820;&#22238;&#26032;&#30340;&#21015;&#34920;&#12290;</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">scale-list</span> (items factor)
+<span class="linenr"> 3: </span>  (<span style="color: #859900;">if</span> (null items)
+<span class="linenr"> 4: </span>      nil
+<span class="linenr"> 5: </span>      (cons (* (car items) factor)
+<span class="linenr"> 6: </span>            (scale-list (cdr items) factor))))
+<span class="linenr"> 7: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#25105;&#20204;&#21487;&#20197;&#25277;&#35937;&#20986;&#26356;&#36890;&#29992;&#30340;&#39640;&#38454;&#31243;&#24207;&#65292;&#20174;scale-list&#25277;&#35937;&#20986;&#65306;&#25226;&#19968;&#20010;&#20989;&#25968;&#24212;&#29992;&#21040;&#36825;&#20010;&#21015;&#34920;&#30340;&#27599;&#19968;&#39033;&#65292;&#36820;&#22238;&#26368;&#32456;&#30340;&#21015;&#34920;&#12290;&#23601;&#26159;CL&#20013;&#30340;mapcar</span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">mapcar1</span> (proc items)
+<span class="linenr"> 9: </span>  (<span style="color: #859900;">if</span> (null items)
+<span class="linenr">10: </span>      nil
+<span class="linenr">11: </span>      (cons (funcall proc (car items))
+<span class="linenr">12: </span>            (mapcar1 proc (cdr items)))))
+<span class="linenr">13: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#37027;&#20040;scale-list&#23601;&#21487;&#20197;&#20889;&#25104;&#19979;&#38754;&#36825;&#26679;</span>
+<span class="linenr">14: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">scale-list</span> (items factor)
+<span class="linenr">15: </span>  (mapcar1 #'(<span style="color: #859900;">lambda</span> (x) (* x factor))
+<span class="linenr">16: </span>           items))
+</pre>
+</div>
+</div>
+<div id="outline-container-sec-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> 练习</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<p>
+Exercise 2.21.  The procedure square-list takes a list of numbers as argument and returns a list of the squares of those numbers.
+</p>
+
+<p>
+(square-list (list 1 2 3 4)) ==&gt; (1 4 9 16)
+</p>
+
+<p>
+Here are two different definitions of square-list. Complete both of them by filling in the missing expressions:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme">(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">square-list</span> items)
+  (<span style="color: #859900;">if</span> (null? items)
+      nil
+      (cons <span style="color: #b58900;">&lt;??&gt;</span> <span style="color: #b58900;">&lt;??&gt;</span>)))
+(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">square-list</span> items)
+  (<span style="color: #859900;">map</span> <span style="color: #b58900;">&lt;??&gt;</span> <span style="color: #b58900;">&lt;??&gt;</span>))
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">square-list</span> (items)
+<span class="linenr">2: </span>  (<span style="color: #859900;">if</span> (null items)
+<span class="linenr">3: </span>      nil
+<span class="linenr">4: </span>      (cons (square (car items))
+<span class="linenr">5: </span>            (square-list (cdr items)))))
+<span class="linenr">6: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">square-list</span> (items)
+<span class="linenr">7: </span>  (mapcar1 #'square items))
+</pre>
+</div>
+
+<p>
+Exercise 2.22.  Louis Reasoner tries to rewrite the first square-list procedure of exercise 2.21 so that it evolves an iterative process:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme">(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">square-list</span> items)
+  (<span style="color: #859900;">define</span> (<span style="color: #268bd2;">iter</span> things answer)
+    (<span style="color: #859900;">if</span> (null? things)
+        answer
+        (iter (cdr things) 
+              (cons (square (car things))
+                    answer))))
+  (iter items nil))
+</pre>
+</div>
+<p>
+Unfortunately, defining square-list this way produces the answer list in the reverse order of the one desired. Why?
+</p>
+
+<p>
+Louis then tries to fix his bug by interchanging the arguments to cons:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme">(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">square-list</span> items)
+  (<span style="color: #859900;">define</span> (<span style="color: #268bd2;">iter</span> things answer)
+    (<span style="color: #859900;">if</span> (null? things)
+        answer
+        (iter (cdr things)
+              (cons answer
+                    (square (car things))))))
+  (iter items nil))
+</pre>
+</div>
+<p>
+This doesn't work either. Explain.
+</p>
+
+<p>
+这阵子总写列表递归，对于cons这种真是一看就知道该怎么改。
+第一个，(cons last &#x2026; (cons 3 (cons 2 (cons 1 nil))))。最后需要反转
+第二个，顺序根本就错了
+</p>
+
+<p>
+Exercise 2.23.  The procedure for-each is similar to map. It takes as arguments a procedure and a list of elements. However, rather than forming a list of the results, for-each just applies the procedure to each of the elements in turn, from left to right. The values returned by applying the procedure to the elements are not used at all &#x2013; for-each is used with procedures that perform an action, such as printing. For example,
+</p>
+<pre class="example">
+(for-each (lambda (x) (newline) (display x))
+          (list 57 321 88))
+57
+321
+88
+</pre>
+<p>
+The value returned by the call to for-each (not illustrated above) can be something arbitrary, such as true. Give an implementation of for-each.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">for-each</span> (proc items)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">if</span> (null items)
+<span class="linenr"> 3: </span>      nil
+<span class="linenr"> 4: </span>      (<span style="color: #859900;">progn</span>
+<span class="linenr"> 5: </span>        (funcall proc (car items))
+<span class="linenr"> 6: </span>        (for-each proc (cdr items)))))
+<span class="linenr"> 7: </span>
+<span class="linenr"> 8: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#20889;&#19968;&#20010;dolist&#24490;&#29615;&#30340;&#29256;&#26412;&#25226;&#65292;&#22240;&#20026;&#22826;&#36866;&#21512;&#29992;dolist&#20102;</span>
+<span class="linenr"> 9: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">for-each</span> (proc items)
+<span class="linenr">10: </span>  (<span style="color: #859900;">dolist</span> (item items)
+<span class="linenr">11: </span>    (funcall proc item)))
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> 层级结构</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+考虑两个程序length和count-leaves，count-leaves返回tree的叶子总数。
+</p>
+<pre class="example">
+(defparamter *x* ((1 2) 3 4))
+(length *x*) ==&gt; 3
+(count-leaves x) ==&gt; 4
+</pre>
+<p>
+length的递归：
+</p>
+<ul class="org-ul">
+<li>列表x的长度为 1 加上 x 的 cdr 的长度
+</li>
+<li>空表的长度为 0
+</li>
+</ul>
+<p>
+count-leaves的递归类似：
+</p>
+<ul class="org-ul">
+<li>空表的叶子数为 0
+</li>
+<li>tree x的叶子数是 x 的 car 的叶子数 加上 x 的 cdr 的叶子数
+</li>
+<li>一个叶子为 1
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">count-leaves</span> (x)
+<span class="linenr">2: </span>  (<span style="color: #859900;">cond</span> ((null x) 0)
+<span class="linenr">3: </span>        ((atom x) 1)
+<span class="linenr">4: </span>        (t (+ (count-leaves (car x))
+<span class="linenr">5: </span>              (count-leaves (cdr x))))))
+</pre>
+</div>
+<p>
+不得不说，递归的思考方式真tm优雅。由于这几天总写尾递归，加上对性能的小情节&#x2026;写个尾递归的
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">count-leaves-iter</span> (x)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">labels</span> ((iter (tree acc)
+<span class="linenr"> 3: </span>             (<span style="color: #859900;">cond</span> ((null tree) acc)
+<span class="linenr"> 4: </span>                   ((atom tree) (1+ acc))
+<span class="linenr"> 5: </span>                   (t (iter (car tree) 
+<span class="linenr"> 6: </span>                            (iter (cdr tree) acc))))))
+<span class="linenr"> 7: </span>    (iter x 0)))
+<span class="linenr"> 8: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#23545;&#20195;&#30721;&#20570;&#28857;&#23567;&#25913;&#21160;&#65288;car&#21644;cdr&#25442;&#20010;&#20301;&#32622;&#65289;&#65292;&#20351;&#20989;&#25968;&#36882;&#24402;&#23618;&#32423;&#21464;&#23569;&#19968;&#28857;</span>
+<span class="linenr"> 9: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">count-leaves-iter1</span> (x)
+<span class="linenr">10: </span>  (<span style="color: #859900;">labels</span> ((iter (tree acc)
+<span class="linenr">11: </span>             (<span style="color: #859900;">cond</span> ((null tree) acc)
+<span class="linenr">12: </span>                   ((atom tree) (1+ acc))
+<span class="linenr">13: </span>                   (t (iter (cdr tree) 
+<span class="linenr">14: </span>                            (iter (car tree) acc))))))
+<span class="linenr">15: </span>    (iter x 0)))
+</pre>
+</div>
+<p>
+改动后简单测试一下是否有用，从结果上看，确实要好一丢丢:)
+</p>
+<pre class="example">
+CL-USER&gt; (let ((result 1))
+           (defun nest-lst-creator ()
+             (dotimes (i 27 result)
+               (setf result (list result result)))))
+
+NEST-LST-CREATOR
+CL-USER&gt; (defparameter *test-lst* (nest-lst-creator))
+*TEST-LST*
+CL-USER&gt; (time (count-leaves-iter *test-lst*))
+Evaluation took:
+  1.585 seconds of real time
+  1.588479 seconds of total run time (1.588479 user, 0.000000 system)
+  100.19% CPU
+  5,060,917,290 processor cycles
+  11,776 bytes consed
+
+134217728
+CL-USER&gt; (time (count-leaves-iter1 *test-lst*))
+Evaluation took:
+  1.548 seconds of real time
+  1.550104 seconds of total run time (1.550104 user, 0.000000 system)
+  100.13% CPU
+  4,941,946,482 processor cycles
+  0 bytes consed
+
+134217728
+</pre>
+</div>
+
+<div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> 练习</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Exercise 2.25.  Give combinations of cars and cdrs that will pick 7 from each of the following lists:
+</p>
+
+<p>
+(1 3 (5 7) 9) ==&gt; (car (cdr (car (cdr (cdr lst)))))
+</p>
+
+<p>
+((7)) ==&gt; (car (car lst))
+</p>
+
+<p>
+(1 (2 (3 (4 (5 (6 7)))))) ==&gt; (cadr (cadr (cadr (cadr (cadr (cadr '(1 (2 (3 (4 (5 (6 7))))))))))))
+</p>
+
+<p>
+Exercise 2.26.  Suppose we define x and y to be two lists:
+</p>
+
+<p>
+(define x (list 1 2 3))
+</p>
+
+<p>
+(define y (list 4 5 6))
+</p>
+
+<p>
+What result is printed by the interpreter in response to evaluating each of the following expressions:
+</p>
+
+<p>
+(append x y) ==&gt; (1 2 3 4 5 6)
+</p>
+
+<p>
+(cons x y) ==&gt; ((1 2 3) 4 5 6)
+</p>
+
+<p>
+(list x y) ==&gt; ((1 2 3) (4 5 6))
+</p>
+
+<p>
+Exercise 2.27.  Modify your reverse procedure of exercise 2.18 to produce a deep-reverse procedure that takes a list as argument and returns as its value the list with its elements reversed and with all sublists deep-reversed as well. For example,
+</p>
+
+<p>
+(define x (list (list 1 2) (list 3 4)))
+</p>
+
+<p>
+x ==&gt; ((1 2) (3 4))
+</p>
+
+<p>
+(reverse x) ==&gt; ((3 4) (1 2))
+</p>
+
+<p>
+(deep-reverse x) ==&gt; ((4 3) (2 1))
+</p>
+
+<p>
+根据2.18写的两个程序，分别写出deep-reverse。之前的主要是把car放在列表后，deep-reverse也没有改这个流程，只是判断了car是否为cons，如果是cons就把这个car反转返回
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">deep-reverse</span> (lst)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">labels</span> ((iter (lst result)
+<span class="linenr"> 3: </span>             (<span style="color: #859900;">if</span> (null lst)
+<span class="linenr"> 4: </span>                 result
+<span class="linenr"> 5: </span>                 (iter (cdr lst)
+<span class="linenr"> 6: </span>                       (cons
+<span class="linenr"> 7: </span>                        (<span style="color: #859900;">if</span> (consp (car lst))
+<span class="linenr"> 8: </span>                            (deep-reverse (car lst))
+<span class="linenr"> 9: </span>                            (car lst))
+<span class="linenr">10: </span>                        result)))))
+<span class="linenr">11: </span>    (iter lst nil)))
+<span class="linenr">12: </span>
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">deep-reverse</span> (lst)
+<span class="linenr">14: </span>  (<span style="color: #859900;">if</span> (null lst)
+<span class="linenr">15: </span>      nil
+<span class="linenr">16: </span>      (append (deep-reverse (cdr lst))
+<span class="linenr">17: </span>              (list 
+<span class="linenr">18: </span>               (<span style="color: #859900;">if</span> (consp (car lst))
+<span class="linenr">19: </span>                   (deep-reverse (car lst))
+<span class="linenr">20: </span>                   (car lst))))))
+</pre>
+</div>
+
+<p>
+Exercise 2.28.  Write a procedure fringe that takes as argument a tree (represented as a list) and returns a list whose elements are all the leaves of the tree arranged in left-to-right order. For example,
+</p>
+
+<p>
+(define x (list (list 1 2) (list 3 4)))
+</p>
+
+<p>
+(fringe x) ==&gt; (1 2 3 4)
+</p>
+
+<p>
+(fringe (list x x)) ==&gt; (1 2 3 4 1 2 3 4)
+</p>
+
+<p>
+递归（要学会用递归方式思考，问题变得简单，先得出一般形式，再修改下临界情况。如果性能不好，再考虑优化成尾递归形式）：
+</p>
+<ul class="org-ul">
+<li>tree的fringe等于(append (fringe (car tree)) (fringe (cdr tree)))
+</li>
+<li>tree为空时，返回nil
+</li>
+<li>tree为原子时，返回(list tree)
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">fringe</span> (tree)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">cond</span> ((null tree) nil)
+<span class="linenr"> 3: </span>        ((atom tree) (list tree))
+<span class="linenr"> 4: </span>        (t (append (fringe (car tree))
+<span class="linenr"> 5: </span>                   (fringe (cdr tree))))))
+<span class="linenr"> 6: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#24615;&#33021;&#22909;&#20123;&#30340;&#21452;&#36882;&#24402;&#24418;&#24335;</span>
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">fringe</span> (tree)
+<span class="linenr"> 8: </span>  (<span style="color: #859900;">labels</span> ((rec (x acc)
+<span class="linenr"> 9: </span>             (<span style="color: #859900;">cond</span> ((null x) acc)
+<span class="linenr">10: </span>                   ((atom x) (cons x acc))
+<span class="linenr">11: </span>                   (t (rec (car x)
+<span class="linenr">12: </span>                           (rec (cdr x) acc))))))
+<span class="linenr">13: </span>    (rec tree nil)))
+</pre>
+</div>
+
+<p>
+Exercise 2.29.  A binary mobile consists of two branches, a left branch and a right branch. Each branch is a rod of a certain length, from which hangs either a weight or another binary mobile. We can represent a binary mobile using compound data by constructing it from two branches (for example, using list):
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-mobile</span> (left right)
+<span class="linenr">2: </span>  (list left right))
+</pre>
+</div>
+
+<p>
+A branch is constructed from a length (which must be a number) together with a structure, which may be either a number (representing a simple weight) or another mobile:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-branch</span> (length structure)
+<span class="linenr">2: </span>  (list length structure))
+</pre>
+</div>
+
+<p>
+a.  Write the corresponding selectors left-branch and right-branch, which return the branches of a mobile, and branch-length and branch-structure, which return the components of a branch.
+</p>
+
+<p>
+b.  Using your selectors, define a procedure total-weight that returns the total weight of a mobile.
+</p>
+
+<p>
+c.  A mobile is said to be balanced if the torque applied by its top-left branch is equal to that applied by its top-right branch (that is, if the length of the left rod multiplied by the weight hanging from that rod is equal to the corresponding product for the right side) and if each of the submobiles hanging off its branches is balanced. Design a predicate that tests whether a binary mobile is balanced.
+</p>
+
+<p>
+d.  Suppose we change the representation of mobiles so that the constructors are
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-mobile</span> (left right)
+<span class="linenr">2: </span>  (cons left right))
+<span class="linenr">3: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-branch</span> (length structure)
+<span class="linenr">4: </span>  (cons length structure))
+</pre>
+</div>
+
+<p>
+How much do you need to change your programs to convert to the new representation?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">a</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">left-branch</span> (mobile)
+<span class="linenr"> 3: </span>  (car mobile))
+<span class="linenr"> 4: </span>
+<span class="linenr"> 5: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">right-branch</span> (mobile)
+<span class="linenr"> 6: </span>  (car (cdr mobile)))
+<span class="linenr"> 7: </span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">branch-length</span> (branch)
+<span class="linenr"> 9: </span>  (car branch))
+<span class="linenr">10: </span>
+<span class="linenr">11: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">branch-structure</span> (branch)
+<span class="linenr">12: </span>  (car (cdr branch)))
+<span class="linenr">13: </span>
+<span class="linenr">14: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">b </span>
+<span class="linenr">15: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#26641;&#24418;&#36882;&#24402;</span>
+<span class="linenr">16: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">total-weight</span> (mobile)
+<span class="linenr">17: </span>  (<span style="color: #859900;">labels</span> ((branch-weight (branch)
+<span class="linenr">18: </span>             (total-weight (branch-structure branch))))
+<span class="linenr">19: </span>    (<span style="color: #859900;">if</span> (numberp mobile)
+<span class="linenr">20: </span>        mobile
+<span class="linenr">21: </span>        (+ (branch-weight (left-branch mobile))
+<span class="linenr">22: </span>           (branch-weight (right-branch mobile))))))
+<span class="linenr">23: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#21452;&#36882;&#24402;&#65292;&#25928;&#29575;&#39640;&#20123;</span>
+<span class="linenr">24: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">total-weight</span> (mobile)
+<span class="linenr">25: </span>  (<span style="color: #859900;">labels</span> ((rec (m acc)
+<span class="linenr">26: </span>             (<span style="color: #859900;">if</span> (numberp m)
+<span class="linenr">27: </span>                 (+ m acc)
+<span class="linenr">28: </span>                 (rec (branch-structure (left-branch m))
+<span class="linenr">29: </span>                      (rec (branch-structure (right-branch m))
+<span class="linenr">30: </span>                           acc)))))
+<span class="linenr">31: </span>    (rec mobile 0)))
+<span class="linenr">32: </span>
+<span class="linenr">33: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">c</span>
+<span class="linenr">34: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#21033;&#29992;total-weight&#65292;&#26377;&#37325;&#22797;&#35745;&#31639;</span>
+<span class="linenr">35: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">mobile-balanced-p</span> (mobile)
+<span class="linenr">36: </span>  (or (numberp mobile)
+<span class="linenr">37: </span>      (and (= (* (branch-length (left-branch mobile))
+<span class="linenr">38: </span>                 (total-weight (branch-structure (left-branch mobile))))
+<span class="linenr">39: </span>              (* (branch-length (right-branch mobile))
+<span class="linenr">40: </span>                 (total-weight (branch-structure (right-branch mobile)))))
+<span class="linenr">41: </span>           (mobile-balanced-p (branch-structure (left-branch mobile)))
+<span class="linenr">42: </span>           (mobile-balanced-p (branch-structure (right-branch mobile))))))
+<span class="linenr">43: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#26641;&#24418;&#36882;&#24402;&#65292;&#36882;&#24402;&#21040;&#21494;&#23376;&#65292;&#35745;&#31639;&#24182;&#36820;&#22238;weight&#65292;&#28982;&#21518;&#36880;&#23618;&#36820;&#22238;weight&#21644;&#12290;&#27604;&#19978;&#38754;&#25928;&#29575;&#39640;&#20123;</span>
+<span class="linenr">44: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">mobile-balanced-p</span> (mobile)
+<span class="linenr">45: </span>  (<span style="color: #859900;">if</span> (numberp mobile)
+<span class="linenr">46: </span>      mobile
+<span class="linenr">47: </span>      (<span style="color: #859900;">let*</span> ((lbw (mobile-balanced-p (branch-structure (left-branch mobile))))
+<span class="linenr">48: </span>             (rbw (and lbw
+<span class="linenr">49: </span>                       (mobile-balanced-p (branch-structure (right-branch mobile))))))
+<span class="linenr">50: </span>        (and rbw
+<span class="linenr">51: </span>             (= (* (branch-length (left-branch mobile)) lbw)
+<span class="linenr">52: </span>                (* (branch-length (right-branch mobile)) rbw))
+<span class="linenr">53: </span>             (+ lbw rbw)))))
+<span class="linenr">54: </span>
+<span class="linenr">55: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">d</span>
+<span class="linenr">56: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#21482;&#38656;&#35201;&#25913;&#19979;&#38754;&#36825;&#20004;&#20010;&#20989;&#25968;&#21363;&#21487;</span>
+<span class="linenr">57: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">right-branch</span> (mobile) (cdr mobile))
+<span class="linenr">58: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">branch-structure</span> (branch) (cdr branch))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> 对树的映射</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+mapcar是处理序列的一种强有力抽象，与此类似，mapcar与递归的结合也是处理树的一种强有力抽象。可以有与2.2.1节的scale-list类似的scale-tree过程，以一个数值因子和一颗叶子为数值的树作为参数，返回一颗具有同样形状的树，树中的每个数值都乘以了这个因子。对于scale-tree的递归方案也与count-leaves的类似：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">scale-tree</span> (tree factor)
+<span class="linenr">2: </span>  (<span style="color: #859900;">cond</span> ((null tree) nil)
+<span class="linenr">3: </span>        ((not (consp tree)) (* tree factor))
+<span class="linenr">4: </span>        (t (cons (scale-tree (car tree) factor)
+<span class="linenr">5: </span>                 (scale-tree (cdr tree) factor)))))
+</pre>
+</div>
+<p>
+实现scale-tree的另一种方法是将树看成子树的序列，并对它使用mapcar。我们在这种序列上做映射，依次对各棵子树做缩放，并返回结果的表。对于基础情况，也就是当被处理的树是树叶时，就直接用因子去乘它：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">scale-tree</span> (tree factor)
+<span class="linenr">2: </span>  (mapcar1 #'(<span style="color: #859900;">lambda</span> (sub-tree)
+<span class="linenr">3: </span>               (<span style="color: #859900;">if</span> (consp sub-tree)
+<span class="linenr">4: </span>                   (scale-tree sub-tree factor)
+<span class="linenr">5: </span>                   (* sub-tree factor)))
+<span class="linenr">6: </span>           tree))
+</pre>
+</div>
+<p>
+对于树的许多操作可以采用类似方式，通过序列操作和递归的组合实现。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> 练习</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Exercise 2.30.  Define a procedure square-tree analogous to the square-list procedure of exercise 2.21. That is, square-list should behave as follows:
+</p>
+
+<p>
+(square-tree
+ (list 1
+       (list 2 (list 3 4) 5)
+       (list 6 7)))
+ ==&gt; 
+(1 (4 (9 16) 25) (36 49))
+</p>
+
+<p>
+Define square-tree both directly (i.e., without using any higher-order procedures) and also by using map and recursion.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">directly</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">square-tree</span> (tree)
+<span class="linenr"> 3: </span>  (<span style="color: #859900;">cond</span> ((null tree) nil)
+<span class="linenr"> 4: </span>        ((atom tree) (* tree tree))
+<span class="linenr"> 5: </span>        (t (cons (square-tree (car tree))
+<span class="linenr"> 6: </span>                 (square-tree (cdr tree))))))
+<span class="linenr"> 7: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">map and recursion</span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">square-tree</span> (tree)
+<span class="linenr"> 9: </span>  (mapcar1 #'(<span style="color: #859900;">lambda</span> (sub-tree)
+<span class="linenr">10: </span>               (<span style="color: #859900;">if</span> (consp sub-tree)
+<span class="linenr">11: </span>                   (square-tree sub-tree)
+<span class="linenr">12: </span>                   (* sub-tree sub-tree)))
+<span class="linenr">13: </span>           tree))
+</pre>
+</div>
+
+<p>
+Exercise 2.31.  Abstract your answer to exercise 2.30 to produce a procedure tree-map with the property that square-tree could be defined as
+</p>
+
+<p>
+(define (square-tree tree) (tree-map square tree))
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">square-tree</span> (tree)
+<span class="linenr"> 2: </span>  (tree-map #'(<span style="color: #859900;">lambda</span> (x) (* x x))
+<span class="linenr"> 3: </span>            tree))
+<span class="linenr"> 4: </span>
+<span class="linenr"> 5: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">tree-map</span> (fn tree)
+<span class="linenr"> 6: </span>  (mapcar1 #'(<span style="color: #859900;">lambda</span> (sub-tree)
+<span class="linenr"> 7: </span>               (<span style="color: #859900;">if</span> (consp sub-tree)
+<span class="linenr"> 8: </span>                   (tree-map fn sub-tree)
+<span class="linenr"> 9: </span>                   (funcall fn sub-tree)))
+<span class="linenr">10: </span>           tree))
+</pre>
+</div>
+
+<p>
+Exercise 2.32.  We can represent a set as a list of distinct elements, and we can represent the set of all subsets of the set as a list of lists. For example, if the set is (1 2 3), then the set of all subsets is (() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3)). Complete the following definition of a procedure that generates the set of subsets of a set and give a clear explanation of why it works:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr">1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">subsets</span> s)
+<span class="linenr">2: </span>  (<span style="color: #859900;">if</span> (null? s)
+<span class="linenr">3: </span>      (list nil)
+<span class="linenr">4: </span>      (<span style="color: #859900;">let</span> ((rest (subsets (cdr s))))
+<span class="linenr">5: </span>        (append rest (<span style="color: #859900;">map</span> <span style="color: #b58900;">&lt;??&gt;</span> rest)))))
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">subsets</span> (s)
+<span class="linenr">2: </span>  (<span style="color: #859900;">if</span> (null s)
+<span class="linenr">3: </span>      (list nil)
+<span class="linenr">4: </span>      (<span style="color: #859900;">let</span> ((rest (subsets (cdr s))))
+<span class="linenr">5: </span>        (append rest 
+<span class="linenr">6: </span>                (mapcar1 #'(<span style="color: #859900;">lambda</span> (x)
+<span class="linenr">7: </span>                             (cons (car s) x))
+<span class="linenr">8: </span>                         rest)))))
+</pre>
+</div>
+<p>
+首先理解程序，subsets是求出一个集合的子集的组合，用递归的思想：
+</p>
+<ul class="org-ul">
+<li>集合的子集组合，等于 除了第一个集合元素的集合的子集 加上
+</li>
+<li>第一个集合元素 与 除了第一个集合元素的集合的子集 的组合
+</li>
+<li>边界条件就是当集合为空的时候，返回'(())
+</li>
+</ul>
+<p>
+理解了程序整体，那么我们要填补的部分就对应于 “第一个集合元素 与 除了第一个集合元素的集合的子集 的组合”，这样我们就很容易通过mapcar1把rest中每一元素与第一个集合元素来组合，最终完成subsets
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> 序列作为约定的接口</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+在使用复合数据工作时，我们强调数据抽象怎样使得我们设计程序而不被数据表示细节所困，并且保持在不同数据表示上的灵活性。这一节我们介绍另一种强大的设计原则&#x2013;使用约定的接口。
+</p>
+
+<p>
+下面是两个表面看起来不太一样的函数
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">sum-odd-squares</span> (tree)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">cond</span> ((null tree) 0)  
+<span class="linenr"> 3: </span>        ((not (consp tree))
+<span class="linenr"> 4: </span>         (<span style="color: #859900;">if</span> (oddp tree) (square tree) 0))
+<span class="linenr"> 5: </span>        (t (+ (sum-odd-squares (car tree))
+<span class="linenr"> 6: </span>              (sum-odd-squares (cdr tree))))))
+<span class="linenr"> 7: </span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">even-fibs</span> (n)
+<span class="linenr"> 9: </span>  (<span style="color: #859900;">labels</span> ((next (k)
+<span class="linenr">10: </span>             (<span style="color: #859900;">if</span> (&gt; k n)
+<span class="linenr">11: </span>                 nil
+<span class="linenr">12: </span>                 (<span style="color: #859900;">let</span> ((f (fib k)))
+<span class="linenr">13: </span>                   (<span style="color: #859900;">if</span> (evenp f)
+<span class="linenr">14: </span>                       (cons f (next (+ k 1)))
+<span class="linenr">15: </span>                       (next (+ k 1)))))))
+<span class="linenr">16: </span>    (next 0)))
+</pre>
+</div>
+<p>
+尽管两个函数在结构上很不同，但对于两个计算的抽象描述却会揭示出它们之间极大的相似性。first：
+</p>
+<ul class="org-ul">
+<li>enumerates the leaves of a tree;
+</li>
+<li>filters them, selecting the odd ones;
+</li>
+<li>squares each of the selected ones; and
+</li>
+<li>accumulates the results using +, starting with 0.
+The second program
+</li>
+<li>enumerates the integers from 0 to n;
+</li>
+<li>computes the Fibonacci number for each integer;
+</li>
+<li>filters them, selecting the even ones; and
+</li>
+<li>accumulates the results using cons, starting with the empty list.
+信号处理工程师们可能会发现，这种过程可以很自然地用流过一些级联的处理步骤的信号方式描述。
+</li>
+</ul>
+
+
+<div class="figure">
+<p><img src="http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-17.gif" alt="ch2-Z-G-17.gif" />
+</p>
+</div>
+
+<p>
+遗憾的是，上面的两个过程定义并没有展现出这种信号结构。譬如说，如果仔细考察sum-odd-squares过程，就会发现其中的枚举工作部分地由检查null?和pair?实现，部分地由过程的树形递归结构实现。与此类似，在那些检查中也可以看到一部分累积工作，另一部分是用在递归中的加法。一般而言，在这两个过程里，没有一个部分正好对应于信号流描述中的某一要素。我们的两个过程采用不同的方式分解了这个计算，将枚举工作散布在程序中各处，并将它与map、fillter和accumulates混在一起。如果我们能够重新组织这一程序，使得信号流结构明显表现在写出的过程中，将会大大提高结果代码的清晰性。
+</p>
+</div>
+
+<div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> 序列操作</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+要组织好这些程序，使之能够更清晰地反应上面信号流的结构，最关键的一点就是将注意力集中在处理过程中从一个步骤流向下一个步骤的“信号”，下面定义一些处理信号的函数。
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">; </span><span style="color: #586e75; font-style: italic;">&#26144;&#23556; (mapcar1 #'square '(1 2 3)) ==&gt; (1 4 9)</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">mapcar1</span> (proc items)
+<span class="linenr"> 3: </span>  (<span style="color: #859900;">if</span> (null items)
+<span class="linenr"> 4: </span>      nil
+<span class="linenr"> 5: </span>      (cons (funcall proc (car items))
+<span class="linenr"> 6: </span>            (mapcar1 proc (cdr items)))))
+<span class="linenr"> 7: </span><span style="color: #586e75; font-style: italic;">; </span><span style="color: #586e75; font-style: italic;">&#36807;&#28388; (filter #'oddp '(1 2 3)) ==&gt; (1 3)</span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">filter</span> (predicate lst)
+<span class="linenr"> 9: </span>  (<span style="color: #859900;">cond</span> ((null lst) nil)
+<span class="linenr">10: </span>        ((funcall predicate (car lst))
+<span class="linenr">11: </span>         (cons (car lst) (filter predicate (cdr lst))))
+<span class="linenr">12: </span>        (t (filter predicate (cdr lst)))))
+<span class="linenr">13: </span><span style="color: #586e75; font-style: italic;">; </span><span style="color: #586e75; font-style: italic;">&#32047;&#31215; (accumulate #'+ 0 '(1 2 3)) ==&gt; 6  &#26159;CL&#20013;&#30340;reduce&#29305;&#20363;</span>
+<span class="linenr">14: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">accumulate</span> (fn initial lst)
+<span class="linenr">15: </span>  (<span style="color: #859900;">if</span> (null lst)
+<span class="linenr">16: </span>      initial
+<span class="linenr">17: </span>      (funcall fn (car lst)
+<span class="linenr">18: </span>               (accumulate fn initial (cdr lst)))))
+<span class="linenr">19: </span><span style="color: #586e75; font-style: italic;">; </span><span style="color: #586e75; font-style: italic;">&#26522;&#20030;&#21306;&#38388; (enumerate-interval 2 5) ==&gt; (2 3 4 5)</span>
+<span class="linenr">20: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">enumerate-interval</span> (low high)
+<span class="linenr">21: </span>  (<span style="color: #859900;">if</span> (&gt; low high)
+<span class="linenr">22: </span>      nil
+<span class="linenr">23: </span>      (cons low (enumerate-interval (1+ low) high))))
+<span class="linenr">24: </span><span style="color: #586e75; font-style: italic;">; </span><span style="color: #586e75; font-style: italic;">&#26522;&#20030;&#26641;&#21494; (enumerate-tree (1 (2 (3 4)) 5)) ==&gt; (1 2 3 4 5)</span>
+<span class="linenr">25: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">enumerate-tree</span> (tree)
+<span class="linenr">26: </span>  (<span style="color: #859900;">cond</span> ((null tree) nil)
+<span class="linenr">27: </span>        ((atom tree) (list tree))
+<span class="linenr">28: </span>        (t (append (enumerate-tree (car tree))
+<span class="linenr">29: </span>                   (enumerate-tree (cdr tree))))))
+</pre>
+</div>
+<p>
+用以上的函数就可以重新构造sum-odd-squares和even-fibs了
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">sum-odd-squares</span> (tree)
+<span class="linenr"> 2: </span>  (accumulate #'+
+<span class="linenr"> 3: </span>              0
+<span class="linenr"> 4: </span>              (mapcar1 #'square
+<span class="linenr"> 5: </span>                       (filter #'oddp
+<span class="linenr"> 6: </span>                               (enumerate-tree tree)))))
+<span class="linenr"> 7: </span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">even-fibs</span> (n)
+<span class="linenr"> 9: </span>  (accumulate #'cons
+<span class="linenr">10: </span>              nil
+<span class="linenr">11: </span>              (filter #'evenp
+<span class="linenr">12: </span>                      (mapcar1 #'fib
+<span class="linenr">13: </span>                               (enumerate-interval 0 n)))))
+<span class="linenr">14: </span><span style="color: #586e75; font-style: italic;">; </span><span style="color: #586e75; font-style: italic;">&#19968;&#20123;&#20854;&#20182;&#20363;&#23376;</span>
+<span class="linenr">15: </span><span style="color: #586e75; font-style: italic;">; </span><span style="color: #586e75; font-style: italic;">&#25214;&#20986;&#34218;&#27700;&#26368;&#39640;&#30340;&#31243;&#24207;&#21592;&#30340;&#24037;&#36164;&#25968;&#39069;</span>
+<span class="linenr">16: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">salary-of-highest-paid-programmer</span> (records)
+<span class="linenr">17: </span>  (accumulate #'max
+<span class="linenr">18: </span>              0
+<span class="linenr">19: </span>              (mapcar1 #'salary
+<span class="linenr">20: </span>                       (filter #'programmerp records))))
+<span class="linenr">21: </span><span style="color: #586e75; font-style: italic;">; </span><span style="color: #586e75; font-style: italic;">(product-of-squares-of-odd-elements (list 1 2 3 4 5)) ==&gt; 225</span>
+<span class="linenr">22: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">product-of-squares-of-odd-elements</span> (sequence)
+<span class="linenr">23: </span>  (accumulate #'*
+<span class="linenr">24: </span>              1
+<span class="linenr">25: </span>              (mapcar1 #'square
+<span class="linenr">26: </span>                       (filter #'oddp sequence))))
+<span class="linenr">27: </span><span style="color: #586e75; font-style: italic;">; </span><span style="color: #586e75; font-style: italic;">(list-fib-squares 10) ==&gt; (0 1 1 4 9 25 64 169 441 1156 3025)</span>
+<span class="linenr">28: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">list-fib-squares</span> (n)
+<span class="linenr">29: </span>  (accumulate #'cons
+<span class="linenr">30: </span>              nil
+<span class="linenr">31: </span>              (mapcar1 #'square
+<span class="linenr">32: </span>                       (mapcar1 #'fib
+<span class="linenr">33: </span>                                (enumerate-interval 0 n)))))
+</pre>
+</div>
+<p>
+将程序表示为一些针对序列的操作，这样做的价值就在于能帮助我们得到模块化的程序设计。在工程设计中，模块化结构是控制复杂性的一种威力强大的策略。
+</p>
+
+<p>
+在这里序列的实现为列表，被作为一种方便的接口，我们可以利用这种接口去组合各种处理模块。如果以序列作为所用的统一表示结构，我们就能将程序对于数据结构的依赖性局限到不多的几个序列操作上。通过修改这些操作，就可以在序列的不同表示之间转换，并保持程序的整个设计不变。
+</p>
+
+
+<p>
+Exercise 2.33.  Fill in the missing expressions to complete the following definitions of some basic list-manipulation operations as accumulations:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr">1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">map</span> p sequence)
+<span class="linenr">2: </span>  (accumulate (<span style="color: #859900;">lambda</span> (x y) <span style="color: #b58900;">&lt;??&gt;</span>) nil sequence))
+<span class="linenr">3: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">append</span> seq1 seq2)
+<span class="linenr">4: </span>  (accumulate cons <span style="color: #b58900;">&lt;??&gt;</span> <span style="color: #b58900;">&lt;??&gt;</span>))
+<span class="linenr">5: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">length</span> sequence)
+<span class="linenr">6: </span>  (accumulate <span style="color: #b58900;">&lt;??&gt;</span> 0 sequence))
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">mapcar1</span> (p sequence)
+<span class="linenr"> 2: </span>  (accumulate #'(<span style="color: #859900;">lambda</span> (x y) 
+<span class="linenr"> 3: </span>                  (cons (funcall p x) y)) 
+<span class="linenr"> 4: </span>              nil 
+<span class="linenr"> 5: </span>              sequence))
+<span class="linenr"> 6: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">append1</span> (seq1 seq2)
+<span class="linenr"> 7: </span>  (accumulate #'cons seq2 seq1))
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">length1</span> (sequence)
+<span class="linenr"> 9: </span>  (accumulate #'(<span style="color: #859900;">lambda</span> (x y)
+<span class="linenr">10: </span>                  (1+ y))
+<span class="linenr">11: </span>              0 
+<span class="linenr">12: </span>              sequence))
+</pre>
+</div>
+
+<p>
+Exercise 2.34.  Evaluating a polynomial in x at a given value of x can be formulated as an accumulation. We evaluate the polynomial
+</p>
+
+
+<div class="figure">
+<p><img src="http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-18.gif" alt="ch2-Z-G-18.gif" />
+</p>
+</div>
+
+<p>
+using a well-known algorithm called Horner's rule, which structures the computation as
+</p>
+
+
+<div class="figure">
+<p><img src="http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-19.gif" alt="ch2-Z-G-19.gif" />
+</p>
+</div>
+
+<p>
+In other words, we start with an, multiply by x, add an-1, multiply by x, and so on, until we reach a0.16 Fill in the following template to produce a procedure that evaluates a polynomial using Horner's rule. Assume that the coefficients of the polynomial are arranged in a sequence, from a0 through an.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr">1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">horner-eval</span> x coefficient-sequence)
+<span class="linenr">2: </span>  (accumulate (<span style="color: #859900;">lambda</span> (this-coeff higher-terms) <span style="color: #b58900;">&lt;??&gt;</span>)
+<span class="linenr">3: </span>              0
+<span class="linenr">4: </span>              coefficient-sequence))
+</pre>
+</div>
+<p>
+For example, to compute 1 + 3x + 5x3 + x5 at x = 2 you would evaluate
+</p>
+
+<p>
+(horner-eval 2 (list 1 3 0 5 0 1))
+</p>
+
+<p>
+有算法就是好
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">horner-eval</span> (x coefficient-sequence)
+<span class="linenr">2: </span>  (accumulate #'(<span style="color: #859900;">lambda</span> (this-coeff higher-terms)
+<span class="linenr">3: </span>                  (+ (* x higher-terms) this-coeff))
+<span class="linenr">4: </span>              0
+<span class="linenr">5: </span>              coefficient-sequence))
+</pre>
+</div>
+
+<p>
+Exercise 2.35.  Redefine count-leaves from section 2.2.2 as an accumulation:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr">1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">count-leaves</span> t)
+<span class="linenr">2: </span>  (accumulate <span style="color: #b58900;">&lt;??&gt;</span> <span style="color: #b58900;">&lt;??&gt;</span> (<span style="color: #859900;">map</span> <span style="color: #b58900;">&lt;??&gt;</span> <span style="color: #b58900;">&lt;??&gt;</span>)))
+</pre>
+</div>
+<p>
+不用mapcar1也可以，但是题给了就配合一下。这里主要用mapcar1和enumerate把tree编程类似'((1) (***) (**))，然后用length来加每一个子列表。(如果用递归的话主旨不符！)
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">count-leaves</span> (tree)
+<span class="linenr">2: </span>  (accumulate #'(<span style="color: #859900;">lambda</span> (x y)
+<span class="linenr">3: </span>                  (+ (length x) y))
+<span class="linenr">4: </span>              0
+<span class="linenr">5: </span>              (mapcar1 #'enumerate-tree tree)))
+</pre>
+</div>
+
+<p>
+Exercise 2.36.  The procedure accumulate-n is similar to accumulate except that it takes as its third argument a sequence of sequences, which are all assumed to have the same number of elements. It applies the designated accumulation procedure to combine all the first elements of the sequences, all the second elements of the sequences, and so on, and returns a sequence of the results. For instance, if s is a sequence containing four sequences, ((1 2 3) (4 5 6) (7 8 9) (10 11 12)), then the value of (accumulate-n + 0 s) should be the sequence (22 26 30). Fill in the missing expressions in the following definition of accumulate-n:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr">1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">accumulate-n</span> op init seqs)
+<span class="linenr">2: </span>  (<span style="color: #859900;">if</span> (null? (car seqs))
+<span class="linenr">3: </span>      nil
+<span class="linenr">4: </span>      (cons (accumulate op init <span style="color: #b58900;">&lt;??&gt;</span>)
+<span class="linenr">5: </span>            (accumulate-n op init <span style="color: #b58900;">&lt;??&gt;</span>))))
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">accumulate-n</span> (op init seqs)
+<span class="linenr">2: </span>  (<span style="color: #859900;">if</span> (null (car seqs))
+<span class="linenr">3: </span>      nil
+<span class="linenr">4: </span>      (cons (accumulate op init (mapcar1 #'(<span style="color: #859900;">lambda</span> (x) (car x)) seqs))
+<span class="linenr">5: </span>            (accumulate-n op init (mapcar1 #'(<span style="color: #859900;">lambda</span> (x) (cdr x)) seqs)))))
+</pre>
+</div>
+
+<p>
+Exercise 2.37.  Suppose we represent vectors v = (vi) as sequences of numbers, and matrices m = (mij) as sequences of vectors (the rows of the matrix). For example, the matrix
+</p>
+
+
+<div class="figure">
+<p><img src="http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-20.gif" alt="ch2-Z-G-20.gif" />
+</p>
+</div>
+
+<p>
+is represented as the sequence ((1 2 3 4) (4 5 6 6) (6 7 8 9)). With this representation, we can use sequence operations to concisely express the basic matrix and vector operations. These operations (which are described in any book on matrix algebra) are the following:
+</p>
+
+
+<div class="figure">
+<p><img src="http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-21.gif" alt="ch2-Z-G-21.gif" />
+</p>
+</div>
+
+<p>
+We can define the dot product as17
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr">1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">dot-product</span> v w)
+<span class="linenr">2: </span>  (accumulate + 0 (<span style="color: #859900;">map</span> * v w)))
+</pre>
+</div>
+<p>
+Fill in the missing expressions in the following procedures for computing the other matrix operations. (The procedure accumulate-n is defined in exercise 2.36.)
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr">1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">matrix-*-vector</span> m v)
+<span class="linenr">2: </span>  (<span style="color: #859900;">map</span> <span style="color: #b58900;">&lt;??&gt;</span> m))
+<span class="linenr">3: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">transpose</span> mat)
+<span class="linenr">4: </span>  (accumulate-n <span style="color: #b58900;">&lt;??&gt;</span> <span style="color: #b58900;">&lt;??&gt;</span> mat))
+<span class="linenr">5: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">matrix-*-matrix</span> m n)
+<span class="linenr">6: </span>  (<span style="color: #859900;">let</span> ((cols (transpose n)))
+<span class="linenr">7: </span>    (<span style="color: #859900;">map</span> <span style="color: #b58900;">&lt;??&gt;</span> m)))
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">; </span><span style="color: #586e75; font-style: italic;">&#36825;&#37324;&#20351;&#29992;&#21040;cl&#33258;&#24102;&#30340;mapcar</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">dot-product</span> (v w)
+<span class="linenr"> 3: </span>  (accumulate #'+ 0 (mapcar #'* v w)))
+<span class="linenr"> 4: </span>
+<span class="linenr"> 5: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">matrix-*-vector</span> (m v)
+<span class="linenr"> 6: </span>  (mapcar1 #'(<span style="color: #859900;">lambda</span> (row)
+<span class="linenr"> 7: </span>               (dot-product row v))
+<span class="linenr"> 8: </span>           m))
+<span class="linenr"> 9: </span>
+<span class="linenr">10: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">transpose</span> (mat)
+<span class="linenr">11: </span>  (accumulate-n #'cons nil mat))
+<span class="linenr">12: </span>
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">matrix-*-matrix</span> (m n)
+<span class="linenr">14: </span>  (<span style="color: #859900;">let</span> ((cols (transpose n)))
+<span class="linenr">15: </span>    (mapcar1 #'(<span style="color: #859900;">lambda</span> (row)
+<span class="linenr">16: </span>                 (matrix-*-vector cols row))
+<span class="linenr">17: </span>             m)))
+</pre>
+</div>
+
+<p>
+Exercise 2.38.  The accumulate procedure is also known as fold-right, because it combines the first element of the sequence with the result of combining all the elements to the right. There is also a fold-left, which is similar to fold-right, except that it combines elements working in the opposite direction:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr">1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">fold-left</span> op initial sequence)
+<span class="linenr">2: </span>  (<span style="color: #859900;">define</span> (<span style="color: #268bd2;">iter</span> result rest)
+<span class="linenr">3: </span>    (<span style="color: #859900;">if</span> (null? rest)
+<span class="linenr">4: </span>        result
+<span class="linenr">5: </span>        (iter (op result (car rest))
+<span class="linenr">6: </span>              (cdr rest))))
+<span class="linenr">7: </span>  (iter initial sequence))
+</pre>
+</div>
+<p>
+What are the values of
+</p>
+<pre class="example">
+(fold-right / 1 (list 1 2 3)) ==&gt; 2/3
+(fold-left / 1 (list 1 2 3)) ==&gt; 1/6
+(fold-right list nil (list 1 2 3)) ==&gt; (1 (2 (3 nil)))
+(fold-left list nil (list 1 2 3)) ==&gt; (((nil 1) 2) 3)
+</pre>
+<p>
+Give a property that op should satisfy to guarantee that fold-right and fold-left will produce the same values for any sequence.
+</p>
+
+<p>
+如果序列元素都是数字的话，那么+，max，min就可以一样。
+</p>
+
+<p>
+Exercise 2.39.   Complete the following definitions of reverse (exercise 2.18) in terms of fold-right and fold-left from exercise 2.38:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr">1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">reverse</span> sequence)
+<span class="linenr">2: </span>  (fold-right (<span style="color: #859900;">lambda</span> (x y) <span style="color: #b58900;">&lt;??&gt;</span>) nil sequence))
+<span class="linenr">3: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">reverse</span> sequence)
+<span class="linenr">4: </span>  (fold-left (<span style="color: #859900;">lambda</span> (x y) <span style="color: #b58900;">&lt;??&gt;</span>) nil sequence))
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">our-reverse</span> (sequence)
+<span class="linenr"> 2: </span>  (fold-right #'(<span style="color: #859900;">lambda</span> (x y) 
+<span class="linenr"> 3: </span>                  (append y (list x))) 
+<span class="linenr"> 4: </span>              nil 
+<span class="linenr"> 5: </span>              sequence))
+<span class="linenr"> 6: </span>
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">our-reverse</span> (sequence)
+<span class="linenr"> 8: </span>  (fold-left #'(<span style="color: #859900;">lambda</span> (x y) 
+<span class="linenr"> 9: </span>                 (cons y x)) 
+<span class="linenr">10: </span>             nil 
+<span class="linenr">11: </span>             sequence))
+<span class="linenr">12: </span>
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">fold-right</span> (op initial sequence)
+<span class="linenr">14: </span>  (accumulate op initial sequence))
+<span class="linenr">15: </span>
+<span class="linenr">16: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">fold-left</span> (op initial sequence)
+<span class="linenr">17: </span>  (<span style="color: #859900;">labels</span> ((iter (result rest)
+<span class="linenr">18: </span>             (<span style="color: #859900;">if</span> (null rest)
+<span class="linenr">19: </span>                 result
+<span class="linenr">20: </span>                 (iter (funcall op result (car rest))
+<span class="linenr">21: </span>                       (cdr rest)))))
+<span class="linenr">22: </span>    (iter initial sequence)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> 嵌套映射</h3>
+<div class="outline-text-3" id="text-3-2">
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">flatmap</span> (proc seq)
+<span class="linenr"> 2: </span>  (accumulate #'append nil (mapcar1 proc seq)))
+<span class="linenr"> 3: </span>
+<span class="linenr"> 4: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">prime-sum-p</span> (pair)
+<span class="linenr"> 5: </span>  (primep (+ (car pair) (cadr pair))))
+<span class="linenr"> 6: </span>
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-pair-sum</span> (pair)
+<span class="linenr"> 8: </span>  (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+<span class="linenr"> 9: </span>
+<span class="linenr">10: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">prime-sum-pairs</span> (n)
+<span class="linenr">11: </span>  (mapcar1 #'make-pair-sum
+<span class="linenr">12: </span>           (filter #'prime-sum-p
+<span class="linenr">13: </span>                   (flatmap
+<span class="linenr">14: </span>                    #'(<span style="color: #859900;">lambda</span> (i)
+<span class="linenr">15: </span>                        (mapcar1 #'(<span style="color: #859900;">lambda</span> (j) (list i j))
+<span class="linenr">16: </span>                                 (enumerate-interval 1 (- i 1))))
+<span class="linenr">17: </span>                    (enumerate-interval 1 n)))))
+<span class="linenr">18: </span>
+<span class="linenr">19: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">permutations</span> (s)
+<span class="linenr">20: </span>  (<span style="color: #859900;">if</span> (null s)                    <span style="color: #586e75; font-style: italic;">; empty set?</span>
+<span class="linenr">21: </span>      (list nil)                   <span style="color: #586e75; font-style: italic;">; sequence containing empty set</span>
+<span class="linenr">22: </span>      (flatmap #'(<span style="color: #859900;">lambda</span> (x)
+<span class="linenr">23: </span>                   (mapcar1 #'(<span style="color: #859900;">lambda</span> (p) (cons x p))
+<span class="linenr">24: </span>                            (permutations (our-remove x s))))
+<span class="linenr">25: </span>               s)))
+<span class="linenr">26: </span>
+<span class="linenr">27: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">our-remove</span> (item sequence)
+<span class="linenr">28: </span>  (filter #'(<span style="color: #859900;">lambda</span> (x) (not (= x item)))
+<span class="linenr">29: </span>          sequence))
+<span class="linenr">30: </span>
+<span class="linenr">31: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#32032;&#25968;&#26816;&#27979;</span>
+<span class="linenr">32: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">primep</span> (n)
+<span class="linenr">33: </span>  (= n (smallest-divisor n)))
+<span class="linenr">34: </span>
+<span class="linenr">35: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">smallest-divisor</span> (n)
+<span class="linenr">36: </span>  (find-divisor n 2))
+<span class="linenr">37: </span>
+<span class="linenr">38: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">find-divisor</span> (n test-divisor)
+<span class="linenr">39: </span>  (<span style="color: #859900;">cond</span> ((&gt; (square test-divisor) n) n)
+<span class="linenr">40: </span>        ((dividesp test-divisor n) test-divisor)
+<span class="linenr">41: </span>        (t (find-divisor n (1+ test-divisor)))))
+<span class="linenr">42: </span>
+<span class="linenr">43: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">dividesp</span> (a b)
+<span class="linenr">44: </span>  (zerop (rem b a)))
+<span class="linenr">45: </span>
+<span class="linenr">46: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#32032;&#25968;&#26816;&#27979;&#65292;&#36153;&#39532;&#26816;&#26597;</span>
+<span class="linenr">47: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">fast-prime-p</span> (n times)
+<span class="linenr">48: </span>  (<span style="color: #859900;">cond</span> ((= times 0) t)
+<span class="linenr">49: </span>        ((fermat-test n) (fast-prime-p n (1- times)))
+<span class="linenr">50: </span>        (t nil)))
+<span class="linenr">51: </span>
+<span class="linenr">52: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">fermat-test</span> (n)
+<span class="linenr">53: </span>  (<span style="color: #859900;">labels</span> ((try-it (a)
+<span class="linenr">54: </span>             (= (expmod a n n) a)))
+<span class="linenr">55: </span>    (try-it (1+ (random (1- n))))))
+<span class="linenr">56: </span>
+<span class="linenr">57: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">expmod</span> (base exp m)
+<span class="linenr">58: </span>  (<span style="color: #859900;">cond</span> ((= exp 0) 1)
+<span class="linenr">59: </span>        ((evenp exp) (rem (square (expmod base (/ exp 2) m)) m))
+<span class="linenr">60: </span>        (t (rem (* base (expmod base (- exp 1) m)) m))))
+</pre>
+</div>
+
+<p>
+Exercise 2.40.  Define a procedure unique-pairs that, given an integer n, generates the sequence of pairs (i,j) with 1&lt; j&lt; i&lt; n. Use unique-pairs to simplify the definition of prime-sum-pairs given above.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">unique-pairs</span> (n)
+<span class="linenr"> 2: </span>  (flatmap
+<span class="linenr"> 3: </span>   #'(<span style="color: #859900;">lambda</span> (i)
+<span class="linenr"> 4: </span>       (mapcar1 #'(<span style="color: #859900;">lambda</span> (j) (list i j))
+<span class="linenr"> 5: </span>                (enumerate-interval 1 (- i 1))))
+<span class="linenr"> 6: </span>   (enumerate-interval 1 n)))
+<span class="linenr"> 7: </span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">prime-sum-pairs</span> (n)
+<span class="linenr"> 9: </span>  (mapcar1 #'make-pair-sum
+<span class="linenr">10: </span>           (filter #'prime-sum-p
+<span class="linenr">11: </span>                   (unique-pairs n))))
+</pre>
+</div>
+
+<p>
+Exercise 2.41.  Write a procedure to find all ordered triples of distinct positive integers i, j, and k less than or equal to a given integer n that sum to a given integer s.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">s-sum-triples</span> (n s)
+<span class="linenr"> 2: </span>  (filter #'(<span style="color: #859900;">lambda</span> (lst)
+<span class="linenr"> 3: </span>              (= (accumulate #'+ 0 lst) s))
+<span class="linenr"> 4: </span>          (unique-triples n)))
+<span class="linenr"> 5: </span>
+<span class="linenr"> 6: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">unique-triples</span> (n)
+<span class="linenr"> 7: </span>  (permutations-n (enumerate-interval 1 n) 3))
+<span class="linenr"> 8: </span>
+<span class="linenr"> 9: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#23545;&#20110;&#32473;&#30340;s &#29983;&#25104; &#21547;&#26377;n&#20010;&#20803;&#32032;&#30340;&#25490;&#21015;</span>
+<span class="linenr">10: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">permutations-n</span> (s n)
+<span class="linenr">11: </span>  (<span style="color: #859900;">if</span> (or (null s) (zerop n))
+<span class="linenr">12: </span>      (list nil)
+<span class="linenr">13: </span>      (flatmap #'(<span style="color: #859900;">lambda</span> (x)
+<span class="linenr">14: </span>                   (mapcar1 #'(<span style="color: #859900;">lambda</span> (p) (cons x p))
+<span class="linenr">15: </span>                            (permutations-n (our-remove x s)
+<span class="linenr">16: </span>                                            (1- n))))
+<span class="linenr">17: </span>               s)))
+</pre>
+</div>
+
+<p>
+Exercise 2.42.
+</p>
+
+
+<div class="figure">
+<p><img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-23.gif" alt="ch2-Z-G-23.gif" />
+</p>
+</div>
+
+<p>
+Figure 2.8:  A solution to the eight-queens puzzle.
+</p>
+
+<p>
+The ``eight-queens puzzle'' asks how to place eight queens on a chessboard so that no queen is in check from any other (i.e., no two queens are in the same row, column, or diagonal). One possible solution is shown in figure 2.8. One way to solve the puzzle is to work across the board, placing a queen in each column. Once we have placed k - 1 queens, we must place the kth queen in a position where it does not check any of the queens already on the board. We can formulate this approach recursively: Assume that we have already generated the sequence of all possible ways to place k - 1 queens in the first k - 1 columns of the board. For each of these ways, generate an extended set of positions by placing a queen in each row of the kth column. Now filter these, keeping only the positions for which the queen in the kth column is safe with respect to the other queens. This produces the sequence of all ways to place k queens in the first k columns. By continuing this process, we will produce not only one solution, but all solutions to the puzzle.
+</p>
+
+<p>
+We implement this solution as a procedure queens, which returns a sequence of all solutions to the problem of placing n queens on an n× n chessboard. Queens has an internal procedure queen-cols that returns the sequence of all ways to place queens in the first k columns of the board.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr"> 1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">queens</span> board-size)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">define</span> (<span style="color: #268bd2;">queen-cols</span> k)  
+<span class="linenr"> 3: </span>    (<span style="color: #859900;">if</span> (= k 0)
+<span class="linenr"> 4: </span>        (list empty-board)
+<span class="linenr"> 5: </span>        (filter
+<span class="linenr"> 6: </span>         (<span style="color: #859900;">lambda</span> (positions) (safe? k positions))
+<span class="linenr"> 7: </span>         (flatmap
+<span class="linenr"> 8: </span>          (<span style="color: #859900;">lambda</span> (rest-of-queens)
+<span class="linenr"> 9: </span>            (<span style="color: #859900;">map</span> (<span style="color: #859900;">lambda</span> (new-row)
+<span class="linenr">10: </span>                   (adjoin-position new-row k rest-of-queens))
+<span class="linenr">11: </span>                 (enumerate-interval 1 board-size)))
+<span class="linenr">12: </span>          (queen-cols (- k 1))))))
+<span class="linenr">13: </span>  (queen-cols board-size))
+</pre>
+</div>
+
+<p>
+In this procedure rest-of-queens is a way to place k - 1 queens in the first k - 1 columns, and new-row is a proposed row in which to place the queen for the kth column. Complete the program by implementing the representation for sets of board positions, including the procedure adjoin-position, which adjoins a new row-column position to a set of positions, and empty-board, which represents an empty set of positions. You must also write the procedure safe?, which determines for a set of positions, whether the queen in the kth column is safe with respect to the others. (Note that we need only check whether the new queen is safe &#x2013; the other queens are already guaranteed safe with respect to each other.) 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">queens</span> (board-size)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">labels</span> ((queen-cols (k)
+<span class="linenr"> 3: </span>             (<span style="color: #859900;">if</span> (= k 0)
+<span class="linenr"> 4: </span>                 (list *empty-board*)
+<span class="linenr"> 5: </span>                 (filter
+<span class="linenr"> 6: </span>                  #'(<span style="color: #859900;">lambda</span> (positions) (safep k positions))
+<span class="linenr"> 7: </span>                  (flatmap
+<span class="linenr"> 8: </span>                   #'(<span style="color: #859900;">lambda</span> (rest-of-queens)
+<span class="linenr"> 9: </span>                       (mapcar1 #'(<span style="color: #859900;">lambda</span> (new-row)
+<span class="linenr">10: </span>                                    (adjoin-position new-row k rest-of-queens))
+<span class="linenr">11: </span>                                (enumerate-interval 1 board-size)))
+<span class="linenr">12: </span>                   (queen-cols (- k 1)))))))
+<span class="linenr">13: </span>    (queen-cols board-size)))
+<span class="linenr">14: </span>
+<span class="linenr">15: </span>(<span style="color: #859900;">defparameter</span> <span style="color: #268bd2;">*empty-board*</span> nil)
+<span class="linenr">16: </span>
+<span class="linenr">17: </span><span style="color: #586e75; font-style: italic;">; </span><span style="color: #586e75; font-style: italic;">&#31616;&#21333;&#30340;&#25226;new-row&#21152;&#20837;&#21040;&#21015;&#34920;&#23614;&#37096;&#65292;&#27809;&#26377;&#29992;&#21040;k</span>
+<span class="linenr">18: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">adjoin-position</span> (new-row k rest-of-queens)
+<span class="linenr">19: </span>  (append rest-of-queens (list new-row)))
+<span class="linenr">20: </span>
+<span class="linenr">21: </span><span style="color: #586e75; font-style: italic;">; </span><span style="color: #586e75; font-style: italic;">&#21028;&#26029;&#21516;&#34892;&#21644;&#23545;&#35282;&#32447;&#26159;&#21542;safe</span>
+<span class="linenr">22: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">safep</span> (k positions)
+<span class="linenr">23: </span>  (<span style="color: #859900;">let*</span> ((k-value (car (last positions)))
+<span class="linenr">24: </span>         (lst (remove k-value positions <span style="color: #859900;">:from-end</span> t <span style="color: #859900;">:count</span> 1)))
+<span class="linenr">25: </span>    (<span style="color: #859900;">labels</span> ((iter (rest i)
+<span class="linenr">26: </span>               (<span style="color: #859900;">let</span> ((item (car rest)))
+<span class="linenr">27: </span>                 (<span style="color: #859900;">cond</span> ((null rest) t)
+<span class="linenr">28: </span>                       ((or (= item k-value) <span style="color: #586e75; font-style: italic;">; &#21028;&#26029;&#21516;&#19968;&#34892;&#21644;&#23545;&#35282;&#32447;</span>
+<span class="linenr">29: </span>                            (= item (- k-value (- k i)))
+<span class="linenr">30: </span>                            (= item (+ k-value (- k i))))
+<span class="linenr">31: </span>                        nil)
+<span class="linenr">32: </span>                       (t (iter (cdr rest) (1+ i)))))))
+<span class="linenr">33: </span>      (iter lst 1))))
+</pre>
+</div>
+
+<p>
+Exercise 2.43.  Louis Reasoner is having a terrible time doing exercise 2.42. His queens procedure seems to work, but it runs extremely slowly. (Louis never does manage to wait long enough for it to solve even the 6× 6 case.) When Louis asks Eva Lu Ator for help, she points out that he has interchanged the order of the nested mappings in the flatmap, writing it as
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr">1: </span>(flatmap
+<span class="linenr">2: </span> (<span style="color: #859900;">lambda</span> (new-row)
+<span class="linenr">3: </span>   (<span style="color: #859900;">map</span> (<span style="color: #859900;">lambda</span> (rest-of-queens)
+<span class="linenr">4: </span>          (adjoin-position new-row k rest-of-queens))
+<span class="linenr">5: </span>        (queen-cols (- k 1))))
+<span class="linenr">6: </span> (enumerate-interval 1 board-size))
+</pre>
+</div>
+<p>
+Explain why this interchange makes the program run slowly. Estimate how long it will take Louis's program to solve the eight-queens puzzle, assuming that the program in exercise 2.42 solves the puzzle in time T. 
+</p>
+
+<p>
+慢的原因：举例来说，如果两个程序分别都调用(queen-cols 3) 来做对比，那么2.42的程序会分别运行(qc 3),(qc 2),(qc 1),(qc 0)。那么2.43呢：(qc 3), 3(qc 2), 3*3(qc 1), 3*3*3(qc 0)。（这里说运行(qc 3)是指排除调用(qc 2)的部分）
+但要估算时间，我就有点力不从心了，呜呜。分别调用(qc 0),(qc 1),(qc 2),(qc 3)所花时间递增，因为列表规模不断增大，不能简单的把(qc n)调用时间看成相等
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> 实例：一个图形语言</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+本节将介绍一种用于画图形的简单语言，以展示数据抽象和闭包的威力，其中也以一种非常本质的方式使用了高阶过程。
+</p>
+</div>
+
+<div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> 图形语言</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+在1.1节里开始研究程序设计时我们就强调说，在描述一种语言时，应该将注意力集中到语言的基本原语，它的组合手段以及它的抽象手段。
+这一图形语言只有一种元素，称为painter。一个painter将画出一个图像，这种图像可以变形或者改变大小，以便能正好放到某个指定的平行四边形框架里。举例来说，这里有个称为wave的基本画家，它能作出如下图所示的折线画，而所做出图画的实际形状依赖于具体的框架。还有称为rogers的基本画家能画出MIT创始人的画像。
+</p>
+
+<p>
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-26.gif" alt="ch2-Z-G-26.gif" />
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-27.gif" alt="ch2-Z-G-27.gif" />
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-28.gif" alt="ch2-Z-G-28.gif" />
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-29.gif" alt="ch2-Z-G-29.gif" />
+</p>
+
+<p>
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-30.gif" alt="ch2-Z-G-30.gif" />
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-31.gif" alt="ch2-Z-G-31.gif" />
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-32.gif" alt="ch2-Z-G-32.gif" />
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-33.gif" alt="ch2-Z-G-33.gif" />
+</p>
+
+<p>
+(define wave2 (beside wave (flip-vert wave)))
+</p>
+
+
+<div class="figure">
+<p><img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-34.gif" alt="ch2-Z-G-34.gif" />
+</p>
+</div>
+
+<p>
+(define wave4 (below wave2 wave2))
+</p>
+
+
+<div class="figure">
+<p><img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-35.gif" alt="ch2-Z-G-35.gif" />
+</p>
+</div>
+
+<p>
+抽象wave4：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr">1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">flipped-pairs</span> painter)
+<span class="linenr">2: </span>  (<span style="color: #859900;">let</span> ((painter2 (beside painter (flip-vert painter))))
+<span class="linenr">3: </span>    (below painter2 painter2)))
+</pre>
+</div>
+<p>
+and define wave4 as an instance of this pattern:
+</p>
+
+<p>
+(define wave4 (flipped-pairs wave))
+</p>
+
+<p>
+我们也可以定义递归操作
+</p>
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr">1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">right-split</span> painter n)
+<span class="linenr">2: </span>  (<span style="color: #859900;">if</span> (= n 0)
+<span class="linenr">3: </span>      painter
+<span class="linenr">4: </span>      (<span style="color: #859900;">let</span> ((smaller (right-split painter (- n 1))))
+<span class="linenr">5: </span>        (beside painter (below smaller smaller)))))
+</pre>
+</div>
+<p>
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-38.gif" alt="ch2-Z-G-38.gif" />
+(right-split wave 4) 
+</p>
+
+<p>
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-39.gif" alt="ch2-Z-G-39.gif" />
+(right-split rogers 4)
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-scheme"><span class="linenr"> 1: </span>(<span style="color: #859900;">define</span> (<span style="color: #268bd2;">corner-split</span> painter n)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">if</span> (= n 0)
+<span class="linenr"> 3: </span>      painter
+<span class="linenr"> 4: </span>      (<span style="color: #859900;">let</span> ((up (up-split painter (- n 1)))
+<span class="linenr"> 5: </span>            (right (right-split painter (- n 1))))
+<span class="linenr"> 6: </span>        (<span style="color: #859900;">let</span> ((top-left (beside up up))
+<span class="linenr"> 7: </span>              (bottom-right (below right right))
+<span class="linenr"> 8: </span>              (corner (corner-split painter (- n 1))))
+<span class="linenr"> 9: </span>          (beside (below painter top-left)
+<span class="linenr">10: </span>                  (below bottom-right corner))))))
+</pre>
+</div>
+<p>
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-40.gif" alt="ch2-Z-G-40.gif" />
+(corner-split wave 4)
+</p>
+
+<p>
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-41.gif" alt="ch2-Z-G-41.gif" />
+(corner-split rogers 4)
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(define (square-limit painter n)
+<span class="linenr">2: </span>  (<span style="color: #859900;">let</span> ((quarter (corner-split painter n)))
+<span class="linenr">3: </span>    (<span style="color: #859900;">let</span> ((half (beside (flip-horiz quarter) quarter)))
+<span class="linenr">4: </span>      (below (flip-vert half) half))))
+</pre>
+</div>
+<p>
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-24.gif" alt="ch2-Z-G-24.gif" />
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-25.gif" alt="ch2-Z-G-25.gif" />
+</p>
+
+<p>
+Exercise 2.44.  Define the procedure up-split used by corner-split. It is similar to right-split, except that it switches the roles of below and beside.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">up-split</span> (painter n)
+<span class="linenr">2: </span>  (<span style="color: #859900;">if</span> (= n 0)
+<span class="linenr">3: </span>      painter
+<span class="linenr">4: </span>      (<span style="color: #859900;">let</span> ((smaller (up-split painter (- n 1))))
+<span class="linenr">5: </span>        (below painter (beside smaller smaller)))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4-2" class="outline-3">
+<h3 id="sec-4-2"><span class="section-number-3">4.2</span> 高阶操作</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+抽象来了，flipped-pairs和square-limit两者都将一个painter的四个copies安排在一个正方形的模式中，它们之间的差异仅仅在这些copies的旋转角度。
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">square-of-four</span> (tl tr bl br)
+<span class="linenr"> 2: </span>  #'(<span style="color: #859900;">lambda</span> (painter)
+<span class="linenr"> 3: </span>      (<span style="color: #859900;">let</span> ((top (beside (funcall tl painter) (funcall tr painter)))
+<span class="linenr"> 4: </span>            (bottom (beside (funcall bl painter) (funcall br painter))))
+<span class="linenr"> 5: </span>        (below bottom top))))
+<span class="linenr"> 6: </span>
+<span class="linenr"> 7: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Then flipped-pairs can be defined in terms of square-of-four as follows:</span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">flipped-pairs</span> (painter)
+<span class="linenr"> 9: </span>  (<span style="color: #859900;">let</span> ((combine4 (square-of-four #'identity #'flip-vert
+<span class="linenr">10: </span>                                  #'identity #'flip-vert)))
+<span class="linenr">11: </span>    (funcall combine4 painter)))
+<span class="linenr">12: </span>
+<span class="linenr">13: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">and square-limit can be expressed as</span>
+<span class="linenr">14: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">square-limit</span> (painter n)
+<span class="linenr">15: </span>  (<span style="color: #859900;">let</span> ((combine4 (square-of-four #'flip-horiz #'identity
+<span class="linenr">16: </span>                                  #'rotate180 #'flip-vert)))
+<span class="linenr">17: </span>    (funcall combine4 (corner-split painter n))))
+</pre>
+</div>
+
+<p>
+Exercise 2.45.  Right-split and up-split can be expressed as instances of a general splitting operation. Define a procedure split with the property that evaluating
+</p>
+
+<p>
+(define right-split (split beside below))
+(define up-split (split below beside))
+</p>
+
+<p>
+produces procedures right-split and up-split with the same behaviors as the ones already defined.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">split</span> (combine-main combine-smaller)
+<span class="linenr">2: </span>  (<span style="color: #859900;">labels</span> ((rec (painter n)
+<span class="linenr">3: </span>             (<span style="color: #859900;">if</span> (= n 0)
+<span class="linenr">4: </span>                 painter
+<span class="linenr">5: </span>                 (<span style="color: #859900;">let</span> ((smaller (rec painter (- n 1))))
+<span class="linenr">6: </span>                   (funcall combine-main
+<span class="linenr">7: </span>                            (funcall combine-smaller smaller smaller))))))
+<span class="linenr">8: </span>    #'rec))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4-3" class="outline-3">
+<h3 id="sec-4-3"><span class="section-number-3">4.3</span> 框架</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+Exercise 2.46.  A two-dimensional vector v running from the origin to a point can be represented as a pair consisting of an x-coordinate and a y-coordinate. Implement a data abstraction for vectors by giving a constructor make-vect and corresponding selectors xcor-vect and ycor-vect. In terms of your selectors and constructor, implement procedures add-vect, sub-vect, and scale-vect that perform the operations vector addition, vector subtraction, and multiplying a vector by a scalar:
+</p>
+
+
+<div class="figure">
+<p><img src="http://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-44.gif" alt="ch2-Z-G-44.gif" />
+</p>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">add-vect</span> (v1 v2)
+<span class="linenr"> 2: </span>  (make-vect (+ (xcor-vect v1)
+<span class="linenr"> 3: </span>                (xcor-vect v2))
+<span class="linenr"> 4: </span>             (+ (ycor-vect v1)
+<span class="linenr"> 5: </span>                (ycor-vect v2))))
+<span class="linenr"> 6: </span>
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">sub-vect</span> (v1 v2)
+<span class="linenr"> 8: </span>  (make-vect (- (xcor-vect v1)
+<span class="linenr"> 9: </span>                (xcor-vect v2))
+<span class="linenr">10: </span>             (- (ycor-vect v1)
+<span class="linenr">11: </span>                (ycor-vect v2))))
+<span class="linenr">12: </span>
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">scale-vect</span> (v s)
+<span class="linenr">14: </span>  (make-vect (* s (xcor-vect v))
+<span class="linenr">15: </span>             (* s (ycor-vect v))))
+<span class="linenr">16: </span>
+<span class="linenr">17: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-vect</span> (x y)
+<span class="linenr">18: </span>  (cons x y))
+<span class="linenr">19: </span>
+<span class="linenr">20: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">xcor-vect</span> (v)
+<span class="linenr">21: </span>  (car v))
+<span class="linenr">22: </span>
+<span class="linenr">23: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">ycor-vect</span> (v)
+<span class="linenr">24: </span>  (cdr v))
+</pre>
+</div>
+
+<p>
+Exercise 2.47.  Here are two possible constructors for frames:
+</p>
+
+<p>
+(define (make-frame origin edge1 edge2)
+  (list origin edge1 edge2))
+</p>
+
+<p>
+(define (make-frame origin edge1 edge2)
+  (cons origin (cons edge1 edge2)))
+</p>
+
+<p>
+For each constructor supply the appropriate selectors to produce an implementation for frames.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">origin-frame</span> (frame)
+<span class="linenr"> 2: </span>  (car frame))
+<span class="linenr"> 3: </span>
+<span class="linenr"> 4: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">edge1-frame</span> (frame)
+<span class="linenr"> 5: </span>  (cadr frame))
+<span class="linenr"> 6: </span>
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">edge2-frame</span> (frame)
+<span class="linenr"> 8: </span>  (caddr frame))
+<span class="linenr"> 9: </span>
+<span class="linenr">10: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-frame</span> (origin edge1 edge2)
+<span class="linenr">11: </span>  (list origin edge1 edge2))
+<span class="linenr">12: </span>
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">origin-frame</span> (frame)
+<span class="linenr">14: </span>  (car frame))
+<span class="linenr">15: </span>
+<span class="linenr">16: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">edge1-frame</span> (frame)
+<span class="linenr">17: </span>  (cadr frame))
+<span class="linenr">18: </span>
+<span class="linenr">19: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">edge2-frame</span> (frame)
+<span class="linenr">20: </span>  (cddr frame))
+<span class="linenr">21: </span>
+<span class="linenr">22: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-frame</span> (origin edge1 edge2)
+<span class="linenr">23: </span>  (cons origin (cons edge1 edge2)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4-4" class="outline-3">
+<h3 id="sec-4-4"><span class="section-number-3">4.4</span> 画家</h3>
+<div class="outline-text-3" id="text-4-4">
+<p>
+Exercise 2.48.  A directed line segment in the plane can be represented as a pair of vectors &#x2013; the vector running from the origin to the start-point of the segment, and the vector running from the origin to the end-point of the segment. Use your vector representation from exercise 2.46 to define a representation for segments with a constructor make-segment and selectors start-segment and end-segment.
+</p>
+
+<p>
+Exercise 2.49.  Use segments-&gt;painter to define the following primitive painters:
+</p>
+
+<p>
+a.  The painter that draws the outline of the designated frame.
+</p>
+
+<p>
+b.  The painter that draws an ``X'' by connecting opposite corners of the frame.
+</p>
+
+<p>
+c.  The painter that draws a diamond shape by connecting the midpoints of the sides of the frame.
+</p>
+
+<p>
+d.  The wave painter.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">a outline</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">let</span> ((bl (make-vect 0 0))
+<span class="linenr"> 3: </span>      (br (make-vect 1 0))
+<span class="linenr"> 4: </span>      (tl (make-vect 0 1))
+<span class="linenr"> 5: </span>      (tr (make-vect 1 1)))
+<span class="linenr"> 6: </span>  <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">a outline</span>
+<span class="linenr"> 7: </span>  (segments-&gt;painter (list
+<span class="linenr"> 8: </span>                      (make-segment bl tl)
+<span class="linenr"> 9: </span>                      (make-segment tl tr)
+<span class="linenr">10: </span>                      (make-segment tr br)
+<span class="linenr">11: </span>                      (make-segment br bl)))
+<span class="linenr">12: </span>  <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">b corner</span>
+<span class="linenr">13: </span>  (segments-&gt;painter (list
+<span class="linenr">14: </span>                      (make-segment bl tr)
+<span class="linenr">15: </span>                      (make-segment br tl))))
+<span class="linenr">16: </span>
+<span class="linenr">17: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">c diamond</span>
+<span class="linenr">18: </span>(<span style="color: #859900;">let</span> ((lm (make-vect 0 .5))
+<span class="linenr">19: </span>      (tm (make-vect .5 1))
+<span class="linenr">20: </span>      (rm (make-vect 1 .5))
+<span class="linenr">21: </span>      (bm (make-vect .5 0)))
+<span class="linenr">22: </span>  (segments-&gt;painter (list
+<span class="linenr">23: </span>                      (make-segment lm tm)
+<span class="linenr">24: </span>                      (make-segment tm rm)
+<span class="linenr">25: </span>                      (make-segment rm bm)
+<span class="linenr">26: </span>                      (make-segment bm lm))))
+<span class="linenr">27: </span>
+<span class="linenr">28: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">d wave</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4-5" class="outline-3">
+<h3 id="sec-4-5"><span class="section-number-3">4.5</span> 画家的变换和组合</h3>
+<div class="outline-text-3" id="text-4-5">
+<p>
+Exercise 2.50.  Define the transformation flip-horiz, which flips painters horizontally, and transformations that rotate painters counterclockwise by 180 degrees and 270 degrees.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">flip-horiz</span> (painter)
+<span class="linenr"> 2: </span>  (transform-painter painter
+<span class="linenr"> 3: </span>                     (make-vect 1.0 0.0)
+<span class="linenr"> 4: </span>                     (make-vect 0.0 0.0)
+<span class="linenr"> 5: </span>                     (make-vect 1.0 1.0)))
+<span class="linenr"> 6: </span>
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">rotate270</span> (painter)
+<span class="linenr"> 8: </span>  (transform-painter painter
+<span class="linenr"> 9: </span>                     (make-vect 0.0 1.0)
+<span class="linenr">10: </span>                     (make-vect 0.0 0.0)
+<span class="linenr">11: </span>                     (make-vect 1.0 1.0)))
+<span class="linenr">12: </span>
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">rotate180</span> (painter)
+<span class="linenr">14: </span>  (transform-painter painter
+<span class="linenr">15: </span>                     (make-vect 1.0 1.0)
+<span class="linenr">16: </span>                     (make-vect 0.0 1.0)
+<span class="linenr">17: </span>                     (make-vect 1.0 0.0)))
+<span class="linenr">18: </span>
+<span class="linenr">19: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">flip-vert</span> (painter)
+<span class="linenr">20: </span>  (transform-painter painter
+<span class="linenr">21: </span>                     (make-vect 0.0 1.0)   <span style="color: #586e75; font-style: italic;">; new origin</span>
+<span class="linenr">22: </span>                     (make-vect 1.0 1.0)   <span style="color: #586e75; font-style: italic;">; new end of edge1</span>
+<span class="linenr">23: </span>                     (make-vect 0.0 0.0))) <span style="color: #586e75; font-style: italic;">; new end of edge2</span>
+<span class="linenr">24: </span>
+<span class="linenr">25: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">rotate90</span> (painter)
+<span class="linenr">26: </span>  (transform-painter painter
+<span class="linenr">27: </span>                     (make-vect 1.0 0.0)
+<span class="linenr">28: </span>                     (make-vect 1.0 1.0)
+<span class="linenr">29: </span>                     (make-vect 0.0 0.0)))
+<span class="linenr">30: </span>
+<span class="linenr">31: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">transform-painter</span> (painter origin corner1 corner2)
+<span class="linenr">32: </span>  #'(<span style="color: #859900;">lambda</span> (frame)
+<span class="linenr">33: </span>      (<span style="color: #859900;">let</span> ((m (frame-coord-map frame)))
+<span class="linenr">34: </span>        (<span style="color: #859900;">let</span> ((new-origin (funcall #'m origin)))
+<span class="linenr">35: </span>          (funcall
+<span class="linenr">36: </span>           painter
+<span class="linenr">37: </span>           (make-frame new-origin
+<span class="linenr">38: </span>                       (sub-vect (funcall #'m corner1) new-origin)
+<span class="linenr">39: </span>                       (sub-vect (funcall #'m corner2) new-origin)))))))
+</pre>
+</div>
+
+
+<p>
+Exercise 2.51.  Define the below operation for painters. Below takes two painters as arguments. The resulting painter, given a frame, draws with the first painter in the bottom of the frame and with the second painter in the top. Define below in two different ways &#x2013; first by writing a procedure that is analogous to the beside procedure given above, and again in terms of beside and suitable rotation operations (from exercise 2.50).
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">below</span> (painter1 painter2)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">let</span> ((split-point (make-vect 0.0 0.5)))
+<span class="linenr"> 3: </span>    (<span style="color: #859900;">let</span> ((paint-bottom
+<span class="linenr"> 4: </span>           (transform-painter painter1
+<span class="linenr"> 5: </span>                              (make-vect 0.0 0.0)
+<span class="linenr"> 6: </span>                              (make-vect 1.0 0.0)
+<span class="linenr"> 7: </span>                              split-point))
+<span class="linenr"> 8: </span>          (paint-top
+<span class="linenr"> 9: </span>           (transform-painter painter2
+<span class="linenr">10: </span>                              split-point
+<span class="linenr">11: </span>                              (make-vect 1.0 0.5)
+<span class="linenr">12: </span>                              (make-vect 0.0 1.0))))
+<span class="linenr">13: </span>      (<span style="color: #859900;">lambda</span> (frame)
+<span class="linenr">14: </span>        (funcall paint-bottom frame)
+<span class="linenr">15: </span>        (funcall paint-top frame)))))
+<span class="linenr">16: </span>
+<span class="linenr">17: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">below</span> (painter1 painter2)
+<span class="linenr">18: </span>  (rotate90
+<span class="linenr">19: </span>   (beside
+<span class="linenr">20: </span>    (rotate270 painter1)
+<span class="linenr">21: </span>    (rotate270 painter2))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-4-6" class="outline-3">
+<h3 id="sec-4-6"><span class="section-number-3">4.6</span> 强健设计的语言层次</h3>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2014-11-25</p>
+<p class="author">Author: Leon</p>
+<p class="date">Created: 2015-04-28 Tue 08:04</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
