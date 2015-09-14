@@ -1,0 +1,667 @@
+---
+layout: post
+title: 2.4 抽象数据的多重表示
+category: sicp
+description: sicp 2.4节 习题，少量笔记
+---
+
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>2.4 抽象数据的多重表示</title>
+<!-- 2015-09-14 Mon 08:16 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Leon" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">2.4 抽象数据的多重表示</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. 复数的表示</a></li>
+<li><a href="#sec-2">2. 带标志数据</a></li>
+<li><a href="#sec-3">3. 数据导向的程序设计和可加性</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> 复数的表示</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+复数两种可能表示方式：直角坐标（实部和虚部）和极坐标形式（模和角）。
+</p>
+
+<p>
+复数的加法，用直角坐标表示更自然些
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/leon/Documents/sicp-exercise/2.4_files/ch2-Z-G-55.gif" alt="ch2-Z-G-55.gif" />
+</p>
+</div>
+
+
+<div class="figure">
+<p><img src="file:///Users/leon/Documents/sicp-exercise/2.4_files/ch2-Z-G-56.gif" alt="ch2-Z-G-56.gif" />
+</p>
+</div>
+
+<p>
+复数的乘法，用极坐标表示更自然些
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/leon/Documents/sicp-exercise/2.4_files/ch2-Z-G-57.gif" alt="ch2-Z-G-57.gif" />
+</p>
+</div>
+
+
+<div class="figure">
+<p><img src="file:///Users/leon/Documents/sicp-exercise/2.4_files/ch2-Z-G-58.gif" alt="ch2-Z-G-58.gif" />
+</p>
+</div>
+
+<p>
+跟之前有理数设计一样，假定复数有四个选择函数：real-part, imag-part, magnitude, and angle，两个构造函数：make-from-real-imag和make-from-mag-ang。有了这些我们就可以实现复数算术了。
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">add-complex</span> (z1 z2)
+<span class="linenr"> 2: </span>  (make-from-real-imag (+ (real-part z1) (real-part z2))
+<span class="linenr"> 3: </span>                       (+ (imag-part z1) (imag-part z2))))
+<span class="linenr"> 4: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">sub-complex</span> (z1 z2)
+<span class="linenr"> 5: </span>  (make-from-real-imag (- (real-part z1) (real-part z2))
+<span class="linenr"> 6: </span>                       (- (imag-part z1) (imag-part z2))))
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">mul-complex</span> (z1 z2)
+<span class="linenr"> 8: </span>  (make-from-mag-ang (* (magnitude z1) (magnitude z2))
+<span class="linenr"> 9: </span>                     (+ (angle z1) (angle z2))))
+<span class="linenr">10: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">div-complex</span> (z1 z2)
+<span class="linenr">11: </span>  (make-from-mag-ang (/ (magnitude z1) (magnitude z2))
+<span class="linenr">12: </span>                     (- (angle z1) (angle z2))))
+</pre>
+</div>
+
+<p>
+那么我们该选直角坐标还是极坐标表示方式呢？假设有两个程序员Ben和Alyssa分别选择直角坐标和极坐标表示方式。它们有以下关系
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/leon/Documents/sicp-exercise/2.4_files/ch2-Z-G-60.gif" alt="ch2-Z-G-60.gif" />
+</p>
+</div>
+
+
+<div class="figure">
+<p><img src="file:///Users/leon/Documents/sicp-exercise/2.4_files/ch2-Z-G-61.gif" alt="ch2-Z-G-61.gif" />
+</p>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Ben</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">real-part</span> (z) (car z))
+<span class="linenr"> 3: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">imag-part</span> (z) (cdr z))
+<span class="linenr"> 4: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">magnitude</span> (z)
+<span class="linenr"> 5: </span>  (sqrt (+ (square (real-part z)) (square (imag-part z)))))
+<span class="linenr"> 6: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">angle</span> (z)
+<span class="linenr"> 7: </span>  (atan (imag-part z) (real-part z)))
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-real-imag</span> (x y) (cons x y))
+<span class="linenr"> 9: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-mag-ang</span> (r a) 
+<span class="linenr">10: </span>  (cons (* r (cos a)) (* r (sin a))))
+<span class="linenr">11: </span>
+<span class="linenr">12: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Alyssa</span>
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">real-part</span> (z)
+<span class="linenr">14: </span>  (* (magnitude z) (cos (angle z))))
+<span class="linenr">15: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">imag-part</span> (z)
+<span class="linenr">16: </span>  (* (magnitude z) (sin (angle z))))
+<span class="linenr">17: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">magnitude</span> (z) (car z))
+<span class="linenr">18: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">angle</span> (z) (cdr z))
+<span class="linenr">19: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-real-imag</span> (x y) 
+<span class="linenr">20: </span>  (cons (sqrt (+ (square x) (square y)))
+<span class="linenr">21: </span>        (atan y x)))
+<span class="linenr">22: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-mag-ang</span> (r a) (cons r a))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> 带标志数据</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+如果以上两种表示方式出现在一个系统里，我们将需要某种方式区别直角坐标和极坐标表示方式，我们可以加一个类型标志：为每个复合数据加上 symbol rectangular or polar。
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">attach-tag</span> (type-tag contents)
+<span class="linenr"> 2: </span>  (cons type-tag contents))
+<span class="linenr"> 3: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">type-tag</span> (datum)
+<span class="linenr"> 4: </span>  (<span style="color: #859900;">if</span> (consp datum)
+<span class="linenr"> 5: </span>      (car datum)
+<span class="linenr"> 6: </span>      (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"Bad tagged ~A -- TYPE-TAG"</span> datum)))
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">contents</span> (datum)
+<span class="linenr"> 8: </span>  (<span style="color: #859900;">if</span> (consp datum)
+<span class="linenr"> 9: </span>      (cdr datum)
+<span class="linenr">10: </span>      (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"Bad tagged ~A -- CONTENTS"</span> datum)))
+<span class="linenr">11: </span>
+<span class="linenr">12: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">rectangularp</span> (z)
+<span class="linenr">13: </span>  (eq (type-tag z) 'rectangular))
+<span class="linenr">14: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">polarp</span> (z)
+<span class="linenr">15: </span>  (eq (type-tag z) 'polar))
+</pre>
+</div>
+<p>
+现在Ben和Alyssa需要修改它们的函数，以避免程序名字冲突。
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Ben</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">real-part-rectangular</span> (z) (car z))
+<span class="linenr"> 3: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">imag-part-rectangular</span> (z) (cdr z))
+<span class="linenr"> 4: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">magnitude-rectangular</span> (z)
+<span class="linenr"> 5: </span>  (sqrt (+ (square (real-part-rectangular z))
+<span class="linenr"> 6: </span>           (square (imag-part-rectangular z)))))
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">angle-rectangular</span> (z)
+<span class="linenr"> 8: </span>  (atan (imag-part-rectangular z)
+<span class="linenr"> 9: </span>        (real-part-rectangular z)))
+<span class="linenr">10: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-real-imag-rectangular</span> (x y)
+<span class="linenr">11: </span>  (attach-tag 'rectangular (cons x y)))
+<span class="linenr">12: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-mag-ang-rectangular</span> (r a) 
+<span class="linenr">13: </span>  (attach-tag 'rectangular
+<span class="linenr">14: </span>              (cons (* r (cos a)) (* r (sin a)))))
+<span class="linenr">15: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Alyssa</span>
+<span class="linenr">16: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">real-part-polar</span> (z)
+<span class="linenr">17: </span>  (* (magnitude-polar z) (cos (angle-polar z))))
+<span class="linenr">18: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">imag-part-polar</span> (z)
+<span class="linenr">19: </span>  (* (magnitude-polar z) (sin (angle-polar z))))
+<span class="linenr">20: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">magnitude-polar</span> (z) (car z))
+<span class="linenr">21: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">angle-polar</span> (z) (cdr z))
+<span class="linenr">22: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-real-imag-polar</span> (x y) 
+<span class="linenr">23: </span>  (attach-tag 'polar
+<span class="linenr">24: </span>               (cons (sqrt (+ (square x) (square y)))
+<span class="linenr">25: </span>                     (atan y x))))
+<span class="linenr">26: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-mag-ang-polar</span> (r a)
+<span class="linenr">27: </span>  (attach-tag 'polar (cons r a)))
+</pre>
+</div>
+<p>
+现在该修改下通用的选择函数了
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">real-part</span> (z)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">cond</span> ((rectangularp z) 
+<span class="linenr"> 3: </span>         (real-part-rectangular (contents z)))
+<span class="linenr"> 4: </span>        ((polarp z)
+<span class="linenr"> 5: </span>         (real-part-polar (contents z)))
+<span class="linenr"> 6: </span>        (else (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"Unknown type -- REAL-PART ~A"</span> z))))
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">imag-part</span> (z)
+<span class="linenr"> 8: </span>  (<span style="color: #859900;">cond</span> ((rectangularp z)
+<span class="linenr"> 9: </span>         (imag-part-rectangular (contents z)))
+<span class="linenr">10: </span>        ((polarp z)
+<span class="linenr">11: </span>         (imag-part-polar (contents z)))
+<span class="linenr">12: </span>        (else (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"Unknown type -- IMAG-PART ~A"</span> z))))
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">magnitude</span> (z)
+<span class="linenr">14: </span>  (<span style="color: #859900;">cond</span> ((rectangularp z)
+<span class="linenr">15: </span>         (magnitude-rectangular (contents z)))
+<span class="linenr">16: </span>        ((polarp z)
+<span class="linenr">17: </span>         (magnitude-polar (contents z)))
+<span class="linenr">18: </span>        (else (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"Unknown type -- MAGNITUDE ~A"</span> z))))
+<span class="linenr">19: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">angle</span> (z)
+<span class="linenr">20: </span>  (<span style="color: #859900;">cond</span> ((rectangularp z)
+<span class="linenr">21: </span>         (angle-rectangular (contents z)))
+<span class="linenr">22: </span>        ((polarp z)
+<span class="linenr">23: </span>         (angle-polar (contents z)))
+<span class="linenr">24: </span>        (else (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"Unknown type -- ANGLE ~A"</span> z))))
+</pre>
+</div>
+<p>
+最后我们要选择构造复合数据到底时用Ben（直角坐标）还是Alyssa（极坐标）表示。一种合理的选择是，有实部和虚部时采用直角坐标，有模和角时采用极坐标
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-real-imag</span> (x y)
+<span class="linenr">2: </span>  (make-from-real-imag-rectangular x y))
+<span class="linenr">3: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-mag-ang</span> (r a)
+<span class="linenr">4: </span>  (make-from-mag-ang-polar r a))
+</pre>
+</div>
+<p>
+<img src="file:///Users/leon/Documents/sicp-exercise/2.4_files/ch2-Z-G-62.gif" alt="ch2-Z-G-62.gif" />
+这种剥去和加上标志的规范方式可以成为一种重要的组织策略
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> 数据导向的程序设计和可加性</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+以上程序设计有两个显著得弱点。第一个弱点是，其中这些通用型过程（real-part、imag-part、magnitude和angle）必须知道所有得不同表示。举例，如果现在要为复数系统增加另一种表示，我们就必须将这一新表示方式标识为一种新类型，而且要在每个通用过程里增加一个检查子句。另一个弱点，Ben和Alyssa得设计程序必须保证名字不能相同。
+以上得程序设计并不具有“可加性”。
+</p>
+
+<p>
+现在我们需要一种能够将系统设计进一步模块化得方法。一种称为“数据导向得程序设计”得编程技术提供了这种能力。在处理针对不同类型得通用型操作时，事实上，我们正是在处理一个二维表格。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/leon/Documents/sicp-exercise/2.4_files/ch2-Z-G-63.gif" alt="ch2-Z-G-63.gif" />
+</p>
+</div>
+
+<p>
+数据导向得程序设计就是一种使程序能直接利用这种表格工作得程序设计技术。
+</p>
+
+<p>
+假设有两个过程put-table和get-table（原为put和get，但get与common lisp中得get名字冲突）
+</p>
+
+<ul class="org-ul">
+<li>(put-table &lt;op&gt; &lt;type&gt; &lt;item&gt;) 将&lt;item&gt;加入表格中，以&lt;op&gt;和&lt;type&gt;作为这个表项索引
+</li>
+<li>(get-talbe &lt;op&gt; &lt;type&gt;) 在表中查找&lt;op&gt;和&lt;type&gt;对应得项，如果找到就返回找到得项，否则返回假
+</li>
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Ben</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-rectangular-package</span>()
+<span class="linenr"> 3: </span>  <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">internal procedures</span>
+<span class="linenr"> 4: </span>  (<span style="color: #859900;">labels</span> ((real-part (z) (car z))
+<span class="linenr"> 5: </span>           (imag-part (z) (cdr z))
+<span class="linenr"> 6: </span>           (make-from-real-imag (x y) (cons x y))
+<span class="linenr"> 7: </span>           (magnitude (z)
+<span class="linenr"> 8: </span>             (sqrt (+ (square (real-part z))
+<span class="linenr"> 9: </span>                      (square (imag-part z)))))
+<span class="linenr">10: </span>           (angle (z)
+<span class="linenr">11: </span>             (atan (imag-part z) (real-part z)))
+<span class="linenr">12: </span>           (make-from-mag-ang (r a)
+<span class="linenr">13: </span>             (cons (* r (cos a)) (* r (sin a))))
+<span class="linenr">14: </span>           <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">interface to the rest of the system</span>
+<span class="linenr">15: </span>           (tag (x) (attach-tag 'rectangular x)))
+<span class="linenr">16: </span>    (put-table 'real-part '(rectangular) #'real-part)
+<span class="linenr">17: </span>    (put-table 'imag-part '(rectangular) #'imag-part)
+<span class="linenr">18: </span>    (put-table 'magnitude '(rectangular) #'magnitude)
+<span class="linenr">19: </span>    (put-table 'angle '(rectangular) #'angle)
+<span class="linenr">20: </span>    (put-table 'make-from-real-imag 'rectangular 
+<span class="linenr">21: </span>         (<span style="color: #859900;">lambda</span> (x y) (tag (make-from-real-imag x y))))
+<span class="linenr">22: </span>    (put-table 'make-from-mag-ang 'rectangular 
+<span class="linenr">23: </span>         (<span style="color: #859900;">lambda</span> (r a) (tag (make-from-mag-ang r a))))
+<span class="linenr">24: </span>    'done))
+<span class="linenr">25: </span>
+<span class="linenr">26: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Alyssa</span>
+<span class="linenr">27: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-polar-package</span>()
+<span class="linenr">28: </span>  <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">internal procedures</span>
+<span class="linenr">29: </span>  (<span style="color: #859900;">labels</span> ((magnitude (z) (car z))
+<span class="linenr">30: </span>           (angle (z) (cdr z))
+<span class="linenr">31: </span>           (make-from-mag-ang (r a) (cons r a))
+<span class="linenr">32: </span>           (real-part (z)
+<span class="linenr">33: </span>             (* (magnitude z) (cos (angle z))))
+<span class="linenr">34: </span>           (imag-part (z)
+<span class="linenr">35: </span>             (* (magnitude z) (sin (angle z))))
+<span class="linenr">36: </span>           (make-from-real-imag (x y)
+<span class="linenr">37: </span>             (cons (sqrt (+ (square x) (square y)))
+<span class="linenr">38: </span>                   (atan y x)))
+<span class="linenr">39: </span>           <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">interface to the rest of the system</span>
+<span class="linenr">40: </span>           (tag (x) (attach-tag 'polar x)))
+<span class="linenr">41: </span>    (put-table 'real-part '(polar) #'real-part)
+<span class="linenr">42: </span>    (put-table 'imag-part '(polar) #'imag-part)
+<span class="linenr">43: </span>    (put-table 'magnitude '(polar) #'magnitude)
+<span class="linenr">44: </span>    (put-table 'angle '(polar) #'angle)
+<span class="linenr">45: </span>    (put-table 'make-from-real-imag 'polar
+<span class="linenr">46: </span>         (<span style="color: #859900;">lambda</span> (x y) (tag (make-from-real-imag x y))))
+<span class="linenr">47: </span>    (put-table 'make-from-mag-ang 'polar 
+<span class="linenr">48: </span>         (<span style="color: #859900;">lambda</span> (r a) (tag (make-from-mag-ang r a))))
+<span class="linenr">49: </span>    'done))
+<span class="linenr">50: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#20197;&#19978;&#23601;&#19981;&#29992;&#25285;&#24515;&#21517;&#23383;&#20914;&#31361;&#38382;&#39064;</span>
+<span class="linenr">51: </span>
+<span class="linenr">52: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#36890;&#29992;&#36873;&#25321;&#20989;&#25968;</span>
+<span class="linenr">53: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">apply-generic</span> (op <span style="color: #b58900;">&amp;rest</span> args)
+<span class="linenr">54: </span>  (<span style="color: #859900;">let</span> ((type-tags (mapcar type-tag args)))
+<span class="linenr">55: </span>    (<span style="color: #859900;">let</span> ((proc (get-table op type-tags)))
+<span class="linenr">56: </span>      (<span style="color: #859900;">if</span> proc
+<span class="linenr">57: </span>          (apply proc (mapcar contents args))
+<span class="linenr">58: </span>          (<span style="color: #dc322f; font-weight: bold;">error</span>
+<span class="linenr">59: </span>            <span style="color: #2aa198;">"No method for these types ~A -- APPLY-GENERIC"</span>
+<span class="linenr">60: </span>            (list op type-tags))))))
+<span class="linenr">61: </span>
+<span class="linenr">62: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">real-part</span> (z) (apply-generic 'real-part z))
+<span class="linenr">63: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">imag-part</span> (z) (apply-generic 'imag-part z))
+<span class="linenr">64: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">magnitude</span> (z) (apply-generic 'magnitude z))
+<span class="linenr">65: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">angle</span> (z) (apply-generic 'angle z))
+<span class="linenr">66: </span>
+<span class="linenr">67: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#26368;&#21518;&#24403;&#25105;&#20204;&#26377;&#23454;&#37096;&#21644;&#34394;&#37096;&#26102;&#23601;&#29992;&#30452;&#35282;&#22352;&#26631;&#34920;&#31034;&#65292;&#24403;&#26377;&#27169;&#21644;&#35282;&#26102;&#23601;&#29992;&#26497;&#22352;&#26631;&#34920;&#31034;</span>
+<span class="linenr">68: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-real-imag</span> (x y)
+<span class="linenr">69: </span>  ((get-table 'make-from-real-imag 'rectangular) x y))
+<span class="linenr">70: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-mag-ang</span> (r a)
+<span class="linenr">71: </span>  ((get-table 'make-from-mag-ang 'polar) r a))
+</pre>
+</div>
+
+<p>
+Exercise 2.73.  Section 2.3.2 described a program that performs symbolic differentiation:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">deriv</span> (exp var)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">cond</span> ((numberp exp) 0)
+<span class="linenr"> 3: </span>        ((variablep exp)
+<span class="linenr"> 4: </span>         (<span style="color: #859900;">if</span> (same-variable-p exp var) 1 0))
+<span class="linenr"> 5: </span>        ((sump exp)
+<span class="linenr"> 6: </span>         (make-sum (deriv (addend exp) var)
+<span class="linenr"> 7: </span>                   (deriv (augend exp) var)))
+<span class="linenr"> 8: </span>        ((productp exp)
+<span class="linenr"> 9: </span>         (make-sum
+<span class="linenr">10: </span>          (make-product (multiplier exp)
+<span class="linenr">11: </span>                        (deriv (multiplicand exp) var))
+<span class="linenr">12: </span>          (make-product (deriv (multiplier exp) var)
+<span class="linenr">13: </span>                        (multiplicand exp))))
+<span class="linenr">14: </span>        ((exponentiationp exp)
+<span class="linenr">15: </span>         (make-product
+<span class="linenr">16: </span>          (make-product (exponent exp)
+<span class="linenr">17: </span>                        (make-exponentiation
+<span class="linenr">18: </span>                         (base exp)
+<span class="linenr">19: </span>                         (make-sum (exponent exp) -1)))
+<span class="linenr">20: </span>          (deriv (base exp) var)))
+<span class="linenr">21: </span>        (t (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"unknown expression type -- DERIV ~A"</span> exp))))
+</pre>
+</div>
+<p>
+We can regard this program as performing a dispatch on the type of the expression to be differentiated. In this situation the ``type tag'' of the datum is the algebraic operator symbol (such as +) and the operation being performed is deriv. We can transform this program into data-directed style by rewriting the basic derivative procedure as
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">deriv</span> (exp var)
+<span class="linenr">2: </span>   (<span style="color: #859900;">cond</span> ((numberp exp) 0)
+<span class="linenr">3: </span>         ((variablep exp) (<span style="color: #859900;">if</span> (same-variable-p exp var) 1 0))
+<span class="linenr">4: </span>         (t (funcall (get-table 'deriv (operator exp))
+<span class="linenr">5: </span>                     (operands exp) var))))
+<span class="linenr">6: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">operator</span> (exp) (car exp))
+<span class="linenr">7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">operands</span> (exp) (cdr exp))
+</pre>
+</div>
+<p>
+a.  Explain what was done above. Why can't we assimilate the predicates number? and same-variable? into the data-directed dispatch?
+</p>
+
+<p>
+b.  Write the procedures for derivatives of sums and products, and the auxiliary code required to install them in the table used by the program above.
+</p>
+
+<p>
+c.  Choose any additional differentiation rule that you like, such as the one for exponents (exercise 2.56), and install it in this data-directed system.
+</p>
+
+<p>
+d.  In this simple algebraic manipulator the type of an expression is the algebraic operator that binds it together. Suppose, however, we indexed the procedures in the opposite way, so that the dispatch line in deriv looked like
+</p>
+
+<p>
+((get (operator exp) 'deriv) (operands exp) var)
+</p>
+
+<p>
+What corresponding changes to the derivative system are required?
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">b</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-sum-package</span> ()
+<span class="linenr"> 3: </span>  <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">internal procedures</span>
+<span class="linenr"> 4: </span>  (<span style="color: #859900;">labels</span> ((addend (s))
+<span class="linenr"> 5: </span>           (augend (s))
+<span class="linenr"> 6: </span>           (make-sum (a1 a2))
+<span class="linenr"> 7: </span>           (deriv-sum (s var)
+<span class="linenr"> 8: </span>             (make-sum (deriv (addend s) var)
+<span class="linenr"> 9: </span>                       (deriv (augend s) var))))
+<span class="linenr">10: </span>    (put-table 'make-sum '+ #'make-sum)
+<span class="linenr">11: </span>    (put-table 'deriv '+ #'deriv-sum)
+<span class="linenr">12: </span>    'done))
+<span class="linenr">13: </span>
+<span class="linenr">14: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-sum</span> (a1 a2)
+<span class="linenr">15: </span>  (funcall (get-table 'make-sum '+) a1 a2))
+<span class="linenr">16: </span>
+<span class="linenr">17: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-product-package</span> ()
+<span class="linenr">18: </span>  <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">internal procedures</span>
+<span class="linenr">19: </span>  (<span style="color: #859900;">labels</span> ((multiplier (s))
+<span class="linenr">20: </span>           (multiplicand (s))
+<span class="linenr">21: </span>           (make-product (m1 m2))
+<span class="linenr">22: </span>           (deriv-product (s var)
+<span class="linenr">23: </span>             (make-sum
+<span class="linenr">24: </span>              (make-product (multiplier s)
+<span class="linenr">25: </span>                            (deriv (multiplicand s) var))
+<span class="linenr">26: </span>              (make-product (deriv (multiplier s) var)
+<span class="linenr">27: </span>                            (multiplicand s)))))
+<span class="linenr">28: </span>    (put-table 'make-product '* #'make-product)
+<span class="linenr">29: </span>    (put-table 'deriv '* #'deriv-product)
+<span class="linenr">30: </span>    'done))
+<span class="linenr">31: </span>
+<span class="linenr">32: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-product</span> (m1 m2)
+<span class="linenr">33: </span>  (funcall (get-table 'make-product '*) m1 m2))
+<span class="linenr">34: </span>
+<span class="linenr">35: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">c</span>
+<span class="linenr">36: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-exponentiation-package</span> ()
+<span class="linenr">37: </span>  (<span style="color: #859900;">labels</span> ((exponent (e))
+<span class="linenr">38: </span>           (base (e))
+<span class="linenr">39: </span>           (make-exponentiation (base e))
+<span class="linenr">40: </span>           (deriv-exponentiation (s var)
+<span class="linenr">41: </span>             (make-product
+<span class="linenr">42: </span>              (make-product (exponent s)
+<span class="linenr">43: </span>                            (make-exponentiation
+<span class="linenr">44: </span>                             (base s)
+<span class="linenr">45: </span>                             (make-sum (exponent s) -1)))
+<span class="linenr">46: </span>              (deriv (base s) var))))
+<span class="linenr">47: </span>    (put-table 'make-exponentiation '** #'make-exponentiation)
+<span class="linenr">48: </span>    (put-table 'deriv '** #'deriv-exponentiation)
+<span class="linenr">49: </span>    'done))
+<span class="linenr">50: </span>
+<span class="linenr">51: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-exponentiation</span> (base e)
+<span class="linenr">52: </span>  (funcall (get-table 'make-exponentiation '**) base e))
+<span class="linenr">53: </span>
+<span class="linenr">54: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">d</span>
+<span class="linenr">55: </span>&#21482;&#38656;&#35201;&#25913;put-table&#21442;&#25968;&#24471;&#39034;&#24207;&#23601;&#21487;&#20197;
+</pre>
+</div>
+
+<p>
+Exercise 2.74.  Insatiable Enterprises, Inc., is a highly decentralized conglomerate company consisting of a large number of independent divisions located all over the world. The company's computer facilities have just been interconnected by means of a clever network-interfacing scheme that makes the entire network appear to any user to be a single computer. Insatiable's president, in her first attempt to exploit the ability of the network to extract administrative information from division files, is dismayed to discover that, although all the division files have been implemented as data structures in Scheme, the particular data structure used varies from division to division. A meeting of division managers is hastily called to search for a strategy to integrate the files that will satisfy headquarters' needs while preserving the existing autonomy of the divisions.
+</p>
+
+<p>
+Show how such a strategy can be implemented with data-directed programming. As an example, suppose that each division's personnel records consist of a single file, which contains a set of records keyed on employees' names. The structure of the set varies from division to division. Furthermore, each employee's record is itself a set (structured differently from division to division) that contains information keyed under identifiers such as address and salary. In particular:
+</p>
+
+<p>
+a.  Implement for headquarters a get-record procedure that retrieves a specified employee's record from a specified personnel file. The procedure should be applicable to any division's file. Explain how the individual divisions' files should be structured. In particular, what type information must be supplied?
+</p>
+
+<p>
+b.  Implement for headquarters a get-salary procedure that returns the salary information from a given employee's record from any division's personnel file. How should the record be structured in order to make this operation work?
+</p>
+
+<p>
+c.  Implement for headquarters a find-employee-record procedure. This should search all the divisions' files for the record of a given employee and return the record. Assume that this procedure takes as arguments an employee's name and a list of all the divisions' files.
+</p>
+
+<p>
+d.  When Insatiable takes over a new company, what changes must be made in order to incorporate the new personnel information into the central system?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-division-1-package</span> ()
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">labels</span> ((get-record (name file)
+<span class="linenr"> 3: </span>             <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">division-1 implement</span>
+<span class="linenr"> 4: </span>             'record))
+<span class="linenr"> 5: </span>    (put-table 'get-record 'division-1 #'get-record)))
+<span class="linenr"> 6: </span>
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-division-2-package</span> ()
+<span class="linenr"> 8: </span>  (<span style="color: #859900;">labels</span> ((get-record (name file)
+<span class="linenr"> 9: </span>             <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">division-2 implement</span>
+<span class="linenr">10: </span>             'record))
+<span class="linenr">11: </span>    (put-table 'get-record 'division-2 #'get-record)))
+<span class="linenr">12: </span>
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">apply-generic</span> (op file $rest args)
+<span class="linenr">14: </span>  (<span style="color: #859900;">let</span> ((division (car file)))
+<span class="linenr">15: </span>    (<span style="color: #859900;">let</span> ((proc (get-table op divisioin)))
+<span class="linenr">16: </span>      (<span style="color: #859900;">if</span> proc
+<span class="linenr">17: </span>          (apply proc args)
+<span class="linenr">18: </span>          (<span style="color: #dc322f; font-weight: bold;">error</span>
+<span class="linenr">19: </span>            <span style="color: #2aa198;">"No method for the division ~A -- APPLY-GENERIC"</span>
+<span class="linenr">20: </span>            (list op division))))))
+</pre>
+</div>
+<p>
+感觉这题意义不大，不答了
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2015-08-19</p>
+<p class="author">Author: Leon</p>
+<p class="date">Created: 2015-09-14 Mon 08:16</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

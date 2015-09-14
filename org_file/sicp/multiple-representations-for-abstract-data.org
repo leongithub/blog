@@ -1,0 +1,379 @@
+#+TITLE: 2.4 抽象数据的多重表示
+#+DATE: 2015-09-14
+#+OPTIONS: ^:{} *:nil
+
+* 复数的表示
+复数两种可能表示方式：直角坐标（实部和虚部）和极坐标形式（模和角）。
+
+复数的加法，用直角坐标表示更自然些
+
+[[file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-55.gif]]
+
+[[file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-56.gif]]
+
+复数的乘法，用极坐标表示更自然些
+
+[[file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-57.gif]]
+
+[[file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-58.gif]]
+
+跟之前有理数设计一样，假定复数有四个选择函数：real-part, imag-part, magnitude, and angle，两个构造函数：make-from-real-imag和make-from-mag-ang。有了这些我们就可以实现复数算术了。
+#+BEGIN_SRC lisp -n
+  (defun add-complex (z1 z2)
+    (make-from-real-imag (+ (real-part z1) (real-part z2))
+                         (+ (imag-part z1) (imag-part z2))))
+  (defun sub-complex (z1 z2)
+    (make-from-real-imag (- (real-part z1) (real-part z2))
+                         (- (imag-part z1) (imag-part z2))))
+  (defun mul-complex (z1 z2)
+    (make-from-mag-ang (* (magnitude z1) (magnitude z2))
+                       (+ (angle z1) (angle z2))))
+  (defun div-complex (z1 z2)
+    (make-from-mag-ang (/ (magnitude z1) (magnitude z2))
+                       (- (angle z1) (angle z2))))
+#+END_SRC
+
+那么我们该选直角坐标还是极坐标表示方式呢？假设有两个程序员Ben和Alyssa分别选择直角坐标和极坐标表示方式。它们有以下关系
+
+[[file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-60.gif]]
+
+[[file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-61.gif]]
+
+#+BEGIN_SRC lisp -n
+  ;; Ben
+  (defun real-part (z) (car z))
+  (defun imag-part (z) (cdr z))
+  (defun magnitude (z)
+    (sqrt (+ (square (real-part z)) (square (imag-part z)))))
+  (defun angle (z)
+    (atan (imag-part z) (real-part z)))
+  (defun make-from-real-imag (x y) (cons x y))
+  (defun make-from-mag-ang (r a) 
+    (cons (* r (cos a)) (* r (sin a))))
+
+  ;; Alyssa
+  (defun real-part (z)
+    (* (magnitude z) (cos (angle z))))
+  (defun imag-part (z)
+    (* (magnitude z) (sin (angle z))))
+  (defun magnitude (z) (car z))
+  (defun angle (z) (cdr z))
+  (defun make-from-real-imag (x y) 
+    (cons (sqrt (+ (square x) (square y)))
+          (atan y x)))
+  (defun make-from-mag-ang (r a) (cons r a))
+#+END_SRC
+
+* 带标志数据
+如果以上两种表示方式出现在一个系统里，我们将需要某种方式区别直角坐标和极坐标表示方式，我们可以加一个类型标志：为每个复合数据加上 symbol rectangular or polar。
+#+BEGIN_SRC lisp -n
+  (defun attach-tag (type-tag contents)
+    (cons type-tag contents))
+  (defun type-tag (datum)
+    (if (consp datum)
+        (car datum)
+        (error "Bad tagged ~A -- TYPE-TAG" datum)))
+  (defun contents (datum)
+    (if (consp datum)
+        (cdr datum)
+        (error "Bad tagged ~A -- CONTENTS" datum)))
+
+  (defun rectangularp (z)
+    (eq (type-tag z) 'rectangular))
+  (defun polarp (z)
+    (eq (type-tag z) 'polar))
+#+END_SRC
+现在Ben和Alyssa需要修改它们的函数，以避免程序名字冲突。
+#+BEGIN_SRC lisp -n
+  ;; Ben
+  (defun real-part-rectangular (z) (car z))
+  (defun imag-part-rectangular (z) (cdr z))
+  (defun magnitude-rectangular (z)
+    (sqrt (+ (square (real-part-rectangular z))
+             (square (imag-part-rectangular z)))))
+  (defun angle-rectangular (z)
+    (atan (imag-part-rectangular z)
+          (real-part-rectangular z)))
+  (defun make-from-real-imag-rectangular (x y)
+    (attach-tag 'rectangular (cons x y)))
+  (defun make-from-mag-ang-rectangular (r a) 
+    (attach-tag 'rectangular
+                (cons (* r (cos a)) (* r (sin a)))))
+  ;; Alyssa
+  (defun real-part-polar (z)
+    (* (magnitude-polar z) (cos (angle-polar z))))
+  (defun imag-part-polar (z)
+    (* (magnitude-polar z) (sin (angle-polar z))))
+  (defun magnitude-polar (z) (car z))
+  (defun angle-polar (z) (cdr z))
+  (defun make-from-real-imag-polar (x y) 
+    (attach-tag 'polar
+                 (cons (sqrt (+ (square x) (square y)))
+                       (atan y x))))
+  (defun make-from-mag-ang-polar (r a)
+    (attach-tag 'polar (cons r a)))
+#+END_SRC
+现在该修改下通用的选择函数了
+#+BEGIN_SRC lisp -n
+  (defun real-part (z)
+    (cond ((rectangularp z) 
+           (real-part-rectangular (contents z)))
+          ((polarp z)
+           (real-part-polar (contents z)))
+          (else (error "Unknown type -- REAL-PART ~A" z))))
+  (defun imag-part (z)
+    (cond ((rectangularp z)
+           (imag-part-rectangular (contents z)))
+          ((polarp z)
+           (imag-part-polar (contents z)))
+          (else (error "Unknown type -- IMAG-PART ~A" z))))
+  (defun magnitude (z)
+    (cond ((rectangularp z)
+           (magnitude-rectangular (contents z)))
+          ((polarp z)
+           (magnitude-polar (contents z)))
+          (else (error "Unknown type -- MAGNITUDE ~A" z))))
+  (defun angle (z)
+    (cond ((rectangularp z)
+           (angle-rectangular (contents z)))
+          ((polarp z)
+           (angle-polar (contents z)))
+          (else (error "Unknown type -- ANGLE ~A" z))))
+#+END_SRC
+最后我们要选择构造复合数据到底时用Ben（直角坐标）还是Alyssa（极坐标）表示。一种合理的选择是，有实部和虚部时采用直角坐标，有模和角时采用极坐标
+#+BEGIN_SRC lisp -n
+  (defun make-from-real-imag (x y)
+    (make-from-real-imag-rectangular x y))
+  (defun make-from-mag-ang (r a)
+    (make-from-mag-ang-polar r a))
+#+END_SRC
+file:///Users/leon/Documents/sicp-exercise/2.4_files/ch2-Z-G-62.gif
+这种剥去和加上标志的规范方式可以成为一种重要的组织策略
+
+* 数据导向的程序设计和可加性
+以上程序设计有两个显著得弱点。第一个弱点是，其中这些通用型过程（real-part、imag-part、magnitude和angle）必须知道所有得不同表示。举例，如果现在要为复数系统增加另一种表示，我们就必须将这一新表示方式标识为一种新类型，而且要在每个通用过程里增加一个检查子句。另一个弱点，Ben和Alyssa得设计程序必须保证名字不能相同。
+以上得程序设计并不具有“可加性”。
+
+现在我们需要一种能够将系统设计进一步模块化得方法。一种称为“数据导向得程序设计”得编程技术提供了这种能力。在处理针对不同类型得通用型操作时，事实上，我们正是在处理一个二维表格。
+
+file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-63.gif
+
+数据导向得程序设计就是一种使程序能直接利用这种表格工作得程序设计技术。
+
+假设有两个过程put-table和get-table（原为put和get，但get与common lisp中得get名字冲突）
+
++ (put-table <op> <type> <item>) 将<item>加入表格中，以<op>和<type>作为这个表项索引
++ (get-talbe <op> <type>) 在表中查找<op>和<type>对应得项，如果找到就返回找到得项，否则返回假
+
+#+BEGIN_SRC lisp -n
+  ;; Ben
+  (defun install-rectangular-package()
+    ;; internal procedures
+    (labels ((real-part (z) (car z))
+             (imag-part (z) (cdr z))
+             (make-from-real-imag (x y) (cons x y))
+             (magnitude (z)
+               (sqrt (+ (square (real-part z))
+                        (square (imag-part z)))))
+             (angle (z)
+               (atan (imag-part z) (real-part z)))
+             (make-from-mag-ang (r a)
+               (cons (* r (cos a)) (* r (sin a))))
+             ;; interface to the rest of the system
+             (tag (x) (attach-tag 'rectangular x)))
+      (put-table 'real-part '(rectangular) #'real-part)
+      (put-table 'imag-part '(rectangular) #'imag-part)
+      (put-table 'magnitude '(rectangular) #'magnitude)
+      (put-table 'angle '(rectangular) #'angle)
+      (put-table 'make-from-real-imag 'rectangular 
+           (lambda (x y) (tag (make-from-real-imag x y))))
+      (put-table 'make-from-mag-ang 'rectangular 
+           (lambda (r a) (tag (make-from-mag-ang r a))))
+      'done))
+
+  ;; Alyssa
+  (defun install-polar-package()
+    ;; internal procedures
+    (labels ((magnitude (z) (car z))
+             (angle (z) (cdr z))
+             (make-from-mag-ang (r a) (cons r a))
+             (real-part (z)
+               (* (magnitude z) (cos (angle z))))
+             (imag-part (z)
+               (* (magnitude z) (sin (angle z))))
+             (make-from-real-imag (x y)
+               (cons (sqrt (+ (square x) (square y)))
+                     (atan y x)))
+             ;; interface to the rest of the system
+             (tag (x) (attach-tag 'polar x)))
+      (put-table 'real-part '(polar) #'real-part)
+      (put-table 'imag-part '(polar) #'imag-part)
+      (put-table 'magnitude '(polar) #'magnitude)
+      (put-table 'angle '(polar) #'angle)
+      (put-table 'make-from-real-imag 'polar
+           (lambda (x y) (tag (make-from-real-imag x y))))
+      (put-table 'make-from-mag-ang 'polar 
+           (lambda (r a) (tag (make-from-mag-ang r a))))
+      'done))
+  ;; 以上就不用担心名字冲突问题
+
+  ;; 通用选择函数
+  (defun apply-generic (op &rest args)
+    (let ((type-tags (mapcar type-tag args)))
+      (let ((proc (get-table op type-tags)))
+        (if proc
+            (apply proc (mapcar contents args))
+            (error
+              "No method for these types ~A -- APPLY-GENERIC"
+              (list op type-tags))))))
+
+  (defun real-part (z) (apply-generic 'real-part z))
+  (defun imag-part (z) (apply-generic 'imag-part z))
+  (defun magnitude (z) (apply-generic 'magnitude z))
+  (defun angle (z) (apply-generic 'angle z))
+
+  ;; 最后当我们有实部和虚部时就用直角坐标表示，当有模和角时就用极坐标表示
+  (defun make-from-real-imag (x y)
+    ((get-table 'make-from-real-imag 'rectangular) x y))
+  (defun make-from-mag-ang (r a)
+    ((get-table 'make-from-mag-ang 'polar) r a))
+#+END_SRC
+
+Exercise 2.73.  Section 2.3.2 described a program that performs symbolic differentiation:
+#+BEGIN_SRC lisp -n
+  (defun deriv (exp var)
+    (cond ((numberp exp) 0)
+          ((variablep exp)
+           (if (same-variable-p exp var) 1 0))
+          ((sump exp)
+           (make-sum (deriv (addend exp) var)
+                     (deriv (augend exp) var)))
+          ((productp exp)
+           (make-sum
+            (make-product (multiplier exp)
+                          (deriv (multiplicand exp) var))
+            (make-product (deriv (multiplier exp) var)
+                          (multiplicand exp))))
+          ((exponentiationp exp)
+           (make-product
+            (make-product (exponent exp)
+                          (make-exponentiation
+                           (base exp)
+                           (make-sum (exponent exp) -1)))
+            (deriv (base exp) var)))
+          (t (error "unknown expression type -- DERIV ~A" exp))))
+#+END_SRC
+We can regard this program as performing a dispatch on the type of the expression to be differentiated. In this situation the ``type tag'' of the datum is the algebraic operator symbol (such as +) and the operation being performed is deriv. We can transform this program into data-directed style by rewriting the basic derivative procedure as
+#+BEGIN_SRC lisp -n
+  (defun deriv (exp var)
+     (cond ((numberp exp) 0)
+           ((variablep exp) (if (same-variable-p exp var) 1 0))
+           (t (funcall (get-table 'deriv (operator exp))
+                       (operands exp) var))))
+  (defun operator (exp) (car exp))
+  (defun operands (exp) (cdr exp))
+#+END_SRC
+a.  Explain what was done above. Why can't we assimilate the predicates number? and same-variable? into the data-directed dispatch?
+
+b.  Write the procedures for derivatives of sums and products, and the auxiliary code required to install them in the table used by the program above.
+
+c.  Choose any additional differentiation rule that you like, such as the one for exponents (exercise 2.56), and install it in this data-directed system.
+
+d.  In this simple algebraic manipulator the type of an expression is the algebraic operator that binds it together. Suppose, however, we indexed the procedures in the opposite way, so that the dispatch line in deriv looked like
+
+((get (operator exp) 'deriv) (operands exp) var)
+
+What corresponding changes to the derivative system are required?
+#+BEGIN_SRC lisp -n
+  ;; b
+  (defun install-sum-package ()
+    ;; internal procedures
+    (labels ((addend (s))
+             (augend (s))
+             (make-sum (a1 a2))
+             (deriv-sum (s var)
+               (make-sum (deriv (addend s) var)
+                         (deriv (augend s) var))))
+      (put-table 'make-sum '+ #'make-sum)
+      (put-table 'deriv '+ #'deriv-sum)
+      'done))
+
+  (defun make-sum (a1 a2)
+    (funcall (get-table 'make-sum '+) a1 a2))
+
+  (defun install-product-package ()
+    ;; internal procedures
+    (labels ((multiplier (s))
+             (multiplicand (s))
+             (make-product (m1 m2))
+             (deriv-product (s var)
+               (make-sum
+                (make-product (multiplier s)
+                              (deriv (multiplicand s) var))
+                (make-product (deriv (multiplier s) var)
+                              (multiplicand s)))))
+      (put-table 'make-product '* #'make-product)
+      (put-table 'deriv '* #'deriv-product)
+      'done))
+
+  (defun make-product (m1 m2)
+    (funcall (get-table 'make-product '*) m1 m2))
+
+  ;; c
+  (defun install-exponentiation-package ()
+    (labels ((exponent (e))
+             (base (e))
+             (make-exponentiation (base e))
+             (deriv-exponentiation (s var)
+               (make-product
+                (make-product (exponent s)
+                              (make-exponentiation
+                               (base s)
+                               (make-sum (exponent s) -1)))
+                (deriv (base s) var))))
+      (put-table 'make-exponentiation '** #'make-exponentiation)
+      (put-table 'deriv '** #'deriv-exponentiation)
+      'done))
+
+  (defun make-exponentiation (base e)
+    (funcall (get-table 'make-exponentiation '**) base e))
+
+  ;; d
+  只需要改put-table参数得顺序就可以
+#+END_SRC
+
+Exercise 2.74.  Insatiable Enterprises, Inc., is a highly decentralized conglomerate company consisting of a large number of independent divisions located all over the world. The company's computer facilities have just been interconnected by means of a clever network-interfacing scheme that makes the entire network appear to any user to be a single computer. Insatiable's president, in her first attempt to exploit the ability of the network to extract administrative information from division files, is dismayed to discover that, although all the division files have been implemented as data structures in Scheme, the particular data structure used varies from division to division. A meeting of division managers is hastily called to search for a strategy to integrate the files that will satisfy headquarters' needs while preserving the existing autonomy of the divisions.
+
+Show how such a strategy can be implemented with data-directed programming. As an example, suppose that each division's personnel records consist of a single file, which contains a set of records keyed on employees' names. The structure of the set varies from division to division. Furthermore, each employee's record is itself a set (structured differently from division to division) that contains information keyed under identifiers such as address and salary. In particular:
+
+a.  Implement for headquarters a get-record procedure that retrieves a specified employee's record from a specified personnel file. The procedure should be applicable to any division's file. Explain how the individual divisions' files should be structured. In particular, what type information must be supplied?
+
+b.  Implement for headquarters a get-salary procedure that returns the salary information from a given employee's record from any division's personnel file. How should the record be structured in order to make this operation work?
+
+c.  Implement for headquarters a find-employee-record procedure. This should search all the divisions' files for the record of a given employee and return the record. Assume that this procedure takes as arguments an employee's name and a list of all the divisions' files.
+
+d.  When Insatiable takes over a new company, what changes must be made in order to incorporate the new personnel information into the central system?
+
+#+BEGIN_SRC lisp -n
+  (defun install-division-1-package ()
+    (labels ((get-record (name file)
+               ;; division-1 implement
+               'record))
+      (put-table 'get-record 'division-1 #'get-record)))
+
+  (defun install-division-2-package ()
+    (labels ((get-record (name file)
+               ;; division-2 implement
+               'record))
+      (put-table 'get-record 'division-2 #'get-record)))
+
+  (defun apply-generic (op file $rest args)
+    (let ((division (car file)))
+      (let ((proc (get-table op divisioin)))
+        (if proc
+            (apply proc args)
+            (error
+              "No method for the division ~A -- APPLY-GENERIC"
+              (list op division))))))
+#+END_SRC
+感觉这题意义不大，不答了
