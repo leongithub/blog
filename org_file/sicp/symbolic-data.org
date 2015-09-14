@@ -1,0 +1,704 @@
+#+TITLE: 2.3 符号数据
+#+DATE: 2015-04-28
+#+OPTIONS: ^:{} *:nil
+
+* 引号
+Exercise 2.53.  What would the interpreter print in response to evaluating each of the following expressions?
+
+(list 'a 'b 'c) ==> (a b c)
+
+(list (list 'george)) ==> ((george))
+
+(cdr '((x1 x2) (y1 y2))) ==> ((y1 y2))
+
+(cadr '((x1 x2) (y1 y2))) ==> (y1 y2)
+
+(pair? (car '(a short list))) ==> nil
+
+(memq 'red '((red shoes) (blue socks))) ==> nil
+
+(memq 'red '(red shoes blue socks)) ==> (red shoes blue socks)
+
+
+Exercise 2.54.  Two lists are said to be equal? if they contain equal elements arranged in the same order. For example,
+
+(equal? '(this is a list) '(this is a list))
+
+is true, but
+
+(equal? '(this is a list) '(this (is a) list))
+
+is false. To be more precise, we can define equal? recursively in terms of the basic eq? equality of symbols by saying that a and b are equal? if they are both symbols and the symbols are eq?, or if they are both lists such that (car a) is equal? to (car b) and (cdr a) is equal? to (cdr b). Using this idea, implement equal? as a procedure.
+
+#+BEGIN_SRC lisp -n
+  (defun equal? (lst1 lst2)
+    (cond ((and (atom lst1) (atom lst2))
+           (eq lst1 lst2))
+          ((and (listp lst1) (listp lst2))
+           (and (eq (car lst1) (car lst2))
+                (equal? (cdr lst1) (cdr lst2))))))
+#+END_SRC
+
+Exercise 2.55.  Eva Lu Ator types to the interpreter the expression
+
+(car ''abracadabra)
+
+To her surprise, the interpreter prints back quote. Explain.
+
+结果为：quote
+因为"''abr"表示'abr，'abr又为(quote abr)
+
+* 实例：符号求导
+** 对抽象数据的求导程序
+表达式求导的归约：
+
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-45.gif]]
+
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-46.gif]]
+
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-47.gif]]
+
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-48.gif]]
+
+假设这些以下的选择函数和构造函数都已经存在：
+
+#+BEGIN_SRC lisp -n
+  (defun deriv (exp var)
+    (cond ((numberp exp) 0)
+          ((variablep exp)
+           (if (same-variable-p exp var) 1 0))
+          ((sump exp)
+           (make-sum (deriv (addend exp) var)
+                     (deriv (augend exp) var)))
+          ((productp exp)
+           (make-sum
+            (make-product (multiplier exp)
+                          (deriv (multiplicand exp) var))
+            (make-product (deriv (multiplier exp) var)
+                          (multiplicand exp))))
+          (t (error "unknown expression type -- DERIV" exp))))
+#+END_SRC
+** 代数表达式的表示
+我们可以设想出许多用list结构表示代数表达式的方法。例如可以利用符号list去直接反应代数的记法形式。如ax＋b表示为(+ (* a x) b).
+#+BEGIN_SRC lisp -n
+  ;; 变量就是符号
+  (defun variablep (x) (symbolp x))
+  ;; 变量相同就表示它们的符号相互eq
+  (defun same-variable-p (v1 v2)
+    (and (variablep v1) (variablep v2) (eq v1 v2)))
+  ;; 和式与乘式都构造为表
+  (defun make-sum (a1 a2) (list '+ a1 a2))
+  (defun make-product (m1 m2) (list '* m1 m2))
+  ;; 和式就是第一个元素为符号＋的表
+  (defun sump (x)
+    (and (listp x) (eq (car x) '+)))
+  ;; 被加数表示和式里的第二个元素
+  (defun addend (s) (cadr s))
+  ;; 加数表示和式里的第三个元素
+  (defun augend (s) (caddr s))
+  ;; 乘式为第一个元素为符号*的表
+  (defun productp (x)
+    (and (listp x) (eq (car x) '*)))
+  ;; 被乘数表示乘式里的第二个元素
+  (defun multiplier (p) (cadr p))
+  ;; 乘数表示乘式里的第三个元素
+  (defun multiplicand (p) (caddr p))
+
+  (defun deriv (exp var)
+    (cond ((numberp exp) 0)
+          ((variablep exp)
+           (if (same-variable-p exp var) 1 0))
+          ((sump exp)
+           (make-sum (deriv (addend exp) var)
+                     (deriv (augend exp) var)))
+          ((productp exp)
+           (make-sum
+            (make-product (multiplier exp)
+                          (deriv (multiplicand exp) var))
+            (make-product (deriv (multiplier exp) var)
+                          (multiplicand exp))))
+          (t (error "unknown expression type -- DERIV ~A" exp))))
+#+END_SRC
+让我们看下deriv的行为例子：
+#+BEGIN_EXAMPLE
+  (deriv '(+ x 3) 'x)
+  (+ 1 0)
+  (deriv '(* x y) 'x)
+  (+ (* x 0) (* 1 y))
+  (deriv '(* (* x y) (+ x 3)) 'x)
+  (+ (* (* x y) (+ 1 0))
+     (* (+ (* x 0) (* 1 y))
+        (+  x 3)))
+#+END_EXAMPLE
+这个结果没有简化（很像之前做有理数遇到的问题），我们通过构造函数和选择函数来实现
+#+BEGIN_SRC lisp -n
+  ;; 0与任何东西的乘积都是0，1与任何东西的乘积总是那个东西
+  (defun make-product (m1 m2)
+    (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+          ((=number? m1 1) m2)
+          ((=number? m2 1) m1)
+          ((and (numberp m1) (numberp m2)) (* m1 m2))
+          (t (list '* m1 m2))))
+
+  ;; 当两个求和对象都是数时，返回它们的和。如果其中一个求和对象为0，就返回另一个对象
+  (defun make-sum (a1 a2)
+    (cond ((=number? a1 0) a2)
+          ((=number? a2 0) a1)
+          ((and (numberp a1) (numberp a2)) (+ a1 a2))
+          (t (list '+ a1 a2))))
+
+  ;; 检查某个表达式是否等于一个给定的数
+  (defun =number? (exp num)
+    (and (numberp exp) (= exp num)))
+#+END_SRC
+#+BEGIN_EXAMPLE
+  (deriv '(+ x 3) 'x)
+  1
+  (deriv '(* x y) 'x)
+  y
+  (deriv '(* (* x y) (+ x 3)) 'x)
+  (+ (* x y) (* y (+ x 3)))
+#+END_EXAMPLE
+
+Exercise 2.56.  Show how to extend the basic differentiator to handle more kinds of expressions. For instance, implement the differentiation rule
+
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-50.gif]]
+
+by adding a new clause to the deriv program and defining appropriate procedures exponentiation?, base, exponent, and make-exponentiation. (You may use the symbol ** to denote exponentiation.) Build in the rules that anything raised to the power 0 is 1 and anything raised to the power 1 is the thing itself.
+
+#+BEGIN_SRC lisp -n
+  (defun make-exponentiation (base e)
+    (cond ((=number? base 1) 1)
+          ((=number? e 0) 1)
+          ((=number? e 1) base)
+          ((and (numberp base) (numberp e)) (expt base e))
+          (t (list '** base e))))
+  (defun base (e) (cadr e))
+  (defun exponent (e) (caddr e))
+  ;; 第一个元素为**的表
+  (defun exponentiationp (x)
+    (and (consp x) (eq (car x) '**)))
+
+  (defun deriv (exp var)
+    (cond ((numberp exp) 0)
+          ((variablep exp)
+           (if (same-variable-p exp var) 1 0))
+          ((sump exp)
+           (make-sum (deriv (addend exp) var)
+                     (deriv (augend exp) var)))
+          ((productp exp)
+           (make-sum
+            (make-product (multiplier exp)
+                          (deriv (multiplicand exp) var))
+            (make-product (deriv (multiplier exp) var)
+                          (multiplicand exp))))
+          ((exponentiationp exp)
+           (make-product
+            (make-product (exponent exp)
+                          (make-exponentiation
+                           (base exp)
+                           (make-sum (exponent exp) -1)))
+            (deriv (base exp) var)))
+          (t (error "unknown expression type -- DERIV ~A" exp))))
+#+END_SRC
+
+Exercise 2.57.  Extend the differentiation program to handle sums and products of arbitrary numbers of (two or more) terms. Then the last example above could be expressed as
+
+(deriv '(* x y (+ x 3)) 'x)
+
+Try to do this by changing only the representation for sums and products, without changing the deriv procedure at all. For example, the addend of a sum would be the first term, and the augend would be the sum of the rest of the terms.
+
+#+BEGIN_SRC lisp -n
+  (defun augend (s)
+    (if (cdddr s)
+        (cons '+ (cddr s))
+        (caddr s)))
+
+  (defun multiplicand (p)
+    (if (cdddr p)
+        (cons '* (cddr p))
+        (caddr p)))
+#+END_SRC
+
+Exercise 2.58.  Suppose we want to modify the differentiation program so that it works with ordinary mathematical notation, in which + and * are infix rather than prefix operators. Since the differentiation program is defined in terms of abstract data, we can modify it to work with different representations of expressions solely by changing the predicates, selectors, and constructors that define the representation of the algebraic expressions on which the differentiator is to operate.
+
+a. Show how to do this in order to differentiate algebraic expressions presented in infix form, such as (x + (3 * (x + (y + 2)))). To simplify the task, assume that + and * always take two arguments and that expressions are fully parenthesized.
+
+b. The problem becomes substantially harder if we allow standard algebraic notation, such as (x + 3 * (x + y + 2)), which drops unnecessary parentheses and assumes that multiplication is done before addition. Can you design appropriate predicates, selectors, and constructors for this notation such that our derivative program still works?
+
+#+BEGIN_SRC lisp -n
+  ;; a
+  (defun sump (x)
+    (and (listp x) (eq (cadr x) '+)))
+
+  (defun addend (s) (car s))
+  (defun augend (s) (caddr s))
+
+  (defun make-sum (a1 a2)
+    (cond ((=number? a1 0) a2)
+          ((=number? a2 0) a1)
+          ((and (numberp a1) (numberp a2)) (+ a1 a2))
+          (t (list a1 '+ a2))))
+
+  (defun productp (x)
+    (and (listp x) (eq (cadr x) '*)))
+
+  (defun multiplier (p) (car p))
+  (defun multiplicand (p) (caddr p))
+
+  (defun make-product (m1 m2)
+    (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+          ((=number? m1 1) m2)
+          ((=number? m2 1) m1)
+          ((and (numberp m1) (numberp m2)) (* m1 m2))
+          (t (list m1 '* m2))))
+
+  ;; b
+
+  ;; 是增加了一点难度，主要是要满足先算乘法，并且没有括号（我们自己加括号）：
+  ;; 1,(x * y + 3 * (x + y + 2))
+  ;; 2,((x * y) + (3 * (x + y + 2)))
+  ;; b 中需要得是［1］表达式，我们加上括号转化乘［2］表达式后发现：
+  ;; 1，判断一个表达式是乘法还是加法得方法：如果表达式中含有'+，就为加法，如果都是'*，就为乘法。（谓词算法出来了）
+  ;; 2，如果为加法，那么addend为第一个'+之前得项（如果为多项就是list，单项就是atom），augend为第一个'+之后得项（如果为多项就是list，单项就是atom）
+  ;; 3，如果为乘法，multiplier就是第一项（car），multiplicand就是第二项之后得项（如果为多项就是list，单项就是atom）。
+  ;; 至此，已经明了，相对a得环境，我们只需改谓词sump,productp，选择函数addend,augend,multiplicand，就可以了。
+
+  (defun productp (x)
+    (and (consp x)
+         (eq (cadr x) '*)
+         (productp (cddr x))))
+
+  (defun sump (x)
+    （or (and (consp x)
+              (eq (cadr x) '+))
+         (sump (cddr x))))
+
+  (defun addend (s)
+    (labels ((rec (s)
+               (if (eq '+ (car s))
+                   nil
+                   (cons (car s) (rec (cdr s))))))
+      (let ((addend (rec s)))
+        (if (cdr addend)
+            addend
+            (car addend)))))
+               
+  (defun augend (s)
+    (if (eq '+ (cadr s))
+        (if (cdddr s) (cddr s) (caddr s))
+        (augend (cddr s))))
+
+  (defun multiplicand (p)
+    (if (cdddr p)
+        (cddr p)
+        (caddr p)))
+#+END_SRC
+
+** 实例：集合的表示
+
+*** 集合作为未排序的列表
+Exercise 2.59.  Implement the union-set operation for the unordered-list representation of sets.
+#+BEGIN_SRC lisp -n
+  (defun union-set (set1 set2)
+    (cond ((null set1) set2)
+          ((null set2) set1)
+          ((element-of-set-p (car set1) set2)
+           (union-set (cdr set1) set2))
+          (t (cons (car set1)
+                   (union-set (cdr set1) set2)))))
+#+END_SRC
+
+Exercise 2.60.  We specified that a set would be represented as a list with no duplicates. Now suppose we allow duplicates. For instance, the set {1,2,3} could be represented as the list (2 3 2 1 3 2 2). Design procedures element-of-set?, adjoin-set, union-set, and intersection-set that operate on this representation. How does the efficiency of each compare with the corresponding procedure for the non-duplicate representation? Are there applications for which you would use this representation in preference to the non-duplicate one?
+
+#+BEGIN_SRC lisp -n
+  (defun adjoin-set (x set)
+    (cons x set))
+
+  (defun intersection-set (set1 set2)
+    (labels ((rec (set1 set2)
+               (cond ((or (null set1) (null set2)) '())
+                     ((element-of-set-p (car set1) set2)
+                      (cons (car set1)
+                            (rec (cdr set1) set2)))
+                     (t (rec (cdr set1) set2)))))
+      (append (rec set1 set2) (rec set2 set1))))
+
+  (defun union-set (set1 set2)
+    (append set1 set2))
+#+END_SRC
+
+*** 集合作为排序的列表
+#+BEGIN_SRC lisp -n
+  ;; sets as ordered lists
+  (defun element-of-set-p (x set)
+    (cond ((null set) nil)
+          ((= x (car set)) t)
+          ((< x (car set)) nil)
+          (t (element-of-set-p x (cdr set)))))
+
+  (defun intersection-set (set1 set2)
+    (if (or (null set1) (null set2))
+        '()
+        (let ((x1 (car set1)) (x2 (car set2)))
+          (cond ((= x1 x2)
+                 (cons x1
+                       (intersection-set (cdr set1)
+                                         (cdr set2))))
+                ((< x1 x2)
+                 (intersection-set (cdr set1) set2))
+                ((> x1 x2)
+                 (intersection-set set1 (cdr set2)))))))
+#+END_SRC
+
+Exercise 2.61.  Give an implementation of adjoin-set using the ordered representation. By analogy with element-of-set? show how to take advantage of the ordering to produce a procedure that requires on the average about half as many steps as with the unordered representation.
+#+BEGIN_SRC lisp -n
+  ;; 只有查找未再集合中的元素，平均的步数才是未排序列表的一半
+  (defun adjoin-set (x set)
+    (cond ((null set) nil)
+          ((= x (car set)) (list x))
+          ((< x (car set)) (cons x set))
+          (t (cons (car set)
+                   (adjoin-set x (cdr set))))))
+#+END_SRC
+Exercise 2.62.  Give a (n) implementation of union-set for sets represented as ordered lists.
+#+BEGIN_SRC lisp -n
+  (defun union-set (set1 set2)
+    (cond ((null set1) set2)
+          ((null set2) set1)
+          (t
+           (let ((x1 (car set1)) (x2 (car set2)))
+             (cond ((= x1 x2)
+                    (cons x1
+                          (union-set (cdr set1) (cdr set2))))
+                   ((< x1 x2)
+                    (cons x1
+                          (union-set (cdr set1) set2)))
+                   ((> x1 x2)
+                    (cons x2
+                          (union-set set1 (cdr set2))))))
+#+END_SRC
+
+*** 集合作为二叉树
+#+BEGIN_SRC lisp -n
+  (defun entry (tree) (car tree))
+  (defun left-branch (tree) (cadr tree))
+  (defun right-branch (tree) (caddr tree))
+  (defun make-tree (entry left right)
+    (list entry left right))
+
+  (defun element-of-set-p (x set)
+    (cond ((null set) nil)
+          ((= x (entry set)) t)
+          ((< x (entry set))
+           (element-of-set-p x (left-branch set)))
+          ((> x (entry set))
+           (element-of-set-p x (right-branch set)))))
+
+  (defun adjoin-set (x set)
+    (cond ((null set) (make-tree x '() '()))
+          ((= x (entry set)) set)
+          ((< x (entry set))
+           (make-tree (entry set)
+                      (adjoin-set x (left-branch set))
+                      (right-branch set)))
+          ((> x (entry set))
+           (make-tree (entry set)
+                      (left-branch set)
+                      (adjoin-set x (right-branch set))))))
+#+END_SRC
+Exercise 2.63.  Each of the following two procedures converts a binary tree to a list.
+#+BEGIN_SRC lisp -n
+  (define (tree->list-1 tree)
+    (if (null? tree)
+        '()
+        (append (tree->list-1 (left-branch tree))
+                (cons (entry tree)
+                      (tree->list-1 (right-branch tree))))))
+  (define (tree->list-2 tree)
+    (define (copy-to-list tree result-list)
+      (if (null? tree)
+          result-list
+          (copy-to-list (left-branch tree)
+                        (cons (entry tree)
+                              (copy-to-list (right-branch tree)
+                                            result-list)))))
+    (copy-to-list tree '()))
+#+END_SRC
+a. Do the two procedures produce the same result for every tree? If not, how do the results differ? What lists do the two procedures produce for the trees in figure 2.16?
+
+b. Do the two procedures have the same order of growth in the number of steps required to convert a balanced tree with n elements to a list? If not, which one grows more slowly?
+
+解答：
+a，相同，对于2.16图的树都产生'(1 3 5 7 9 11)
+b，复杂度不太会算。。。但如果说哪个复杂度增长更慢，肯定是第二个，尾递归嘛，第一个主要额外还是有append的操作，(append lst1 lst2)会cons生成lst1的副本，然后指向lst2。tree->list-2 为O(n)。tree->list-1 首先肯定要遍历tree一遍，那么步数就已经为n了，加上在 *二叉树* 上调用append，对左子树做cons，这种“减半”的复杂度为O(log n)，那么tree->list-1的复杂度为O(n * log n)
+
+对于复杂度怎么算还是不太熟练啊，过后得看看算法导论好好研究研究！
+
+Exercise 2.64.  The following procedure list->tree converts an ordered list to a balanced binary tree. The helper procedure partial-tree takes as arguments an integer n and list of at least n elements and constructs a balanced tree containing the first n elements of the list. The result returned by partial-tree is a pair (formed with cons) whose car is the constructed tree and whose cdr is the list of elements not included in the tree.
+
+#+BEGIN_SRC lisp -n
+  (defun list->tree (elements)
+    (car (partial-tree elements (length elements))))
+
+  (defun partial-tree (elts n)
+    (if (= n 0)
+        (cons '() elts)
+        (let ((left-size (floor (/ (- n 1) 2))))
+          (let ((left-result (partial-tree elts left-size)))
+            (let ((left-tree (car left-result))
+                  (non-left-elts (cdr left-result))
+                  (right-size (- n (+ left-size 1))))
+              (let ((this-entry (car non-left-elts))
+                    (right-result (partial-tree (cdr non-left-elts)
+                                                right-size)))
+                (let ((right-tree (car right-result))
+                      (remaining-elts (cdr right-result)))
+                  (cons (make-tree this-entry left-tree right-tree)
+                        remaining-elts))))))))
+#+END_SRC
+
+a. Write a short paragraph explaining as clearly as you can how partial-tree works. Draw the tree produced by list->tree for the list (1 3 5 7 9 11).
+
+b. What is the order of growth in the number of steps required by list->tree to convert a list of n elements?
+
+n
+
+Exercise 2.65.  Use the results of exercises 2.63 and  2.64 to give [[https://mitpress.mit.edu/sicp/full-text/book/book-Z-G-D-3.gif]](n) implementations of union-set and intersection-set for sets implemented as (balanced) binary trees.
+#+BEGIN_SRC lisp -n
+  (defun tree->list (tree)
+    (labels ((copy-to-list (tree result-list)
+               (if (null tree)
+                   result-list
+                   (copy-to-list (left-branch tree)
+                                 (cons (entry tree)
+                                       (copy-to-list (right-branch tree)
+                                                     result-list))))))
+      (copy-to-list tree '())))
+
+  (defun union-set (tree1 tree2)
+    (labels ((union-set-list (set1 set2)
+               (cond ((null set1) set2)
+                     ((null set2) set1)
+                     (t
+                      (let ((x1 (car set1)) (x2 (car set2)))
+                        (cond ((= x1 x2)
+                               (cons x1
+                                     (union-set-list (cdr set1) (cdr set2))))
+                              ((< x1 x2)
+                               (cons x1
+                                     (union-set-list (cdr set1) set2)))
+                              ((> x1 x2)
+                               (cons x2
+                                     (union-set-list set1 (cdr set2))))))))))
+      (list->tree (union-set-list (tree->list tree1)
+                                  (tree->list tree2)))))
+#+END_SRC
+
+*** 集合与信息检索
+Exercise 2.66.  Implement the lookup procedure for the case where the set of records is structured as a binary tree, ordered by the numerical values of the keys.
+#+BEGIN_SRC lisp -n
+  ;; implemented as an unordered list
+  (defun lookup (given-key set-of-records)
+    (cond ((null set-of-records) nil)
+          ((equal? given-key (key (car set-of-records)))
+           (car set-of-records))
+          (t (lookup given-key (cdr set-of-records)))))
+
+  ;; implemented as an binary tree
+  (defun lookup (given-key set-of-records)
+    (if (null set-of-records)
+        nil
+        (let ((record-key (key (car set-of-records))))
+          (cond ((= given-key record-key)
+                 (car set-of-records))
+                ((> given-key record-key)
+                 (lookup given-key (right-branch set-of-records)))
+                ((< given-key record-key)
+                 (lookup given-key (left-branch set-of-records)))))))
+#+END_SRC
+
+** 实例：Huffman编码树
+
+*** 生成Huffman树
+
+*** Huffman树的表示
+#+BEGIN_SRC lisp -n
+  ;; Huffman树的表示
+  (defun make-leaf (symbol weight)
+    (list 'leaf symbol weight))
+
+  (defun leafp (object)
+    (eq (car object) 'leaf))
+
+  (defun symbol-leaf (x) (cadr x))
+  (defun weight-leaf (x) (caddr x))
+
+  (defun make-code-tree (left right)
+    (list left
+          right
+          (append (symbols left) (symbols right))
+          (+ (weight left) (weight right))))
+
+  (defun left-branch (tree) (car tree))
+  (defun right-branch (tree) (cadr tree))
+  (defun symbols (tree)
+    (if (leafp tree)
+        (list (symbol-leaf tree))
+        (caddr tree)))
+  (defun weight (tree)
+    (if (leafp tree)
+        (weight-leaf tree)
+        (cadddr tree)))
+#+END_SRC
+
+*** 解码过程
+#+BEGIN_SRC lisp -n
+  ;; 解码过程
+  (defun decode (bits tree)
+    (labels ((decode-1 (bits current-branch)
+               (if (null bits)
+                   '()
+                   (let ((next-branch
+                          (choose-branch (car bits) current-branch)))
+                     (if (leafp next-branch)
+                         (cons (symbol-leaf next-branch)
+                               (decode-1 (cdr bits) tree))
+                         (decode-1 (cdr bits) next-branch))))))
+      (decode-1 bits tree)))
+
+  (defun choose-branch (bit branch)
+    (cond ((= bit 0) (left-branch branch))
+          ((= bit 1) (right-branch branch))
+          (t (error "bad bit -- CHOOSE-BRANCH ~A" bit))))
+#+END_SRC
+
+*** 带权重元素的集合
+#+BEGIN_SRC lisp -n
+  ;; 带权重元素的集合
+  (defun adjoin-set (x set)
+    (cond ((null set) (list x))
+          ((< (weight x) (weight (car set))) (cons x set))
+          (t (cons (car set)
+                   (adjoin-set x (cdr set))))))
+
+  (defun make-leaf-set (pairs)
+    (if (null pairs)
+        '()
+        (let ((pair (car pairs)))
+          (adjoin-set (make-leaf (car pair)
+                                 (cadr pair))
+                      (make-leaf-set (cdr pairs))))))
+#+END_SRC
+
+Exercise 2.67.  Define an encoding tree and a sample message:
+#+BEGIN_SRC lisp -n
+  (defun sample-tree ()
+    (make-code-tree (make-leaf 'A 4)
+                    (make-code-tree
+                     (make-leaf 'B 2)
+                     (make-code-tree (make-leaf 'D 1)
+                                     (make-leaf 'C 1)))))
+
+  (defparameter sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+#+END_SRC
+Use the decode procedure to decode the message, and give the result.
+
+(A D A B B C A)
+
+Exercise 2.68.  The encode procedure takes as arguments a message and a tree and produces the list of bits that gives the encoded message.
+#+BEGIN_SRC lisp -n
+  (defun encode (message tree)
+    (if (null message)
+        '()
+        (append (encode-symbol (car message) tree)
+                (encode (cdr message) tree))))
+#+END_SRC
+Encode-symbol is a procedure, which you must write, that returns the list of bits that encodes a given symbol according to a given tree. You should design encode-symbol so that it signals an error if the symbol is not in the tree at all. Test your procedure by encoding the result you obtained in exercise 2.67 with the sample tree and seeing whether it is the same as the original sample message.
+
+#+BEGIN_SRC lisp -n
+  (defun encode-symbol (symbol tree)
+    (labels ((encode-symbol-1 (symbol tree bits)
+               (if (leafp tree)
+                   (and (eq symbol (symbol-leaf tree)) (nreverse bits))
+                   (let ((left-bits (encode-symbol-1 symbol (left-branch tree) (cons 0 bits))))
+                     (if left-bits
+                         left-bits
+                         (encode-symbol-1 symbol (right-branch tree) (cons 1 bits)))))))
+      (if (element-of-set-p symbol (symbols tree))
+          (encode-symbol-1 symbol tree nil)
+          (error "symbol is not in the tree ~A" symbol))))
+#+END_SRC
+
+Exercise 2.69.  The following procedure takes as its argument a list of symbol-frequency pairs (where no symbol appears in more than one pair) and generates a Huffman encoding tree according to the Huffman algorithm.
+#+BEGIN_SRC lisp -n
+  (defun generate-huffman-tree (pairs)
+    (successive-merge (make-leaf-set pairs)))
+#+END_SRC
+Make-leaf-set is the procedure given above that transforms the list of pairs into an ordered set of leaves. Successive-merge is the procedure you must write, using make-code-tree to successively merge the smallest-weight elements of the set until there is only one element left, which is the desired Huffman tree. (This procedure is slightly tricky, but not really complicated. If you find yourself designing a complex procedure, then you are almost certainly doing something wrong. You can take significant advantage of the fact that we are using an ordered set representation.)
+
+#+BEGIN_SRC lisp -n
+  ;; Initial leaves {(A 8) (B 3) (C 1) (D 1) (E 1) (F 1) (G 1) (H 1)}
+  ;; Merge {(A 8) (B 3) ({C D} 2) (E 1) (F 1) (G 1) (H 1)}
+  ;; Merge {(A 8) (B 3) ({C D} 2) ({E F} 2) (G 1) (H 1)}
+  ;; Merge {(A 8) (B 3) ({C D} 2) ({E F} 2) ({G H} 2)}
+  ;; Merge {(A 8) (B 3) ({C D} 2) ({E F G H} 4)}
+  ;; Merge {(A 8) ({B C D} 5) ({E F G H} 4)}
+  ;; Merge {(A 8) ({B C D E F G H} 9)}
+  ;; Final merge {({A B C D E F G H} 17)}
+  ;; make-leaf-set 产生从小到大排列((leaf d 1) (leaf c 2))，successive-merge 实用 make-code-tree 反复归并集合中权重最小的元素，直到只剩一个为止。利用 adjoin-set 我们可以保证集合一直都是从小到大排列，我们不断的归并前两个元素，直到只剩一个为止。
+  (defun generate-huffman-tree (pairs)
+    (successive-merge (make-leaf-set pairs)))
+
+  (defun successive-merge (lst)
+    (cond ((< (length lst) 2) (car lst))
+          (t (successive-merge
+              (adjoin-set (make-code-tree (first lst)
+                                          (second lst))
+                          (cddr lst))))))
+#+END_SRC
+
+Exercise 2.70.  The following eight-symbol alphabet with associated relative frequencies was designed to efficiently encode the lyrics of 1950s rock songs. (Note that the ``symbols'' of an ``alphabet'' need not be individual letters.)
+|------+---+-----+----|
+| A    | 2 | NA  | 16 |
+| BOOM | 1 | SHA |  3 |
+| GET  | 2 | YIP |  9 |
+| JOB  | 2 | WAH |  1 |
+
+Use generate-huffman-tree (exercise 2.69) to generate a corresponding Huffman tree, and use encode (exercise 2.68) to encode the following message:
+
+Get a job
+
+Sha na na na na na na na na
+
+Get a job
+
+Sha na na na na na na na na
+
+Wah yip yip yip yip yip yip yip yip yip
+
+Sha boom
+
+How many bits are required for the encoding? What is the smallest number of bits that would be needed to encode this song if we used a fixed-length code for the eight-symbol alphabet?
+#+BEGIN_SRC lisp -n
+  (defparameter *songs-pairs*
+    '((a 2) (na 16) (boom 1) (sha 3) (get 2) (yip 9) (job 2) (wah 1)))
+
+  (defparameter *songs-message*
+    '(Get a job
+      Sha na na na na na na na na
+      Get a job
+      Sha na na na na na na na na
+      Wah yip yip yip yip yip yip yip yip yip
+      Sha boom))
+#+END_SRC
+1, 84 bits
+2, 8 ＝ 2 ^ 3 ，每个需要3位，需要108位
+
+Exercise 2.71.  Suppose we have a Huffman tree for an alphabet of n symbols, and that the relative frequencies of the symbols are 1, 2, 4, ..., 2n-1. Sketch the tree for n=5; for n=10. In such a tree (for general n) how many bits are required to encode the most frequent symbol? the least frequent symbol?
+
+最频繁的符号用 1 bit，最不频繁的符号用 n－1 bits
+
+Exercise 2.72.  Consider the encoding procedure that you designed in exercise 2.68. What is the order of growth in the number of steps needed to encode a symbol? Be sure to include the number of steps needed to search the symbol list at each node encountered. To answer this question in general is difficult. Consider the special case where the relative frequencies of the n symbols are as described in exercise 2.71, and give the order of growth (as a function of n) of the number of steps needed to encode the most frequent and least frequent symbols in the alphabet.
+
+2.71 最频繁的符号encode 需要 n 步（在给出的需编码符号列表中遍历查找），最不频繁的符号encode 需要 遍历查找要 n 步，遍历整个tree需要 n 步，应该需要 n^2 吧。。。

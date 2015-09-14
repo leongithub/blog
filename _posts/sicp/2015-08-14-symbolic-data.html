@@ -1,0 +1,1144 @@
+---
+layout: post
+title: 2.3 符号数据
+category: sicp
+description: sicp 2.3 节习题，少量笔记
+---
+
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>2.3 符号数据</title>
+<!-- 2015-08-14 Fri 08:16 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Leon" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">2.3 符号数据</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. 引号</a></li>
+<li><a href="#sec-2">2. 实例：符号求导</a>
+<ul>
+<li><a href="#sec-2-1">2.1. 对抽象数据的求导程序</a></li>
+<li><a href="#sec-2-2">2.2. 代数表达式的表示</a></li>
+<li><a href="#sec-2-3">2.3. 实例：集合的表示</a>
+<ul>
+<li><a href="#sec-2-3-1">2.3.1. 集合作为未排序的列表</a></li>
+<li><a href="#sec-2-3-2">2.3.2. 集合作为排序的列表</a></li>
+<li><a href="#sec-2-3-3">2.3.3. 集合作为二叉树</a></li>
+<li><a href="#sec-2-3-4">2.3.4. 集合与信息检索</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-4">2.4. 实例：Huffman编码树</a>
+<ul>
+<li><a href="#sec-2-4-1">2.4.1. 生成Huffman树</a></li>
+<li><a href="#sec-2-4-2">2.4.2. Huffman树的表示</a></li>
+<li><a href="#sec-2-4-3">2.4.3. 解码过程</a></li>
+<li><a href="#sec-2-4-4">2.4.4. <span class="todo TODO">TODO</span> 带权重元素的集合</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> 引号</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Exercise 2.53.  What would the interpreter print in response to evaluating each of the following expressions?
+</p>
+
+<p>
+(list 'a 'b 'c) ==&gt; (a b c)
+</p>
+
+<p>
+(list (list 'george)) ==&gt; ((george))
+</p>
+
+<p>
+(cdr '((x1 x2) (y1 y2))) ==&gt; ((y1 y2))
+</p>
+
+<p>
+(cadr '((x1 x2) (y1 y2))) ==&gt; (y1 y2)
+</p>
+
+<p>
+(pair? (car '(a short list))) ==&gt; nil
+</p>
+
+<p>
+(memq 'red '((red shoes) (blue socks))) ==&gt; nil
+</p>
+
+<p>
+(memq 'red '(red shoes blue socks)) ==&gt; (red shoes blue socks)
+</p>
+
+
+<p>
+Exercise 2.54.  Two lists are said to be equal? if they contain equal elements arranged in the same order. For example,
+</p>
+
+<p>
+(equal? '(this is a list) '(this is a list))
+</p>
+
+<p>
+is true, but
+</p>
+
+<p>
+(equal? '(this is a list) '(this (is a) list))
+</p>
+
+<p>
+is false. To be more precise, we can define equal? recursively in terms of the basic eq? equality of symbols by saying that a and b are equal? if they are both symbols and the symbols are eq?, or if they are both lists such that (car a) is equal? to (car b) and (cdr a) is equal? to (cdr b). Using this idea, implement equal? as a procedure.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">equal?</span> (lst1 lst2)
+<span class="linenr">2: </span>  (<span style="color: #859900;">cond</span> ((and (atom lst1) (atom lst2))
+<span class="linenr">3: </span>         (eq lst1 lst2))
+<span class="linenr">4: </span>        ((and (listp lst1) (listp lst2))
+<span class="linenr">5: </span>         (and (eq (car lst1) (car lst2))
+<span class="linenr">6: </span>              (equal? (cdr lst1) (cdr lst2))))))
+</pre>
+</div>
+
+<p>
+Exercise 2.55.  Eva Lu Ator types to the interpreter the expression
+</p>
+
+<p>
+(car ''abracadabra)
+</p>
+
+<p>
+To her surprise, the interpreter prints back quote. Explain.
+</p>
+
+<p>
+结果为：quote
+因为"''abr"表示'abr，'abr又为(quote abr)
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> 实例：符号求导</h2>
+<div class="outline-text-2" id="text-2">
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> 对抽象数据的求导程序</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+表达式求导的归约：
+</p>
+
+
+<div class="figure">
+<p><img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-45.gif" alt="ch2-Z-G-45.gif" />
+</p>
+</div>
+
+
+<div class="figure">
+<p><img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-46.gif" alt="ch2-Z-G-46.gif" />
+</p>
+</div>
+
+
+<div class="figure">
+<p><img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-47.gif" alt="ch2-Z-G-47.gif" />
+</p>
+</div>
+
+
+<div class="figure">
+<p><img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-48.gif" alt="ch2-Z-G-48.gif" />
+</p>
+</div>
+
+<p>
+假设这些以下的选择函数和构造函数都已经存在：
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">deriv</span> (exp var)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">cond</span> ((numberp exp) 0)
+<span class="linenr"> 3: </span>        ((variablep exp)
+<span class="linenr"> 4: </span>         (<span style="color: #859900;">if</span> (same-variable-p exp var) 1 0))
+<span class="linenr"> 5: </span>        ((sump exp)
+<span class="linenr"> 6: </span>         (make-sum (deriv (addend exp) var)
+<span class="linenr"> 7: </span>                   (deriv (augend exp) var)))
+<span class="linenr"> 8: </span>        ((productp exp)
+<span class="linenr"> 9: </span>         (make-sum
+<span class="linenr">10: </span>          (make-product (multiplier exp)
+<span class="linenr">11: </span>                        (deriv (multiplicand exp) var))
+<span class="linenr">12: </span>          (make-product (deriv (multiplier exp) var)
+<span class="linenr">13: </span>                        (multiplicand exp))))
+<span class="linenr">14: </span>        (t (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"unknown expression type -- DERIV"</span> exp))))
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> 代数表达式的表示</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+我们可以设想出许多用list结构表示代数表达式的方法。例如可以利用符号list去直接反应代数的记法形式。如ax＋b表示为(+ (* a x) b).
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#21464;&#37327;&#23601;&#26159;&#31526;&#21495;</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">variablep</span> (x) (symbolp x))
+<span class="linenr"> 3: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#21464;&#37327;&#30456;&#21516;&#23601;&#34920;&#31034;&#23427;&#20204;&#30340;&#31526;&#21495;&#30456;&#20114;eq</span>
+<span class="linenr"> 4: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">same-variable-p</span> (v1 v2)
+<span class="linenr"> 5: </span>  (and (variablep v1) (variablep v2) (eq v1 v2)))
+<span class="linenr"> 6: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#21644;&#24335;&#19982;&#20056;&#24335;&#37117;&#26500;&#36896;&#20026;&#34920;</span>
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-sum</span> (a1 a2) (list '+ a1 a2))
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-product</span> (m1 m2) (list '* m1 m2))
+<span class="linenr"> 9: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#21644;&#24335;&#23601;&#26159;&#31532;&#19968;&#20010;&#20803;&#32032;&#20026;&#31526;&#21495;&#65291;&#30340;&#34920;</span>
+<span class="linenr">10: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">sump</span> (x)
+<span class="linenr">11: </span>  (and (listp x) (eq (car x) '+)))
+<span class="linenr">12: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#34987;&#21152;&#25968;&#34920;&#31034;&#21644;&#24335;&#37324;&#30340;&#31532;&#20108;&#20010;&#20803;&#32032;</span>
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">addend</span> (s) (cadr s))
+<span class="linenr">14: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#21152;&#25968;&#34920;&#31034;&#21644;&#24335;&#37324;&#30340;&#31532;&#19977;&#20010;&#20803;&#32032;</span>
+<span class="linenr">15: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">augend</span> (s) (caddr s))
+<span class="linenr">16: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#20056;&#24335;&#20026;&#31532;&#19968;&#20010;&#20803;&#32032;&#20026;&#31526;&#21495;*&#30340;&#34920;</span>
+<span class="linenr">17: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">productp</span> (x)
+<span class="linenr">18: </span>  (and (listp x) (eq (car x) '*)))
+<span class="linenr">19: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#34987;&#20056;&#25968;&#34920;&#31034;&#20056;&#24335;&#37324;&#30340;&#31532;&#20108;&#20010;&#20803;&#32032;</span>
+<span class="linenr">20: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">multiplier</span> (p) (cadr p))
+<span class="linenr">21: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#20056;&#25968;&#34920;&#31034;&#20056;&#24335;&#37324;&#30340;&#31532;&#19977;&#20010;&#20803;&#32032;</span>
+<span class="linenr">22: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">multiplicand</span> (p) (caddr p))
+<span class="linenr">23: </span>
+<span class="linenr">24: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">deriv</span> (exp var)
+<span class="linenr">25: </span>  (<span style="color: #859900;">cond</span> ((numberp exp) 0)
+<span class="linenr">26: </span>        ((variablep exp)
+<span class="linenr">27: </span>         (<span style="color: #859900;">if</span> (same-variable-p exp var) 1 0))
+<span class="linenr">28: </span>        ((sump exp)
+<span class="linenr">29: </span>         (make-sum (deriv (addend exp) var)
+<span class="linenr">30: </span>                   (deriv (augend exp) var)))
+<span class="linenr">31: </span>        ((productp exp)
+<span class="linenr">32: </span>         (make-sum
+<span class="linenr">33: </span>          (make-product (multiplier exp)
+<span class="linenr">34: </span>                        (deriv (multiplicand exp) var))
+<span class="linenr">35: </span>          (make-product (deriv (multiplier exp) var)
+<span class="linenr">36: </span>                        (multiplicand exp))))
+<span class="linenr">37: </span>        (t (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"unknown expression type -- DERIV ~A"</span> exp))))
+</pre>
+</div>
+<p>
+让我们看下deriv的行为例子：
+</p>
+<pre class="example">
+(deriv '(+ x 3) 'x)
+(+ 1 0)
+(deriv '(* x y) 'x)
+(+ (* x 0) (* 1 y))
+(deriv '(* (* x y) (+ x 3)) 'x)
+(+ (* (* x y) (+ 1 0))
+   (* (+ (* x 0) (* 1 y))
+      (+  x 3)))
+</pre>
+<p>
+这个结果没有简化（很像之前做有理数遇到的问题），我们通过构造函数和选择函数来实现
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">0&#19982;&#20219;&#20309;&#19996;&#35199;&#30340;&#20056;&#31215;&#37117;&#26159;0&#65292;1&#19982;&#20219;&#20309;&#19996;&#35199;&#30340;&#20056;&#31215;&#24635;&#26159;&#37027;&#20010;&#19996;&#35199;</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-product</span> (m1 m2)
+<span class="linenr"> 3: </span>  (<span style="color: #859900;">cond</span> ((or (=number? m1 0) (=number? m2 0)) 0)
+<span class="linenr"> 4: </span>        ((=number? m1 1) m2)
+<span class="linenr"> 5: </span>        ((=number? m2 1) m1)
+<span class="linenr"> 6: </span>        ((and (numberp m1) (numberp m2)) (* m1 m2))
+<span class="linenr"> 7: </span>        (t (list '* m1 m2))))
+<span class="linenr"> 8: </span>
+<span class="linenr"> 9: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#24403;&#20004;&#20010;&#27714;&#21644;&#23545;&#35937;&#37117;&#26159;&#25968;&#26102;&#65292;&#36820;&#22238;&#23427;&#20204;&#30340;&#21644;&#12290;&#22914;&#26524;&#20854;&#20013;&#19968;&#20010;&#27714;&#21644;&#23545;&#35937;&#20026;0&#65292;&#23601;&#36820;&#22238;&#21478;&#19968;&#20010;&#23545;&#35937;</span>
+<span class="linenr">10: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-sum</span> (a1 a2)
+<span class="linenr">11: </span>  (<span style="color: #859900;">cond</span> ((=number? a1 0) a2)
+<span class="linenr">12: </span>        ((=number? a2 0) a1)
+<span class="linenr">13: </span>        ((and (numberp a1) (numberp a2)) (+ a1 a2))
+<span class="linenr">14: </span>        (t (list '+ a1 a2))))
+<span class="linenr">15: </span>
+<span class="linenr">16: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#26816;&#26597;&#26576;&#20010;&#34920;&#36798;&#24335;&#26159;&#21542;&#31561;&#20110;&#19968;&#20010;&#32473;&#23450;&#30340;&#25968;</span>
+<span class="linenr">17: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">=number?</span> (exp num)
+<span class="linenr">18: </span>  (and (numberp exp) (= exp num)))
+</pre>
+</div>
+<pre class="example">
+(deriv '(+ x 3) 'x)
+1
+(deriv '(* x y) 'x)
+y
+(deriv '(* (* x y) (+ x 3)) 'x)
+(+ (* x y) (* y (+ x 3)))
+</pre>
+
+<p>
+Exercise 2.56.  Show how to extend the basic differentiator to handle more kinds of expressions. For instance, implement the differentiation rule
+</p>
+
+
+<div class="figure">
+<p><img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-50.gif" alt="ch2-Z-G-50.gif" />
+</p>
+</div>
+
+<p>
+by adding a new clause to the deriv program and defining appropriate procedures exponentiation?, base, exponent, and make-exponentiation. (You may use the symbol ** to denote exponentiation.) Build in the rules that anything raised to the power 0 is 1 and anything raised to the power 1 is the thing itself.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-exponentiation</span> (base e)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">cond</span> ((=number? base 1) 1)
+<span class="linenr"> 3: </span>        ((=number? e 0) 1)
+<span class="linenr"> 4: </span>        ((=number? e 1) base)
+<span class="linenr"> 5: </span>        ((and (numberp base) (numberp e)) (expt base e))
+<span class="linenr"> 6: </span>        (t (list '** base e))))
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">base</span> (e) (cadr e))
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">exponent</span> (e) (caddr e))
+<span class="linenr"> 9: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#31532;&#19968;&#20010;&#20803;&#32032;&#20026;**&#30340;&#34920;</span>
+<span class="linenr">10: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">exponentiationp</span> (x)
+<span class="linenr">11: </span>  (and (consp x) (eq (car x) '**)))
+<span class="linenr">12: </span>
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">deriv</span> (exp var)
+<span class="linenr">14: </span>  (<span style="color: #859900;">cond</span> ((numberp exp) 0)
+<span class="linenr">15: </span>        ((variablep exp)
+<span class="linenr">16: </span>         (<span style="color: #859900;">if</span> (same-variable-p exp var) 1 0))
+<span class="linenr">17: </span>        ((sump exp)
+<span class="linenr">18: </span>         (make-sum (deriv (addend exp) var)
+<span class="linenr">19: </span>                   (deriv (augend exp) var)))
+<span class="linenr">20: </span>        ((productp exp)
+<span class="linenr">21: </span>         (make-sum
+<span class="linenr">22: </span>          (make-product (multiplier exp)
+<span class="linenr">23: </span>                        (deriv (multiplicand exp) var))
+<span class="linenr">24: </span>          (make-product (deriv (multiplier exp) var)
+<span class="linenr">25: </span>                        (multiplicand exp))))
+<span class="linenr">26: </span>        ((exponentiationp exp)
+<span class="linenr">27: </span>         (make-product
+<span class="linenr">28: </span>          (make-product (exponent exp)
+<span class="linenr">29: </span>                        (make-exponentiation
+<span class="linenr">30: </span>                         (base exp)
+<span class="linenr">31: </span>                         (make-sum (exponent exp) -1)))
+<span class="linenr">32: </span>          (deriv (base exp) var)))
+<span class="linenr">33: </span>        (t (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"unknown expression type -- DERIV ~A"</span> exp))))
+</pre>
+</div>
+
+<p>
+Exercise 2.57.  Extend the differentiation program to handle sums and products of arbitrary numbers of (two or more) terms. Then the last example above could be expressed as
+</p>
+
+<p>
+(deriv '(* x y (+ x 3)) 'x)
+</p>
+
+<p>
+Try to do this by changing only the representation for sums and products, without changing the deriv procedure at all. For example, the addend of a sum would be the first term, and the augend would be the sum of the rest of the terms.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">augend</span> (s)
+<span class="linenr">2: </span>  (<span style="color: #859900;">if</span> (cdddr s)
+<span class="linenr">3: </span>      (cons '+ (cddr s))
+<span class="linenr">4: </span>      (caddr s)))
+<span class="linenr">5: </span>
+<span class="linenr">6: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">multiplicand</span> (p)
+<span class="linenr">7: </span>  (<span style="color: #859900;">if</span> (cdddr p)
+<span class="linenr">8: </span>      (cons '* (cddr p))
+<span class="linenr">9: </span>      (caddr p)))
+</pre>
+</div>
+
+<p>
+Exercise 2.58.  Suppose we want to modify the differentiation program so that it works with ordinary mathematical notation, in which + and * are infix rather than prefix operators. Since the differentiation program is defined in terms of abstract data, we can modify it to work with different representations of expressions solely by changing the predicates, selectors, and constructors that define the representation of the algebraic expressions on which the differentiator is to operate.
+</p>
+
+<p>
+a. Show how to do this in order to differentiate algebraic expressions presented in infix form, such as (x + (3 * (x + (y + 2)))). To simplify the task, assume that + and * always take two arguments and that expressions are fully parenthesized.
+</p>
+
+<p>
+b. The problem becomes substantially harder if we allow standard algebraic notation, such as (x + 3 * (x + y + 2)), which drops unnecessary parentheses and assumes that multiplication is done before addition. Can you design appropriate predicates, selectors, and constructors for this notation such that our derivative program still works?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">a</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">sump</span> (x)
+<span class="linenr"> 3: </span>  (and (listp x) (eq (cadr x) '+)))
+<span class="linenr"> 4: </span>
+<span class="linenr"> 5: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">addend</span> (s) (car s))
+<span class="linenr"> 6: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">augend</span> (s) (caddr s))
+<span class="linenr"> 7: </span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-sum</span> (a1 a2)
+<span class="linenr"> 9: </span>  (<span style="color: #859900;">cond</span> ((=number? a1 0) a2)
+<span class="linenr">10: </span>        ((=number? a2 0) a1)
+<span class="linenr">11: </span>        ((and (numberp a1) (numberp a2)) (+ a1 a2))
+<span class="linenr">12: </span>        (t (list a1 '+ a2))))
+<span class="linenr">13: </span>
+<span class="linenr">14: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">productp</span> (x)
+<span class="linenr">15: </span>  (and (listp x) (eq (cadr x) '*)))
+<span class="linenr">16: </span>
+<span class="linenr">17: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">multiplier</span> (p) (car p))
+<span class="linenr">18: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">multiplicand</span> (p) (caddr p))
+<span class="linenr">19: </span>
+<span class="linenr">20: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-product</span> (m1 m2)
+<span class="linenr">21: </span>  (<span style="color: #859900;">cond</span> ((or (=number? m1 0) (=number? m2 0)) 0)
+<span class="linenr">22: </span>        ((=number? m1 1) m2)
+<span class="linenr">23: </span>        ((=number? m2 1) m1)
+<span class="linenr">24: </span>        ((and (numberp m1) (numberp m2)) (* m1 m2))
+<span class="linenr">25: </span>        (t (list m1 '* m2))))
+<span class="linenr">26: </span>
+<span class="linenr">27: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">b</span>
+<span class="linenr">28: </span>
+<span class="linenr">29: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#26159;&#22686;&#21152;&#20102;&#19968;&#28857;&#38590;&#24230;&#65292;&#20027;&#35201;&#26159;&#35201;&#28385;&#36275;&#20808;&#31639;&#20056;&#27861;&#65292;&#24182;&#19988;&#27809;&#26377;&#25324;&#21495;&#65288;&#25105;&#20204;&#33258;&#24049;&#21152;&#25324;&#21495;&#65289;&#65306;</span>
+<span class="linenr">30: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">1,(x * y + 3 * (x + y + 2))</span>
+<span class="linenr">31: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">2,((x * y) + (3 * (x + y + 2)))</span>
+<span class="linenr">32: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">b &#20013;&#38656;&#35201;&#24471;&#26159;&#65339;1&#65341;&#34920;&#36798;&#24335;&#65292;&#25105;&#20204;&#21152;&#19978;&#25324;&#21495;&#36716;&#21270;&#20056;&#65339;2&#65341;&#34920;&#36798;&#24335;&#21518;&#21457;&#29616;&#65306;</span>
+<span class="linenr">33: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">1&#65292;&#21028;&#26029;&#19968;&#20010;&#34920;&#36798;&#24335;&#26159;&#20056;&#27861;&#36824;&#26159;&#21152;&#27861;&#24471;&#26041;&#27861;&#65306;&#22914;&#26524;&#34920;&#36798;&#24335;&#20013;&#21547;&#26377;'+&#65292;&#23601;&#20026;&#21152;&#27861;&#65292;&#22914;&#26524;&#37117;&#26159;'*&#65292;&#23601;&#20026;&#20056;&#27861;&#12290;&#65288;&#35859;&#35789;&#31639;&#27861;&#20986;&#26469;&#20102;&#65289;</span>
+<span class="linenr">34: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">2&#65292;&#22914;&#26524;&#20026;&#21152;&#27861;&#65292;&#37027;&#20040;addend&#20026;&#31532;&#19968;&#20010;'+&#20043;&#21069;&#24471;&#39033;&#65288;&#22914;&#26524;&#20026;&#22810;&#39033;&#23601;&#26159;list&#65292;&#21333;&#39033;&#23601;&#26159;atom&#65289;&#65292;augend&#20026;&#31532;&#19968;&#20010;'+&#20043;&#21518;&#24471;&#39033;&#65288;&#22914;&#26524;&#20026;&#22810;&#39033;&#23601;&#26159;list&#65292;&#21333;&#39033;&#23601;&#26159;atom&#65289;</span>
+<span class="linenr">35: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">3&#65292;&#22914;&#26524;&#20026;&#20056;&#27861;&#65292;multiplier&#23601;&#26159;&#31532;&#19968;&#39033;&#65288;car&#65289;&#65292;multiplicand&#23601;&#26159;&#31532;&#20108;&#39033;&#20043;&#21518;&#24471;&#39033;&#65288;&#22914;&#26524;&#20026;&#22810;&#39033;&#23601;&#26159;list&#65292;&#21333;&#39033;&#23601;&#26159;atom&#65289;&#12290;</span>
+<span class="linenr">36: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#33267;&#27492;&#65292;&#24050;&#32463;&#26126;&#20102;&#65292;&#30456;&#23545;a&#24471;&#29615;&#22659;&#65292;&#25105;&#20204;&#21482;&#38656;&#25913;&#35859;&#35789;sump,productp&#65292;&#36873;&#25321;&#20989;&#25968;addend,augend,multiplicand&#65292;&#23601;&#21487;&#20197;&#20102;&#12290;</span>
+<span class="linenr">37: </span>
+<span class="linenr">38: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">productp</span> (x)
+<span class="linenr">39: </span>  (and (consp x)
+<span class="linenr">40: </span>       (eq (cadr x) '*)
+<span class="linenr">41: </span>       (productp (cddr x))))
+<span class="linenr">42: </span>
+<span class="linenr">43: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">sump</span> (x)
+<span class="linenr">44: </span>  &#65288;or (and (consp x)
+<span class="linenr">45: </span>            (eq (cadr x) '+))
+<span class="linenr">46: </span>       (sump (cddr x))))
+<span class="linenr">47: </span>
+<span class="linenr">48: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">addend</span> (s)
+<span class="linenr">49: </span>  (<span style="color: #859900;">labels</span> ((rec (s)
+<span class="linenr">50: </span>             (<span style="color: #859900;">if</span> (eq '+ (car s))
+<span class="linenr">51: </span>                 nil
+<span class="linenr">52: </span>                 (cons (car s) (rec (cdr s))))))
+<span class="linenr">53: </span>    (<span style="color: #859900;">let</span> ((addend (rec s)))
+<span class="linenr">54: </span>      (<span style="color: #859900;">if</span> (cdr addend)
+<span class="linenr">55: </span>          addend
+<span class="linenr">56: </span>          (car addend)))))
+<span class="linenr">57: </span>
+<span class="linenr">58: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">augend</span> (s)
+<span class="linenr">59: </span>  (<span style="color: #859900;">if</span> (eq '+ (cadr s))
+<span class="linenr">60: </span>      (<span style="color: #859900;">if</span> (cdddr s) (cddr s) (caddr s))
+<span class="linenr">61: </span>      (augend (cddr s))))
+<span class="linenr">62: </span>
+<span class="linenr">63: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">multiplicand</span> (p)
+<span class="linenr">64: </span>  (<span style="color: #859900;">if</span> (cdddr p)
+<span class="linenr">65: </span>      (cddr p)
+<span class="linenr">66: </span>      (caddr p)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> 实例：集合的表示</h3>
+<div class="outline-text-3" id="text-2-3">
+</div><div id="outline-container-sec-2-3-1" class="outline-4">
+<h4 id="sec-2-3-1"><span class="section-number-4">2.3.1</span> 集合作为未排序的列表</h4>
+<div class="outline-text-4" id="text-2-3-1">
+<p>
+Exercise 2.59.  Implement the union-set operation for the unordered-list representation of sets.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">union-set</span> (set1 set2)
+<span class="linenr">2: </span>  (<span style="color: #859900;">cond</span> ((null set1) set2)
+<span class="linenr">3: </span>        ((null set2) set1)
+<span class="linenr">4: </span>        ((element-of-set-p (car set1) set2)
+<span class="linenr">5: </span>         (union-set (cdr set1) set2))
+<span class="linenr">6: </span>        (t (cons (car set1)
+<span class="linenr">7: </span>                 (union-set (cdr set1) set2)))))
+</pre>
+</div>
+
+<p>
+Exercise 2.60.  We specified that a set would be represented as a list with no duplicates. Now suppose we allow duplicates. For instance, the set {1,2,3} could be represented as the list (2 3 2 1 3 2 2). Design procedures element-of-set?, adjoin-set, union-set, and intersection-set that operate on this representation. How does the efficiency of each compare with the corresponding procedure for the non-duplicate representation? Are there applications for which you would use this representation in preference to the non-duplicate one?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">adjoin-set</span> (x set)
+<span class="linenr"> 2: </span>  (cons x set))
+<span class="linenr"> 3: </span>
+<span class="linenr"> 4: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">intersection-set</span> (set1 set2)
+<span class="linenr"> 5: </span>  (<span style="color: #859900;">labels</span> ((rec (set1 set2)
+<span class="linenr"> 6: </span>             (<span style="color: #859900;">cond</span> ((or (null set1) (null set2)) '())
+<span class="linenr"> 7: </span>                   ((element-of-set-p (car set1) set2)
+<span class="linenr"> 8: </span>                    (cons (car set1)
+<span class="linenr"> 9: </span>                          (rec (cdr set1) set2)))
+<span class="linenr">10: </span>                   (t (rec (cdr set1) set2)))))
+<span class="linenr">11: </span>    (append (rec set1 set2) (rec set2 set1))))
+<span class="linenr">12: </span>
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">union-set</span> (set1 set2)
+<span class="linenr">14: </span>  (append set1 set2))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-3-2" class="outline-4">
+<h4 id="sec-2-3-2"><span class="section-number-4">2.3.2</span> 集合作为排序的列表</h4>
+<div class="outline-text-4" id="text-2-3-2">
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">sets as ordered lists</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">element-of-set-p</span> (x set)
+<span class="linenr"> 3: </span>  (<span style="color: #859900;">cond</span> ((null set) nil)
+<span class="linenr"> 4: </span>        ((= x (car set)) t)
+<span class="linenr"> 5: </span>        ((&lt; x (car set)) nil)
+<span class="linenr"> 6: </span>        (t (element-of-set-p x (cdr set)))))
+<span class="linenr"> 7: </span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">intersection-set</span> (set1 set2)
+<span class="linenr"> 9: </span>  (<span style="color: #859900;">if</span> (or (null set1) (null set2))
+<span class="linenr">10: </span>      '()
+<span class="linenr">11: </span>      (<span style="color: #859900;">let</span> ((x1 (car set1)) (x2 (car set2)))
+<span class="linenr">12: </span>        (<span style="color: #859900;">cond</span> ((= x1 x2)
+<span class="linenr">13: </span>               (cons x1
+<span class="linenr">14: </span>                     (intersection-set (cdr set1)
+<span class="linenr">15: </span>                                       (cdr set2))))
+<span class="linenr">16: </span>              ((&lt; x1 x2)
+<span class="linenr">17: </span>               (intersection-set (cdr set1) set2))
+<span class="linenr">18: </span>              ((&gt; x1 x2)
+<span class="linenr">19: </span>               (intersection-set set1 (cdr set2)))))))
+</pre>
+</div>
+
+<p>
+Exercise 2.61.  Give an implementation of adjoin-set using the ordered representation. By analogy with element-of-set? show how to take advantage of the ordering to produce a procedure that requires on the average about half as many steps as with the unordered representation.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#21482;&#26377;&#26597;&#25214;&#26410;&#20877;&#38598;&#21512;&#20013;&#30340;&#20803;&#32032;&#65292;&#24179;&#22343;&#30340;&#27493;&#25968;&#25165;&#26159;&#26410;&#25490;&#24207;&#21015;&#34920;&#30340;&#19968;&#21322;</span>
+<span class="linenr">2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">adjoin-set</span> (x set)
+<span class="linenr">3: </span>  (<span style="color: #859900;">cond</span> ((null set) nil)
+<span class="linenr">4: </span>        ((= x (car set)) (list x))
+<span class="linenr">5: </span>        ((&lt; x (car set)) (cons x set))
+<span class="linenr">6: </span>        (t (cons (car set)
+<span class="linenr">7: </span>                 (adjoin-set x (cdr set))))))
+</pre>
+</div>
+<p>
+Exercise 2.62.  Give a (n) implementation of union-set for sets represented as ordered lists.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">union-set</span> (set1 set2)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">cond</span> ((null set1) set2)
+<span class="linenr"> 3: </span>        ((null set2) set1)
+<span class="linenr"> 4: </span>        (t
+<span class="linenr"> 5: </span>         (<span style="color: #859900;">let</span> ((x1 (car set1)) (x2 (car set2)))
+<span class="linenr"> 6: </span>           (<span style="color: #859900;">cond</span> ((= x1 x2)
+<span class="linenr"> 7: </span>                  (cons x1
+<span class="linenr"> 8: </span>                        (union-set (cdr set1) (cdr set2))))
+<span class="linenr"> 9: </span>                 ((&lt; x1 x2)
+<span class="linenr">10: </span>                  (cons x1
+<span class="linenr">11: </span>                        (union-set (cdr set1) set2)))
+<span class="linenr">12: </span>                 ((&gt; x1 x2)
+<span class="linenr">13: </span>                  (cons x2
+<span class="linenr">14: </span>                        (union-set set1 (cdr set2))))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-3-3" class="outline-4">
+<h4 id="sec-2-3-3"><span class="section-number-4">2.3.3</span> 集合作为二叉树</h4>
+<div class="outline-text-4" id="text-2-3-3">
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">entry</span> (tree) (car tree))
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">left-branch</span> (tree) (cadr tree))
+<span class="linenr"> 3: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">right-branch</span> (tree) (caddr tree))
+<span class="linenr"> 4: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-tree</span> (entry left right)
+<span class="linenr"> 5: </span>  (list entry left right))
+<span class="linenr"> 6: </span>
+<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">element-of-set-p</span> (x set)
+<span class="linenr"> 8: </span>  (<span style="color: #859900;">cond</span> ((null set) nil)
+<span class="linenr"> 9: </span>        ((= x (entry set)) t)
+<span class="linenr">10: </span>        ((&lt; x (entry set))
+<span class="linenr">11: </span>         (element-of-set-p x (left-branch set)))
+<span class="linenr">12: </span>        ((&gt; x (entry set))
+<span class="linenr">13: </span>         (element-of-set-p x (right-branch set)))))
+<span class="linenr">14: </span>
+<span class="linenr">15: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">adjoin-set</span> (x set)
+<span class="linenr">16: </span>  (<span style="color: #859900;">cond</span> ((null set) (make-tree x '() '()))
+<span class="linenr">17: </span>        ((= x (entry set)) set)
+<span class="linenr">18: </span>        ((&lt; x (entry set))
+<span class="linenr">19: </span>         (make-tree (entry set)
+<span class="linenr">20: </span>                    (adjoin-set x (left-branch set))
+<span class="linenr">21: </span>                    (right-branch set)))
+<span class="linenr">22: </span>        ((&gt; x (entry set))
+<span class="linenr">23: </span>         (make-tree (entry set)
+<span class="linenr">24: </span>                    (left-branch set)
+<span class="linenr">25: </span>                    (adjoin-set x (right-branch set))))))
+</pre>
+</div>
+<p>
+Exercise 2.63.  Each of the following two procedures converts a binary tree to a list.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(define (tree-&gt;list-1 tree)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">if</span> (null? tree)
+<span class="linenr"> 3: </span>      '()
+<span class="linenr"> 4: </span>      (append (tree-&gt;list-1 (left-branch tree))
+<span class="linenr"> 5: </span>              (cons (entry tree)
+<span class="linenr"> 6: </span>                    (tree-&gt;list-1 (right-branch tree))))))
+<span class="linenr"> 7: </span>(define (tree-&gt;list-2 tree)
+<span class="linenr"> 8: </span>  (define (copy-to-list tree result-list)
+<span class="linenr"> 9: </span>    (<span style="color: #859900;">if</span> (null? tree)
+<span class="linenr">10: </span>        result-list
+<span class="linenr">11: </span>        (copy-to-list (left-branch tree)
+<span class="linenr">12: </span>                      (cons (entry tree)
+<span class="linenr">13: </span>                            (copy-to-list (right-branch tree)
+<span class="linenr">14: </span>                                          result-list)))))
+<span class="linenr">15: </span>  (copy-to-list tree '()))
+</pre>
+</div>
+<p>
+a. Do the two procedures produce the same result for every tree? If not, how do the results differ? What lists do the two procedures produce for the trees in figure 2.16?
+</p>
+
+<p>
+b. Do the two procedures have the same order of growth in the number of steps required to convert a balanced tree with n elements to a list? If not, which one grows more slowly?
+</p>
+
+<p>
+解答：
+a，相同，对于2.16图的树都产生'(1 3 5 7 9 11)
+b，复杂度不太会算。。。但如果说哪个复杂度增长更慢，肯定是第二个，尾递归嘛，第一个主要额外还是有append的操作，(append lst1 lst2)会cons生成lst1的副本，然后指向lst2。tree-&gt;list-2 为O(n)。tree-&gt;list-1 首先肯定要遍历tree一遍，那么步数就已经为n了，加上在 *二叉树* 上调用append，对左子树做cons，这种“减半”的复杂度为O(log n)，那么tree-&gt;list-1的复杂度为O(n * log n)
+</p>
+
+<p>
+对于复杂度怎么算还是不太熟练啊，过后得看看算法导论好好研究研究！
+</p>
+
+<p>
+Exercise 2.64.  The following procedure list-&gt;tree converts an ordered list to a balanced binary tree. The helper procedure partial-tree takes as arguments an integer n and list of at least n elements and constructs a balanced tree containing the first n elements of the list. The result returned by partial-tree is a pair (formed with cons) whose car is the constructed tree and whose cdr is the list of elements not included in the tree.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">list-&gt;tree</span> (elements)
+<span class="linenr"> 2: </span>  (car (partial-tree elements (length elements))))
+<span class="linenr"> 3: </span>
+<span class="linenr"> 4: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">partial-tree</span> (elts n)
+<span class="linenr"> 5: </span>  (<span style="color: #859900;">if</span> (= n 0)
+<span class="linenr"> 6: </span>      (cons '() elts)
+<span class="linenr"> 7: </span>      (<span style="color: #859900;">let</span> ((left-size (floor (/ (- n 1) 2))))
+<span class="linenr"> 8: </span>        (<span style="color: #859900;">let</span> ((left-result (partial-tree elts left-size)))
+<span class="linenr"> 9: </span>          (<span style="color: #859900;">let</span> ((left-tree (car left-result))
+<span class="linenr">10: </span>                (non-left-elts (cdr left-result))
+<span class="linenr">11: </span>                (right-size (- n (+ left-size 1))))
+<span class="linenr">12: </span>            (<span style="color: #859900;">let</span> ((this-entry (car non-left-elts))
+<span class="linenr">13: </span>                  (right-result (partial-tree (cdr non-left-elts)
+<span class="linenr">14: </span>                                              right-size)))
+<span class="linenr">15: </span>              (<span style="color: #859900;">let</span> ((right-tree (car right-result))
+<span class="linenr">16: </span>                    (remaining-elts (cdr right-result)))
+<span class="linenr">17: </span>                (cons (make-tree this-entry left-tree right-tree)
+<span class="linenr">18: </span>                      remaining-elts))))))))
+</pre>
+</div>
+
+<p>
+a. Write a short paragraph explaining as clearly as you can how partial-tree works. Draw the tree produced by list-&gt;tree for the list (1 3 5 7 9 11).
+</p>
+
+<p>
+b. What is the order of growth in the number of steps required by list-&gt;tree to convert a list of n elements?
+</p>
+
+<p>
+n
+</p>
+
+<p>
+Exercise 2.65.  Use the results of exercises 2.63 and  2.64 to give <img src="https://mitpress.mit.edu/sicp/full-text/book/book-Z-G-D-3.gif" alt="book-Z-G-D-3.gif" />(n) implementations of union-set and intersection-set for sets implemented as (balanced) binary trees.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">tree-&gt;list</span> (tree)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">labels</span> ((copy-to-list (tree result-list)
+<span class="linenr"> 3: </span>             (<span style="color: #859900;">if</span> (null tree)
+<span class="linenr"> 4: </span>                 result-list
+<span class="linenr"> 5: </span>                 (copy-to-list (left-branch tree)
+<span class="linenr"> 6: </span>                               (cons (entry tree)
+<span class="linenr"> 7: </span>                                     (copy-to-list (right-branch tree)
+<span class="linenr"> 8: </span>                                                   result-list))))))
+<span class="linenr"> 9: </span>    (copy-to-list tree '())))
+<span class="linenr">10: </span>
+<span class="linenr">11: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">union-set</span> (tree1 tree2)
+<span class="linenr">12: </span>  (<span style="color: #859900;">labels</span> ((union-set-list (set1 set2)
+<span class="linenr">13: </span>             (<span style="color: #859900;">cond</span> ((null set1) set2)
+<span class="linenr">14: </span>                   ((null set2) set1)
+<span class="linenr">15: </span>                   (t
+<span class="linenr">16: </span>                    (<span style="color: #859900;">let</span> ((x1 (car set1)) (x2 (car set2)))
+<span class="linenr">17: </span>                      (<span style="color: #859900;">cond</span> ((= x1 x2)
+<span class="linenr">18: </span>                             (cons x1
+<span class="linenr">19: </span>                                   (union-set-list (cdr set1) (cdr set2))))
+<span class="linenr">20: </span>                            ((&lt; x1 x2)
+<span class="linenr">21: </span>                             (cons x1
+<span class="linenr">22: </span>                                   (union-set-list (cdr set1) set2)))
+<span class="linenr">23: </span>                            ((&gt; x1 x2)
+<span class="linenr">24: </span>                             (cons x2
+<span class="linenr">25: </span>                                   (union-set-list set1 (cdr set2))))))))))
+<span class="linenr">26: </span>    (list-&gt;tree (union-set-list (tree-&gt;list tree1)
+<span class="linenr">27: </span>                                (tree-&gt;list tree2)))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-3-4" class="outline-4">
+<h4 id="sec-2-3-4"><span class="section-number-4">2.3.4</span> 集合与信息检索</h4>
+<div class="outline-text-4" id="text-2-3-4">
+<p>
+Exercise 2.66.  Implement the lookup procedure for the case where the set of records is structured as a binary tree, ordered by the numerical values of the keys.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">implemented as an unordered list</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">lookup</span> (given-key set-of-records)
+<span class="linenr"> 3: </span>  (<span style="color: #859900;">cond</span> ((null set-of-records) nil)
+<span class="linenr"> 4: </span>        ((equal? given-key (key (car set-of-records)))
+<span class="linenr"> 5: </span>         (car set-of-records))
+<span class="linenr"> 6: </span>        (t (lookup given-key (cdr set-of-records)))))
+<span class="linenr"> 7: </span>
+<span class="linenr"> 8: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">implemented as an binary tree</span>
+<span class="linenr"> 9: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">lookup</span> (given-key set-of-records)
+<span class="linenr">10: </span>  (<span style="color: #859900;">if</span> (null set-of-records)
+<span class="linenr">11: </span>      nil
+<span class="linenr">12: </span>      (<span style="color: #859900;">let</span> ((record-key (key (car set-of-records))))
+<span class="linenr">13: </span>        (<span style="color: #859900;">cond</span> ((= given-key record-key)
+<span class="linenr">14: </span>               (car set-of-records))
+<span class="linenr">15: </span>              ((&gt; given-key record-key)
+<span class="linenr">16: </span>               (lookup given-key (right-branch set-of-records)))
+<span class="linenr">17: </span>              ((&lt; given-key record-key)
+<span class="linenr">18: </span>               (lookup given-key (left-branch set-of-records)))))))
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-4" class="outline-3">
+<h3 id="sec-2-4"><span class="section-number-3">2.4</span> 实例：Huffman编码树</h3>
+<div class="outline-text-3" id="text-2-4">
+</div><div id="outline-container-sec-2-4-1" class="outline-4">
+<h4 id="sec-2-4-1"><span class="section-number-4">2.4.1</span> 生成Huffman树</h4>
+</div>
+
+<div id="outline-container-sec-2-4-2" class="outline-4">
+<h4 id="sec-2-4-2"><span class="section-number-4">2.4.2</span> Huffman树的表示</h4>
+<div class="outline-text-4" id="text-2-4-2">
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Huffman&#26641;&#30340;&#34920;&#31034;</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-leaf</span> (symbol weight)
+<span class="linenr"> 3: </span>  (list 'leaf symbol weight))
+<span class="linenr"> 4: </span>
+<span class="linenr"> 5: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">leafp</span> (object)
+<span class="linenr"> 6: </span>  (eq (car object) 'leaf))
+<span class="linenr"> 7: </span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">symbol-leaf</span> (x) (cadr x))
+<span class="linenr"> 9: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">weight-leaf</span> (x) (caddr x))
+<span class="linenr">10: </span>
+<span class="linenr">11: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-code-tree</span> (left right)
+<span class="linenr">12: </span>  (list left
+<span class="linenr">13: </span>        right
+<span class="linenr">14: </span>        (append (symbols left) (symbols right))
+<span class="linenr">15: </span>        (+ (weight left) (weight right))))
+<span class="linenr">16: </span>
+<span class="linenr">17: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">left-branch</span> (tree) (car tree))
+<span class="linenr">18: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">right-branch</span> (tree) (cadr tree))
+<span class="linenr">19: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">symbols</span> (tree)
+<span class="linenr">20: </span>  (<span style="color: #859900;">if</span> (leafp tree)
+<span class="linenr">21: </span>      (list (symbol-leaf tree))
+<span class="linenr">22: </span>      (caddr tree)))
+<span class="linenr">23: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">weight</span> (tree)
+<span class="linenr">24: </span>  (<span style="color: #859900;">if</span> (leafp tree)
+<span class="linenr">25: </span>      (weight-leaf tree)
+<span class="linenr">26: </span>      (cadddr tree)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-4-3" class="outline-4">
+<h4 id="sec-2-4-3"><span class="section-number-4">2.4.3</span> 解码过程</h4>
+<div class="outline-text-4" id="text-2-4-3">
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#35299;&#30721;&#36807;&#31243;</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">decode</span> (bits tree)
+<span class="linenr"> 3: </span>  (<span style="color: #859900;">labels</span> ((decode-1 (bits current-branch)
+<span class="linenr"> 4: </span>             (<span style="color: #859900;">if</span> (null bits)
+<span class="linenr"> 5: </span>                 '()
+<span class="linenr"> 6: </span>                 (<span style="color: #859900;">let</span> ((next-branch
+<span class="linenr"> 7: </span>                        (choose-branch (car bits) current-branch)))
+<span class="linenr"> 8: </span>                   (<span style="color: #859900;">if</span> (leafp next-branch)
+<span class="linenr"> 9: </span>                       (cons (symbol-leaf next-branch)
+<span class="linenr">10: </span>                             (decode-1 (cdr bits) tree))
+<span class="linenr">11: </span>                       (decode-1 (cdr bits) next-branch))))))
+<span class="linenr">12: </span>    (decode-1 bits tree)))
+<span class="linenr">13: </span>
+<span class="linenr">14: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">choose-branch</span> (bit branch)
+<span class="linenr">15: </span>  (<span style="color: #859900;">cond</span> ((= bit 0) (left-branch branch))
+<span class="linenr">16: </span>        ((= bit 1) (right-branch branch))
+<span class="linenr">17: </span>        (t (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"bad bit -- CHOOSE-BRANCH ~A"</span> bit))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-4-4" class="outline-4">
+<h4 id="sec-2-4-4"><span class="section-number-4">2.4.4</span> <span class="todo TODO">TODO</span> 带权重元素的集合</h4>
+<div class="outline-text-4" id="text-2-4-4">
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#24102;&#26435;&#37325;&#20803;&#32032;&#30340;&#38598;&#21512;</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">adjoin-set</span> (x set)
+<span class="linenr"> 3: </span>  (<span style="color: #859900;">cond</span> ((null set) (list x))
+<span class="linenr"> 4: </span>        ((&lt; (weight x) (weight (car set))) (cons x set))
+<span class="linenr"> 5: </span>        (t (cons (car set)
+<span class="linenr"> 6: </span>                 (adjoin-set x (cdr set))))))
+<span class="linenr"> 7: </span>
+<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-leaf-set</span> (pairs)
+<span class="linenr"> 9: </span>  (<span style="color: #859900;">if</span> (null pairs)
+<span class="linenr">10: </span>      '()
+<span class="linenr">11: </span>      (<span style="color: #859900;">let</span> ((pair (car pairs)))
+<span class="linenr">12: </span>        (adjoin-set (make-leaf (car pair)
+<span class="linenr">13: </span>                               (cadr pair))
+<span class="linenr">14: </span>                    (make-leaf-set (cdr pairs))))))
+</pre>
+</div>
+
+<p>
+Exercise 2.67.  Define an encoding tree and a sample message:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">sample-tree</span> ()
+<span class="linenr">2: </span>  (make-code-tree (make-leaf 'A 4)
+<span class="linenr">3: </span>                  (make-code-tree
+<span class="linenr">4: </span>                   (make-leaf 'B 2)
+<span class="linenr">5: </span>                   (make-code-tree (make-leaf 'D 1)
+<span class="linenr">6: </span>                                   (make-leaf 'C 1)))))
+<span class="linenr">7: </span>
+<span class="linenr">8: </span>(<span style="color: #859900;">defparameter</span> <span style="color: #268bd2;">sample-message</span> '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+</pre>
+</div>
+<p>
+Use the decode procedure to decode the message, and give the result.
+</p>
+
+<p>
+(A D A B B C A)
+</p>
+
+<p>
+Exercise 2.68.  The encode procedure takes as arguments a message and a tree and produces the list of bits that gives the encoded message.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">encode</span> (message tree)
+<span class="linenr">2: </span>  (<span style="color: #859900;">if</span> (null message)
+<span class="linenr">3: </span>      '()
+<span class="linenr">4: </span>      (append (encode-symbol (car message) tree)
+<span class="linenr">5: </span>              (encode (cdr message) tree))))
+</pre>
+</div>
+<p>
+Encode-symbol is a procedure, which you must write, that returns the list of bits that encodes a given symbol according to a given tree. You should design encode-symbol so that it signals an error if the symbol is not in the tree at all. Test your procedure by encoding the result you obtained in exercise 2.67 with the sample tree and seeing whether it is the same as the original sample message.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">encode-symbol</span> (symbol tree)
+<span class="linenr"> 2: </span>  (<span style="color: #859900;">labels</span> ((encode-symbol-1 (symbol tree bits)
+<span class="linenr"> 3: </span>             (<span style="color: #859900;">if</span> (leafp tree)
+<span class="linenr"> 4: </span>                 (and (eq symbol (symbol-leaf tree)) (nreverse bits))
+<span class="linenr"> 5: </span>                 (<span style="color: #859900;">let</span> ((left-bits (encode-symbol-1 symbol (left-branch tree) (cons 0 bits))))
+<span class="linenr"> 6: </span>                   (<span style="color: #859900;">if</span> left-bits
+<span class="linenr"> 7: </span>                       left-bits
+<span class="linenr"> 8: </span>                       (encode-symbol-1 symbol (right-branch tree) (cons 1 bits)))))))
+<span class="linenr"> 9: </span>    (<span style="color: #859900;">if</span> (element-of-set-p symbol (symbols tree))
+<span class="linenr">10: </span>        (encode-symbol-1 symbol tree nil)
+<span class="linenr">11: </span>        (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"symbol is not in the tree ~A"</span> symbol))))
+</pre>
+</div>
+
+<p>
+Exercise 2.69.  The following procedure takes as its argument a list of symbol-frequency pairs (where no symbol appears in more than one pair) and generates a Huffman encoding tree according to the Huffman algorithm.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">generate-huffman-tree</span> (pairs)
+<span class="linenr">2: </span>  (successive-merge (make-leaf-set pairs)))
+</pre>
+</div>
+<p>
+Make-leaf-set is the procedure given above that transforms the list of pairs into an ordered set of leaves. Successive-merge is the procedure you must write, using make-code-tree to successively merge the smallest-weight elements of the set until there is only one element left, which is the desired Huffman tree. (This procedure is slightly tricky, but not really complicated. If you find yourself designing a complex procedure, then you are almost certainly doing something wrong. You can take significant advantage of the fact that we are using an ordered set representation.)
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Initial leaves {(A 8) (B 3) (C 1) (D 1) (E 1) (F 1) (G 1) (H 1)}</span>
+<span class="linenr"> 2: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Merge {(A 8) (B 3) ({C D} 2) (E 1) (F 1) (G 1) (H 1)}</span>
+<span class="linenr"> 3: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Merge {(A 8) (B 3) ({C D} 2) ({E F} 2) (G 1) (H 1)}</span>
+<span class="linenr"> 4: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Merge {(A 8) (B 3) ({C D} 2) ({E F} 2) ({G H} 2)}</span>
+<span class="linenr"> 5: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Merge {(A 8) (B 3) ({C D} 2) ({E F G H} 4)}</span>
+<span class="linenr"> 6: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Merge {(A 8) ({B C D} 5) ({E F G H} 4)}</span>
+<span class="linenr"> 7: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Merge {(A 8) ({B C D E F G H} 9)}</span>
+<span class="linenr"> 8: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Final merge {({A B C D E F G H} 17)}</span>
+<span class="linenr"> 9: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">make-leaf-set &#20135;&#29983;&#20174;&#23567;&#21040;&#22823;&#25490;&#21015;((leaf d 1) (leaf c 2))&#65292;successive-merge &#23454;&#29992; make-code-tree &#21453;&#22797;&#24402;&#24182;&#38598;&#21512;&#20013;&#26435;&#37325;&#26368;&#23567;&#30340;&#20803;&#32032;&#65292;&#30452;&#21040;&#21482;&#21097;&#19968;&#20010;&#20026;&#27490;&#12290;&#21033;&#29992; adjoin-set &#25105;&#20204;&#21487;&#20197;&#20445;&#35777;&#38598;&#21512;&#19968;&#30452;&#37117;&#26159;&#20174;&#23567;&#21040;&#22823;&#25490;&#21015;&#65292;&#25105;&#20204;&#19981;&#26029;&#30340;&#24402;&#24182;&#21069;&#20004;&#20010;&#20803;&#32032;&#65292;&#30452;&#21040;&#21482;&#21097;&#19968;&#20010;&#20026;&#27490;&#12290;</span>
+<span class="linenr">10: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">generate-huffman-tree</span> (pairs)
+<span class="linenr">11: </span>  (successive-merge (make-leaf-set pairs)))
+<span class="linenr">12: </span>
+<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">successive-merge</span> (lst)
+<span class="linenr">14: </span>  (<span style="color: #859900;">cond</span> ((&lt; (length lst) 2) (car lst))
+<span class="linenr">15: </span>        (t (successive-merge
+<span class="linenr">16: </span>            (adjoin-set (make-code-tree (first lst)
+<span class="linenr">17: </span>                                        (second lst))
+<span class="linenr">18: </span>                        (cddr lst))))))
+</pre>
+</div>
+
+<p>
+Exercise 2.70.  The following eight-symbol alphabet with associated relative frequencies was designed to efficiently encode the lyrics of 1950s rock songs. (Note that the ``symbols'' of an ``alphabet'' need not be individual letters.)
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="right" />
+
+<col  class="left" />
+
+<col  class="right" />
+</colgroup>
+<tbody>
+<tr>
+<td class="left">A</td>
+<td class="right">2</td>
+<td class="left">NA</td>
+<td class="right">16</td>
+</tr>
+
+<tr>
+<td class="left">BOOM</td>
+<td class="right">1</td>
+<td class="left">SHA</td>
+<td class="right">3</td>
+</tr>
+
+<tr>
+<td class="left">GET</td>
+<td class="right">2</td>
+<td class="left">YIP</td>
+<td class="right">9</td>
+</tr>
+
+<tr>
+<td class="left">JOB</td>
+<td class="right">2</td>
+<td class="left">WAH</td>
+<td class="right">1</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Use generate-huffman-tree (exercise 2.69) to generate a corresponding Huffman tree, and use encode (exercise 2.68) to encode the following message:
+</p>
+
+<p>
+Get a job
+</p>
+
+<p>
+Sha na na na na na na na na
+</p>
+
+<p>
+Get a job
+</p>
+
+<p>
+Sha na na na na na na na na
+</p>
+
+<p>
+Wah yip yip yip yip yip yip yip yip yip
+</p>
+
+<p>
+Sha boom
+</p>
+
+<p>
+How many bits are required for the encoding? What is the smallest number of bits that would be needed to encode this song if we used a fixed-length code for the eight-symbol alphabet?
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2015-04-28</p>
+<p class="author">Author: Leon</p>
+<p class="date">Created: 2015-08-14 Fri 08:16</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
