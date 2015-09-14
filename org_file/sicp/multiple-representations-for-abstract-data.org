@@ -7,15 +7,15 @@
 
 复数的加法，用直角坐标表示更自然些
 
-[[file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-55.gif]]
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-55.gif]]
 
-[[file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-56.gif]]
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-56.gif]]
 
 复数的乘法，用极坐标表示更自然些
 
-[[file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-57.gif]]
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-57.gif]]
 
-[[file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-58.gif]]
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-58.gif]]
 
 跟之前有理数设计一样，假定复数有四个选择函数：real-part, imag-part, magnitude, and angle，两个构造函数：make-from-real-imag和make-from-mag-ang。有了这些我们就可以实现复数算术了。
 #+BEGIN_SRC lisp -n
@@ -35,9 +35,9 @@
 
 那么我们该选直角坐标还是极坐标表示方式呢？假设有两个程序员Ben和Alyssa分别选择直角坐标和极坐标表示方式。它们有以下关系
 
-[[file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-60.gif]]
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-60.gif]]
 
-[[file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-61.gif]]
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-61.gif]]
 
 #+BEGIN_SRC lisp -n
   ;; Ben
@@ -156,7 +156,7 @@ file:///Users/leon/Documents/sicp-exercise/2.4_files/ch2-Z-G-62.gif
 
 现在我们需要一种能够将系统设计进一步模块化得方法。一种称为“数据导向得程序设计”得编程技术提供了这种能力。在处理针对不同类型得通用型操作时，事实上，我们正是在处理一个二维表格。
 
-file:~/Documents/sicp-exercise/2.4_files/ch2-Z-G-63.gif
+https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-63.gif
 
 数据导向得程序设计就是一种使程序能直接利用这种表格工作得程序设计技术。
 
