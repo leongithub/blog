@@ -11,7 +11,7 @@ description: sicp 2.3 节习题，少量笔记
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>2.3 符号数据</title>
-<!-- 2015-08-14 Fri 08:16 -->
+<!-- 2015-09-14 Mon 20:18 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Leon" />
@@ -167,7 +167,7 @@ for the JavaScript code in this tag.
 <li><a href="#sec-2-4-1">2.4.1. 生成Huffman树</a></li>
 <li><a href="#sec-2-4-2">2.4.2. Huffman树的表示</a></li>
 <li><a href="#sec-2-4-3">2.4.3. 解码过程</a></li>
-<li><a href="#sec-2-4-4">2.4.4. <span class="todo TODO">TODO</span> 带权重元素的集合</a></li>
+<li><a href="#sec-2-4-4">2.4.4. 带权重元素的集合</a></li>
 </ul>
 </li>
 </ul>
@@ -939,7 +939,7 @@ Exercise 2.66.  Implement the lookup procedure for the case where the set of rec
 </div>
 
 <div id="outline-container-sec-2-4-4" class="outline-4">
-<h4 id="sec-2-4-4"><span class="section-number-4">2.4.4</span> <span class="todo TODO">TODO</span> 带权重元素的集合</h4>
+<h4 id="sec-2-4-4"><span class="section-number-4">2.4.4</span> 带权重元素的集合</h4>
 <div class="outline-text-4" id="text-2-4-4">
 <div class="org-src-container">
 
@@ -1128,6 +1128,40 @@ Sha boom
 <p>
 How many bits are required for the encoding? What is the smallest number of bits that would be needed to encode this song if we used a fixed-length code for the eight-symbol alphabet?
 </p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defparameter</span> <span style="color: #268bd2;">*songs-pairs*</span>
+<span class="linenr"> 2: </span>  '((a 2) (na 16) (boom 1) (sha 3) (get 2) (yip 9) (job 2) (wah 1)))
+<span class="linenr"> 3: </span>
+<span class="linenr"> 4: </span>(<span style="color: #859900;">defparameter</span> <span style="color: #268bd2;">*songs-message*</span>
+<span class="linenr"> 5: </span>  '(Get a job
+<span class="linenr"> 6: </span>    Sha na na na na na na na na
+<span class="linenr"> 7: </span>    Get a job
+<span class="linenr"> 8: </span>    Sha na na na na na na na na
+<span class="linenr"> 9: </span>    Wah yip yip yip yip yip yip yip yip yip
+<span class="linenr">10: </span>    Sha boom))
+</pre>
+</div>
+<p>
+1, 84 bits
+2, 8 ＝ 2 ^ 3 ，每个需要3位，需要108位
+</p>
+
+<p>
+Exercise 2.71.  Suppose we have a Huffman tree for an alphabet of n symbols, and that the relative frequencies of the symbols are 1, 2, 4, &#x2026;, 2n-1. Sketch the tree for n=5; for n=10. In such a tree (for general n) how many bits are required to encode the most frequent symbol? the least frequent symbol?
+</p>
+
+<p>
+最频繁的符号用 1 bit，最不频繁的符号用 n－1 bits
+</p>
+
+<p>
+Exercise 2.72.  Consider the encoding procedure that you designed in exercise 2.68. What is the order of growth in the number of steps needed to encode a symbol? Be sure to include the number of steps needed to search the symbol list at each node encountered. To answer this question in general is difficult. Consider the special case where the relative frequencies of the n symbols are as described in exercise 2.71, and give the order of growth (as a function of n) of the number of steps needed to encode the most frequent and least frequent symbols in the alphabet.
+</p>
+
+<p>
+2.71 最频繁的符号encode 需要 n 步（在给出的需编码符号列表中遍历查找），最不频繁的符号encode 需要 遍历查找要 n 步，遍历整个tree需要 n 步，应该需要 n^2 吧。。。
+</p>
 </div>
 </div>
 </div>
@@ -1136,7 +1170,7 @@ How many bits are required for the encoding? What is the smallest number of bits
 <div id="postamble" class="status">
 <p class="date">Date: 2015-04-28</p>
 <p class="author">Author: Leon</p>
-<p class="date">Created: 2015-08-14 Fri 08:16</p>
+<p class="date">Created: 2015-09-14 Mon 20:18</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
