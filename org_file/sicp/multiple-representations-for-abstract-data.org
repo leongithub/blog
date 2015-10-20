@@ -48,7 +48,7 @@
   (defun angle (z)
     (atan (imag-part z) (real-part z)))
   (defun make-from-real-imag (x y) (cons x y))
-  (defun make-from-mag-ang (r a) 
+  (defun make-from-mag-ang (r a)
     (cons (* r (cos a)) (* r (sin a))))
 
   ;; Alyssa
@@ -147,7 +147,7 @@
   (defun make-from-mag-ang (r a)
     (make-from-mag-ang-polar r a))
 #+END_SRC
-file:///Users/leon/Documents/sicp-exercise/2.4_files/ch2-Z-G-62.gif
+[[https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-62.gif]]
 这种剥去和加上标志的规范方式可以成为一种重要的组织策略
 
 * 数据导向的程序设计和可加性

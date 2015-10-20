@@ -11,7 +11,7 @@ description: sicp 2.4 节习题，少量笔记
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>2.4 抽象数据的多重表示</title>
-<!-- 2015-09-14 Mon 20:07 -->
+<!-- 2015-10-20 Tue 08:41 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Leon" />
@@ -200,16 +200,16 @@ for the JavaScript code in this tag.
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">add-complex</span> (z1 z2)
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">add-complex</span> (z1 z2)
 <span class="linenr"> 2: </span>  (make-from-real-imag (+ (real-part z1) (real-part z2))
 <span class="linenr"> 3: </span>                       (+ (imag-part z1) (imag-part z2))))
-<span class="linenr"> 4: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">sub-complex</span> (z1 z2)
+<span class="linenr"> 4: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">sub-complex</span> (z1 z2)
 <span class="linenr"> 5: </span>  (make-from-real-imag (- (real-part z1) (real-part z2))
 <span class="linenr"> 6: </span>                       (- (imag-part z1) (imag-part z2))))
-<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">mul-complex</span> (z1 z2)
+<span class="linenr"> 7: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">mul-complex</span> (z1 z2)
 <span class="linenr"> 8: </span>  (make-from-mag-ang (* (magnitude z1) (magnitude z2))
 <span class="linenr"> 9: </span>                     (+ (angle z1) (angle z2))))
-<span class="linenr">10: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">div-complex</span> (z1 z2)
+<span class="linenr">10: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">div-complex</span> (z1 z2)
 <span class="linenr">11: </span>  (make-from-mag-ang (/ (magnitude z1) (magnitude z2))
 <span class="linenr">12: </span>                     (- (angle z1) (angle z2))))
 </pre>
@@ -233,28 +233,28 @@ for the JavaScript code in this tag.
 
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Ben</span>
-<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">real-part</span> (z) (car z))
-<span class="linenr"> 3: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">imag-part</span> (z) (cdr z))
-<span class="linenr"> 4: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">magnitude</span> (z)
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75;">;; </span><span style="color: #586e75;">Ben</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">real-part</span> (z) (car z))
+<span class="linenr"> 3: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">imag-part</span> (z) (cdr z))
+<span class="linenr"> 4: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">magnitude</span> (z)
 <span class="linenr"> 5: </span>  (sqrt (+ (square (real-part z)) (square (imag-part z)))))
-<span class="linenr"> 6: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">angle</span> (z)
+<span class="linenr"> 6: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">angle</span> (z)
 <span class="linenr"> 7: </span>  (atan (imag-part z) (real-part z)))
-<span class="linenr"> 8: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-real-imag</span> (x y) (cons x y))
-<span class="linenr"> 9: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-mag-ang</span> (r a) 
+<span class="linenr"> 8: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-from-real-imag</span> (x y) (cons x y))
+<span class="linenr"> 9: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-from-mag-ang</span> (r a)
 <span class="linenr">10: </span>  (cons (* r (cos a)) (* r (sin a))))
 <span class="linenr">11: </span>
-<span class="linenr">12: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Alyssa</span>
-<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">real-part</span> (z)
+<span class="linenr">12: </span><span style="color: #586e75;">;; </span><span style="color: #586e75;">Alyssa</span>
+<span class="linenr">13: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">real-part</span> (z)
 <span class="linenr">14: </span>  (* (magnitude z) (cos (angle z))))
-<span class="linenr">15: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">imag-part</span> (z)
+<span class="linenr">15: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">imag-part</span> (z)
 <span class="linenr">16: </span>  (* (magnitude z) (sin (angle z))))
-<span class="linenr">17: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">magnitude</span> (z) (car z))
-<span class="linenr">18: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">angle</span> (z) (cdr z))
-<span class="linenr">19: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-real-imag</span> (x y) 
+<span class="linenr">17: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">magnitude</span> (z) (car z))
+<span class="linenr">18: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">angle</span> (z) (cdr z))
+<span class="linenr">19: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-from-real-imag</span> (x y) 
 <span class="linenr">20: </span>  (cons (sqrt (+ (square x) (square y)))
 <span class="linenr">21: </span>        (atan y x)))
-<span class="linenr">22: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-mag-ang</span> (r a) (cons r a))
+<span class="linenr">22: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-from-mag-ang</span> (r a) (cons r a))
 </pre>
 </div>
 </div>
@@ -268,20 +268,20 @@ for the JavaScript code in this tag.
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">attach-tag</span> (type-tag contents)
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">attach-tag</span> (type-tag contents)
 <span class="linenr"> 2: </span>  (cons type-tag contents))
-<span class="linenr"> 3: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">type-tag</span> (datum)
-<span class="linenr"> 4: </span>  (<span style="color: #859900;">if</span> (consp datum)
+<span class="linenr"> 3: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">type-tag</span> (datum)
+<span class="linenr"> 4: </span>  (<span style="color: #859900; font-weight: bold;">if</span> (consp datum)
 <span class="linenr"> 5: </span>      (car datum)
-<span class="linenr"> 6: </span>      (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"Bad tagged ~A -- TYPE-TAG"</span> datum)))
-<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">contents</span> (datum)
-<span class="linenr"> 8: </span>  (<span style="color: #859900;">if</span> (consp datum)
+<span class="linenr"> 6: </span>      (<span style="color: #cb4b16; font-weight: bold;">error</span> <span style="color: #2aa198;">"Bad tagged ~A -- TYPE-TAG"</span> datum)))
+<span class="linenr"> 7: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">contents</span> (datum)
+<span class="linenr"> 8: </span>  (<span style="color: #859900; font-weight: bold;">if</span> (consp datum)
 <span class="linenr"> 9: </span>      (cdr datum)
-<span class="linenr">10: </span>      (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"Bad tagged ~A -- CONTENTS"</span> datum)))
+<span class="linenr">10: </span>      (<span style="color: #cb4b16; font-weight: bold;">error</span> <span style="color: #2aa198;">"Bad tagged ~A -- CONTENTS"</span> datum)))
 <span class="linenr">11: </span>
-<span class="linenr">12: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">rectangularp</span> (z)
+<span class="linenr">12: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">rectangularp</span> (z)
 <span class="linenr">13: </span>  (eq (type-tag z) 'rectangular))
-<span class="linenr">14: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">polarp</span> (z)
+<span class="linenr">14: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">polarp</span> (z)
 <span class="linenr">15: </span>  (eq (type-tag z) 'polar))
 </pre>
 </div>
@@ -290,32 +290,32 @@ for the JavaScript code in this tag.
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Ben</span>
-<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">real-part-rectangular</span> (z) (car z))
-<span class="linenr"> 3: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">imag-part-rectangular</span> (z) (cdr z))
-<span class="linenr"> 4: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">magnitude-rectangular</span> (z)
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75;">;; </span><span style="color: #586e75;">Ben</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">real-part-rectangular</span> (z) (car z))
+<span class="linenr"> 3: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">imag-part-rectangular</span> (z) (cdr z))
+<span class="linenr"> 4: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">magnitude-rectangular</span> (z)
 <span class="linenr"> 5: </span>  (sqrt (+ (square (real-part-rectangular z))
 <span class="linenr"> 6: </span>           (square (imag-part-rectangular z)))))
-<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">angle-rectangular</span> (z)
+<span class="linenr"> 7: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">angle-rectangular</span> (z)
 <span class="linenr"> 8: </span>  (atan (imag-part-rectangular z)
 <span class="linenr"> 9: </span>        (real-part-rectangular z)))
-<span class="linenr">10: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-real-imag-rectangular</span> (x y)
+<span class="linenr">10: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-from-real-imag-rectangular</span> (x y)
 <span class="linenr">11: </span>  (attach-tag 'rectangular (cons x y)))
-<span class="linenr">12: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-mag-ang-rectangular</span> (r a) 
+<span class="linenr">12: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-from-mag-ang-rectangular</span> (r a) 
 <span class="linenr">13: </span>  (attach-tag 'rectangular
 <span class="linenr">14: </span>              (cons (* r (cos a)) (* r (sin a)))))
-<span class="linenr">15: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Alyssa</span>
-<span class="linenr">16: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">real-part-polar</span> (z)
+<span class="linenr">15: </span><span style="color: #586e75;">;; </span><span style="color: #586e75;">Alyssa</span>
+<span class="linenr">16: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">real-part-polar</span> (z)
 <span class="linenr">17: </span>  (* (magnitude-polar z) (cos (angle-polar z))))
-<span class="linenr">18: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">imag-part-polar</span> (z)
+<span class="linenr">18: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">imag-part-polar</span> (z)
 <span class="linenr">19: </span>  (* (magnitude-polar z) (sin (angle-polar z))))
-<span class="linenr">20: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">magnitude-polar</span> (z) (car z))
-<span class="linenr">21: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">angle-polar</span> (z) (cdr z))
-<span class="linenr">22: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-real-imag-polar</span> (x y) 
+<span class="linenr">20: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">magnitude-polar</span> (z) (car z))
+<span class="linenr">21: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">angle-polar</span> (z) (cdr z))
+<span class="linenr">22: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-from-real-imag-polar</span> (x y) 
 <span class="linenr">23: </span>  (attach-tag 'polar
 <span class="linenr">24: </span>               (cons (sqrt (+ (square x) (square y)))
 <span class="linenr">25: </span>                     (atan y x))))
-<span class="linenr">26: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-mag-ang-polar</span> (r a)
+<span class="linenr">26: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-from-mag-ang-polar</span> (r a)
 <span class="linenr">27: </span>  (attach-tag 'polar (cons r a)))
 </pre>
 </div>
@@ -324,30 +324,30 @@ for the JavaScript code in this tag.
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">real-part</span> (z)
-<span class="linenr"> 2: </span>  (<span style="color: #859900;">cond</span> ((rectangularp z) 
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">real-part</span> (z)
+<span class="linenr"> 2: </span>  (<span style="color: #859900; font-weight: bold;">cond</span> ((rectangularp z) 
 <span class="linenr"> 3: </span>         (real-part-rectangular (contents z)))
 <span class="linenr"> 4: </span>        ((polarp z)
 <span class="linenr"> 5: </span>         (real-part-polar (contents z)))
-<span class="linenr"> 6: </span>        (else (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"Unknown type -- REAL-PART ~A"</span> z))))
-<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">imag-part</span> (z)
-<span class="linenr"> 8: </span>  (<span style="color: #859900;">cond</span> ((rectangularp z)
+<span class="linenr"> 6: </span>        (else (<span style="color: #cb4b16; font-weight: bold;">error</span> <span style="color: #2aa198;">"Unknown type -- REAL-PART ~A"</span> z))))
+<span class="linenr"> 7: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">imag-part</span> (z)
+<span class="linenr"> 8: </span>  (<span style="color: #859900; font-weight: bold;">cond</span> ((rectangularp z)
 <span class="linenr"> 9: </span>         (imag-part-rectangular (contents z)))
 <span class="linenr">10: </span>        ((polarp z)
 <span class="linenr">11: </span>         (imag-part-polar (contents z)))
-<span class="linenr">12: </span>        (else (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"Unknown type -- IMAG-PART ~A"</span> z))))
-<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">magnitude</span> (z)
-<span class="linenr">14: </span>  (<span style="color: #859900;">cond</span> ((rectangularp z)
+<span class="linenr">12: </span>        (else (<span style="color: #cb4b16; font-weight: bold;">error</span> <span style="color: #2aa198;">"Unknown type -- IMAG-PART ~A"</span> z))))
+<span class="linenr">13: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">magnitude</span> (z)
+<span class="linenr">14: </span>  (<span style="color: #859900; font-weight: bold;">cond</span> ((rectangularp z)
 <span class="linenr">15: </span>         (magnitude-rectangular (contents z)))
 <span class="linenr">16: </span>        ((polarp z)
 <span class="linenr">17: </span>         (magnitude-polar (contents z)))
-<span class="linenr">18: </span>        (else (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"Unknown type -- MAGNITUDE ~A"</span> z))))
-<span class="linenr">19: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">angle</span> (z)
-<span class="linenr">20: </span>  (<span style="color: #859900;">cond</span> ((rectangularp z)
+<span class="linenr">18: </span>        (else (<span style="color: #cb4b16; font-weight: bold;">error</span> <span style="color: #2aa198;">"Unknown type -- MAGNITUDE ~A"</span> z))))
+<span class="linenr">19: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">angle</span> (z)
+<span class="linenr">20: </span>  (<span style="color: #859900; font-weight: bold;">cond</span> ((rectangularp z)
 <span class="linenr">21: </span>         (angle-rectangular (contents z)))
 <span class="linenr">22: </span>        ((polarp z)
 <span class="linenr">23: </span>         (angle-polar (contents z)))
-<span class="linenr">24: </span>        (else (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"Unknown type -- ANGLE ~A"</span> z))))
+<span class="linenr">24: </span>        (else (<span style="color: #cb4b16; font-weight: bold;">error</span> <span style="color: #2aa198;">"Unknown type -- ANGLE ~A"</span> z))))
 </pre>
 </div>
 <p>
@@ -355,14 +355,14 @@ for the JavaScript code in this tag.
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-real-imag</span> (x y)
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-from-real-imag</span> (x y)
 <span class="linenr">2: </span>  (make-from-real-imag-rectangular x y))
-<span class="linenr">3: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-mag-ang</span> (r a)
+<span class="linenr">3: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-from-mag-ang</span> (r a)
 <span class="linenr">4: </span>  (make-from-mag-ang-polar r a))
 </pre>
 </div>
 <p>
-<img src="file:///Users/leon/Documents/sicp-exercise/2.4_files/ch2-Z-G-62.gif" alt="ch2-Z-G-62.gif" />
+<img src="https://mitpress.mit.edu/sicp/full-text/book/ch2-Z-G-62.gif" alt="ch2-Z-G-62.gif" />
 这种剥去和加上标志的规范方式可以成为一种重要的组织策略
 </p>
 </div>
@@ -403,10 +403,10 @@ for the JavaScript code in this tag.
 
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Ben</span>
-<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-rectangular-package</span>()
-<span class="linenr"> 3: </span>  <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">internal procedures</span>
-<span class="linenr"> 4: </span>  (<span style="color: #859900;">labels</span> ((real-part (z) (car z))
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75;">;; </span><span style="color: #586e75;">Ben</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">install-rectangular-package</span>()
+<span class="linenr"> 3: </span>  <span style="color: #586e75;">;; </span><span style="color: #586e75;">internal procedures</span>
+<span class="linenr"> 4: </span>  (<span style="color: #859900; font-weight: bold;">labels</span> ((real-part (z) (car z))
 <span class="linenr"> 5: </span>           (imag-part (z) (cdr z))
 <span class="linenr"> 6: </span>           (make-from-real-imag (x y) (cons x y))
 <span class="linenr"> 7: </span>           (magnitude (z)
@@ -416,22 +416,22 @@ for the JavaScript code in this tag.
 <span class="linenr">11: </span>             (atan (imag-part z) (real-part z)))
 <span class="linenr">12: </span>           (make-from-mag-ang (r a)
 <span class="linenr">13: </span>             (cons (* r (cos a)) (* r (sin a))))
-<span class="linenr">14: </span>           <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">interface to the rest of the system</span>
+<span class="linenr">14: </span>           <span style="color: #586e75;">;; </span><span style="color: #586e75;">interface to the rest of the system</span>
 <span class="linenr">15: </span>           (tag (x) (attach-tag 'rectangular x)))
 <span class="linenr">16: </span>    (put-table 'real-part '(rectangular) #'real-part)
 <span class="linenr">17: </span>    (put-table 'imag-part '(rectangular) #'imag-part)
 <span class="linenr">18: </span>    (put-table 'magnitude '(rectangular) #'magnitude)
 <span class="linenr">19: </span>    (put-table 'angle '(rectangular) #'angle)
 <span class="linenr">20: </span>    (put-table 'make-from-real-imag 'rectangular 
-<span class="linenr">21: </span>         (<span style="color: #859900;">lambda</span> (x y) (tag (make-from-real-imag x y))))
+<span class="linenr">21: </span>         (<span style="color: #859900; font-weight: bold;">lambda</span> (x y) (tag (make-from-real-imag x y))))
 <span class="linenr">22: </span>    (put-table 'make-from-mag-ang 'rectangular 
-<span class="linenr">23: </span>         (<span style="color: #859900;">lambda</span> (r a) (tag (make-from-mag-ang r a))))
+<span class="linenr">23: </span>         (<span style="color: #859900; font-weight: bold;">lambda</span> (r a) (tag (make-from-mag-ang r a))))
 <span class="linenr">24: </span>    'done))
 <span class="linenr">25: </span>
-<span class="linenr">26: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">Alyssa</span>
-<span class="linenr">27: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-polar-package</span>()
-<span class="linenr">28: </span>  <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">internal procedures</span>
-<span class="linenr">29: </span>  (<span style="color: #859900;">labels</span> ((magnitude (z) (car z))
+<span class="linenr">26: </span><span style="color: #586e75;">;; </span><span style="color: #586e75;">Alyssa</span>
+<span class="linenr">27: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">install-polar-package</span>()
+<span class="linenr">28: </span>  <span style="color: #586e75;">;; </span><span style="color: #586e75;">internal procedures</span>
+<span class="linenr">29: </span>  (<span style="color: #859900; font-weight: bold;">labels</span> ((magnitude (z) (car z))
 <span class="linenr">30: </span>           (angle (z) (cdr z))
 <span class="linenr">31: </span>           (make-from-mag-ang (r a) (cons r a))
 <span class="linenr">32: </span>           (real-part (z)
@@ -441,38 +441,38 @@ for the JavaScript code in this tag.
 <span class="linenr">36: </span>           (make-from-real-imag (x y)
 <span class="linenr">37: </span>             (cons (sqrt (+ (square x) (square y)))
 <span class="linenr">38: </span>                   (atan y x)))
-<span class="linenr">39: </span>           <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">interface to the rest of the system</span>
+<span class="linenr">39: </span>           <span style="color: #586e75;">;; </span><span style="color: #586e75;">interface to the rest of the system</span>
 <span class="linenr">40: </span>           (tag (x) (attach-tag 'polar x)))
 <span class="linenr">41: </span>    (put-table 'real-part '(polar) #'real-part)
 <span class="linenr">42: </span>    (put-table 'imag-part '(polar) #'imag-part)
 <span class="linenr">43: </span>    (put-table 'magnitude '(polar) #'magnitude)
 <span class="linenr">44: </span>    (put-table 'angle '(polar) #'angle)
 <span class="linenr">45: </span>    (put-table 'make-from-real-imag 'polar
-<span class="linenr">46: </span>         (<span style="color: #859900;">lambda</span> (x y) (tag (make-from-real-imag x y))))
+<span class="linenr">46: </span>         (<span style="color: #859900; font-weight: bold;">lambda</span> (x y) (tag (make-from-real-imag x y))))
 <span class="linenr">47: </span>    (put-table 'make-from-mag-ang 'polar 
-<span class="linenr">48: </span>         (<span style="color: #859900;">lambda</span> (r a) (tag (make-from-mag-ang r a))))
+<span class="linenr">48: </span>         (<span style="color: #859900; font-weight: bold;">lambda</span> (r a) (tag (make-from-mag-ang r a))))
 <span class="linenr">49: </span>    'done))
-<span class="linenr">50: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#20197;&#19978;&#23601;&#19981;&#29992;&#25285;&#24515;&#21517;&#23383;&#20914;&#31361;&#38382;&#39064;</span>
+<span class="linenr">50: </span><span style="color: #586e75;">;; </span><span style="color: #586e75;">&#20197;&#19978;&#23601;&#19981;&#29992;&#25285;&#24515;&#21517;&#23383;&#20914;&#31361;&#38382;&#39064;</span>
 <span class="linenr">51: </span>
-<span class="linenr">52: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#36890;&#29992;&#36873;&#25321;&#20989;&#25968;</span>
-<span class="linenr">53: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">apply-generic</span> (op <span style="color: #b58900;">&amp;rest</span> args)
-<span class="linenr">54: </span>  (<span style="color: #859900;">let</span> ((type-tags (mapcar type-tag args)))
-<span class="linenr">55: </span>    (<span style="color: #859900;">let</span> ((proc (get-table op type-tags)))
-<span class="linenr">56: </span>      (<span style="color: #859900;">if</span> proc
+<span class="linenr">52: </span><span style="color: #586e75;">;; </span><span style="color: #586e75;">&#36890;&#29992;&#36873;&#25321;&#20989;&#25968;</span>
+<span class="linenr">53: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">apply-generic</span> (op <span style="color: #b58900;">&amp;rest</span> args)
+<span class="linenr">54: </span>  (<span style="color: #859900; font-weight: bold;">let</span> ((type-tags (mapcar type-tag args)))
+<span class="linenr">55: </span>    (<span style="color: #859900; font-weight: bold;">let</span> ((proc (get-table op type-tags)))
+<span class="linenr">56: </span>      (<span style="color: #859900; font-weight: bold;">if</span> proc
 <span class="linenr">57: </span>          (apply proc (mapcar contents args))
-<span class="linenr">58: </span>          (<span style="color: #dc322f; font-weight: bold;">error</span>
+<span class="linenr">58: </span>          (<span style="color: #cb4b16; font-weight: bold;">error</span>
 <span class="linenr">59: </span>            <span style="color: #2aa198;">"No method for these types ~A -- APPLY-GENERIC"</span>
 <span class="linenr">60: </span>            (list op type-tags))))))
 <span class="linenr">61: </span>
-<span class="linenr">62: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">real-part</span> (z) (apply-generic 'real-part z))
-<span class="linenr">63: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">imag-part</span> (z) (apply-generic 'imag-part z))
-<span class="linenr">64: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">magnitude</span> (z) (apply-generic 'magnitude z))
-<span class="linenr">65: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">angle</span> (z) (apply-generic 'angle z))
+<span class="linenr">62: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">real-part</span> (z) (apply-generic 'real-part z))
+<span class="linenr">63: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">imag-part</span> (z) (apply-generic 'imag-part z))
+<span class="linenr">64: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">magnitude</span> (z) (apply-generic 'magnitude z))
+<span class="linenr">65: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">angle</span> (z) (apply-generic 'angle z))
 <span class="linenr">66: </span>
-<span class="linenr">67: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">&#26368;&#21518;&#24403;&#25105;&#20204;&#26377;&#23454;&#37096;&#21644;&#34394;&#37096;&#26102;&#23601;&#29992;&#30452;&#35282;&#22352;&#26631;&#34920;&#31034;&#65292;&#24403;&#26377;&#27169;&#21644;&#35282;&#26102;&#23601;&#29992;&#26497;&#22352;&#26631;&#34920;&#31034;</span>
-<span class="linenr">68: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-real-imag</span> (x y)
+<span class="linenr">67: </span><span style="color: #586e75;">;; </span><span style="color: #586e75;">&#26368;&#21518;&#24403;&#25105;&#20204;&#26377;&#23454;&#37096;&#21644;&#34394;&#37096;&#26102;&#23601;&#29992;&#30452;&#35282;&#22352;&#26631;&#34920;&#31034;&#65292;&#24403;&#26377;&#27169;&#21644;&#35282;&#26102;&#23601;&#29992;&#26497;&#22352;&#26631;&#34920;&#31034;</span>
+<span class="linenr">68: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-from-real-imag</span> (x y)
 <span class="linenr">69: </span>  ((get-table 'make-from-real-imag 'rectangular) x y))
-<span class="linenr">70: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-from-mag-ang</span> (r a)
+<span class="linenr">70: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-from-mag-ang</span> (r a)
 <span class="linenr">71: </span>  ((get-table 'make-from-mag-ang 'polar) r a))
 </pre>
 </div>
@@ -482,10 +482,10 @@ Exercise 2.73.  Section 2.3.2 described a program that performs symbolic differe
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">deriv</span> (exp var)
-<span class="linenr"> 2: </span>  (<span style="color: #859900;">cond</span> ((numberp exp) 0)
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">deriv</span> (exp var)
+<span class="linenr"> 2: </span>  (<span style="color: #859900; font-weight: bold;">cond</span> ((numberp exp) 0)
 <span class="linenr"> 3: </span>        ((variablep exp)
-<span class="linenr"> 4: </span>         (<span style="color: #859900;">if</span> (same-variable-p exp var) 1 0))
+<span class="linenr"> 4: </span>         (<span style="color: #859900; font-weight: bold;">if</span> (same-variable-p exp var) 1 0))
 <span class="linenr"> 5: </span>        ((sump exp)
 <span class="linenr"> 6: </span>         (make-sum (deriv (addend exp) var)
 <span class="linenr"> 7: </span>                   (deriv (augend exp) var)))
@@ -502,7 +502,7 @@ Exercise 2.73.  Section 2.3.2 described a program that performs symbolic differe
 <span class="linenr">18: </span>                         (base exp)
 <span class="linenr">19: </span>                         (make-sum (exponent exp) -1)))
 <span class="linenr">20: </span>          (deriv (base exp) var)))
-<span class="linenr">21: </span>        (t (<span style="color: #dc322f; font-weight: bold;">error</span> <span style="color: #2aa198;">"unknown expression type -- DERIV ~A"</span> exp))))
+<span class="linenr">21: </span>        (t (<span style="color: #cb4b16; font-weight: bold;">error</span> <span style="color: #2aa198;">"unknown expression type -- DERIV ~A"</span> exp))))
 </pre>
 </div>
 <p>
@@ -510,13 +510,13 @@ We can regard this program as performing a dispatch on the type of the expressio
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">deriv</span> (exp var)
-<span class="linenr">2: </span>   (<span style="color: #859900;">cond</span> ((numberp exp) 0)
-<span class="linenr">3: </span>         ((variablep exp) (<span style="color: #859900;">if</span> (same-variable-p exp var) 1 0))
+<pre class="src src-lisp"><span class="linenr">1: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">deriv</span> (exp var)
+<span class="linenr">2: </span>   (<span style="color: #859900; font-weight: bold;">cond</span> ((numberp exp) 0)
+<span class="linenr">3: </span>         ((variablep exp) (<span style="color: #859900; font-weight: bold;">if</span> (same-variable-p exp var) 1 0))
 <span class="linenr">4: </span>         (t (funcall (get-table 'deriv (operator exp))
 <span class="linenr">5: </span>                     (operands exp) var))))
-<span class="linenr">6: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">operator</span> (exp) (car exp))
-<span class="linenr">7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">operands</span> (exp) (cdr exp))
+<span class="linenr">6: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">operator</span> (exp) (car exp))
+<span class="linenr">7: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">operands</span> (exp) (cdr exp))
 </pre>
 </div>
 <p>
@@ -544,10 +544,10 @@ What corresponding changes to the derivative system are required?
 </p>
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">b</span>
-<span class="linenr"> 2: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-sum-package</span> ()
-<span class="linenr"> 3: </span>  <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">internal procedures</span>
-<span class="linenr"> 4: </span>  (<span style="color: #859900;">labels</span> ((addend (s))
+<pre class="src src-lisp"><span class="linenr"> 1: </span><span style="color: #586e75;">;; </span><span style="color: #586e75;">b</span>
+<span class="linenr"> 2: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">install-sum-package</span> ()
+<span class="linenr"> 3: </span>  <span style="color: #586e75;">;; </span><span style="color: #586e75;">internal procedures</span>
+<span class="linenr"> 4: </span>  (<span style="color: #859900; font-weight: bold;">labels</span> ((addend (s))
 <span class="linenr"> 5: </span>           (augend (s))
 <span class="linenr"> 6: </span>           (make-sum (a1 a2))
 <span class="linenr"> 7: </span>           (deriv-sum (s var)
@@ -557,12 +557,12 @@ What corresponding changes to the derivative system are required?
 <span class="linenr">11: </span>    (put-table 'deriv '+ #'deriv-sum)
 <span class="linenr">12: </span>    'done))
 <span class="linenr">13: </span>
-<span class="linenr">14: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-sum</span> (a1 a2)
+<span class="linenr">14: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-sum</span> (a1 a2)
 <span class="linenr">15: </span>  (funcall (get-table 'make-sum '+) a1 a2))
 <span class="linenr">16: </span>
-<span class="linenr">17: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-product-package</span> ()
-<span class="linenr">18: </span>  <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">internal procedures</span>
-<span class="linenr">19: </span>  (<span style="color: #859900;">labels</span> ((multiplier (s))
+<span class="linenr">17: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">install-product-package</span> ()
+<span class="linenr">18: </span>  <span style="color: #586e75;">;; </span><span style="color: #586e75;">internal procedures</span>
+<span class="linenr">19: </span>  (<span style="color: #859900; font-weight: bold;">labels</span> ((multiplier (s))
 <span class="linenr">20: </span>           (multiplicand (s))
 <span class="linenr">21: </span>           (make-product (m1 m2))
 <span class="linenr">22: </span>           (deriv-product (s var)
@@ -575,12 +575,12 @@ What corresponding changes to the derivative system are required?
 <span class="linenr">29: </span>    (put-table 'deriv '* #'deriv-product)
 <span class="linenr">30: </span>    'done))
 <span class="linenr">31: </span>
-<span class="linenr">32: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-product</span> (m1 m2)
+<span class="linenr">32: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-product</span> (m1 m2)
 <span class="linenr">33: </span>  (funcall (get-table 'make-product '*) m1 m2))
 <span class="linenr">34: </span>
-<span class="linenr">35: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">c</span>
-<span class="linenr">36: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-exponentiation-package</span> ()
-<span class="linenr">37: </span>  (<span style="color: #859900;">labels</span> ((exponent (e))
+<span class="linenr">35: </span><span style="color: #586e75;">;; </span><span style="color: #586e75;">c</span>
+<span class="linenr">36: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">install-exponentiation-package</span> ()
+<span class="linenr">37: </span>  (<span style="color: #859900; font-weight: bold;">labels</span> ((exponent (e))
 <span class="linenr">38: </span>           (base (e))
 <span class="linenr">39: </span>           (make-exponentiation (base e))
 <span class="linenr">40: </span>           (deriv-exponentiation (s var)
@@ -594,10 +594,10 @@ What corresponding changes to the derivative system are required?
 <span class="linenr">48: </span>    (put-table 'deriv '** #'deriv-exponentiation)
 <span class="linenr">49: </span>    'done))
 <span class="linenr">50: </span>
-<span class="linenr">51: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">make-exponentiation</span> (base e)
+<span class="linenr">51: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">make-exponentiation</span> (base e)
 <span class="linenr">52: </span>  (funcall (get-table 'make-exponentiation '**) base e))
 <span class="linenr">53: </span>
-<span class="linenr">54: </span><span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">d</span>
+<span class="linenr">54: </span><span style="color: #586e75;">;; </span><span style="color: #586e75;">d</span>
 <span class="linenr">55: </span>&#21482;&#38656;&#35201;&#25913;put-table&#21442;&#25968;&#24471;&#39034;&#24207;&#23601;&#21487;&#20197;
 </pre>
 </div>
@@ -628,24 +628,24 @@ d.  When Insatiable takes over a new company, what changes must be made in order
 
 <div class="org-src-container">
 
-<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-division-1-package</span> ()
-<span class="linenr"> 2: </span>  (<span style="color: #859900;">labels</span> ((get-record (name file)
-<span class="linenr"> 3: </span>             <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">division-1 implement</span>
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">install-division-1-package</span> ()
+<span class="linenr"> 2: </span>  (<span style="color: #859900; font-weight: bold;">labels</span> ((get-record (name file)
+<span class="linenr"> 3: </span>             <span style="color: #586e75;">;; </span><span style="color: #586e75;">division-1 implement</span>
 <span class="linenr"> 4: </span>             'record))
 <span class="linenr"> 5: </span>    (put-table 'get-record 'division-1 #'get-record)))
 <span class="linenr"> 6: </span>
-<span class="linenr"> 7: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">install-division-2-package</span> ()
-<span class="linenr"> 8: </span>  (<span style="color: #859900;">labels</span> ((get-record (name file)
-<span class="linenr"> 9: </span>             <span style="color: #586e75; font-style: italic;">;; </span><span style="color: #586e75; font-style: italic;">division-2 implement</span>
+<span class="linenr"> 7: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">install-division-2-package</span> ()
+<span class="linenr"> 8: </span>  (<span style="color: #859900; font-weight: bold;">labels</span> ((get-record (name file)
+<span class="linenr"> 9: </span>             <span style="color: #586e75;">;; </span><span style="color: #586e75;">division-2 implement</span>
 <span class="linenr">10: </span>             'record))
 <span class="linenr">11: </span>    (put-table 'get-record 'division-2 #'get-record)))
 <span class="linenr">12: </span>
-<span class="linenr">13: </span>(<span style="color: #859900;">defun</span> <span style="color: #268bd2;">apply-generic</span> (op file $rest args)
-<span class="linenr">14: </span>  (<span style="color: #859900;">let</span> ((division (car file)))
-<span class="linenr">15: </span>    (<span style="color: #859900;">let</span> ((proc (get-table op divisioin)))
-<span class="linenr">16: </span>      (<span style="color: #859900;">if</span> proc
+<span class="linenr">13: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">apply-generic</span> (op file $rest args)
+<span class="linenr">14: </span>  (<span style="color: #859900; font-weight: bold;">let</span> ((division (car file)))
+<span class="linenr">15: </span>    (<span style="color: #859900; font-weight: bold;">let</span> ((proc (get-table op divisioin)))
+<span class="linenr">16: </span>      (<span style="color: #859900; font-weight: bold;">if</span> proc
 <span class="linenr">17: </span>          (apply proc args)
-<span class="linenr">18: </span>          (<span style="color: #dc322f; font-weight: bold;">error</span>
+<span class="linenr">18: </span>          (<span style="color: #cb4b16; font-weight: bold;">error</span>
 <span class="linenr">19: </span>            <span style="color: #2aa198;">"No method for the division ~A -- APPLY-GENERIC"</span>
 <span class="linenr">20: </span>            (list op division))))))
 </pre>
@@ -659,7 +659,7 @@ d.  When Insatiable takes over a new company, what changes must be made in order
 <div id="postamble" class="status">
 <p class="date">Date: 2015-09-14</p>
 <p class="author">Author: Leon</p>
-<p class="date">Created: 2015-09-14 Mon 20:07</p>
+<p class="date">Created: 2015-10-20 Tue 08:41</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
