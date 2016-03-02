@@ -1,0 +1,41 @@
+#+OPTIONS: ^:{}
+
+* 前言
+此篇博客讲的是用 AndroidStudio 编译运行 ContactsProvider 的一个 bug 的解决过程和方法，本来平时遇到的一些问题，用 google 百度一下或自己思考解决就行了，没必要写一篇博客，顶多自己记下笔记。但是这个问题是我在编译运行 Contacts，Dialer 和 ContactsProvider 项目时都遇到过的，而且搜索此问题的解决方式也有很多说法，有一些方法对某些人管用，其他人就不管用了。我认为我找到了此问题的根本解决方法，至少对我所编译运行的三个项目都管用。所以分享出来，希望可以让他人少走弯路:)
+
+* 过程
+最近在升级联系人代码到 Android M 版本，之前所搭开发环境自然也要配置新的环境来检测代码移植是否正确，在配置好 ContactsProvider 的开发环境时，一运行就会报如下类似错误：
+#+BEGIN_VERSE
+Error:Execution failed for task ':app:preDexDebug'.
+com.android.ide.common.process.ProcessException: org.gradle.process.internal.ExecException: Process 'command 'C:\Program Files (x86)\Java\jdk1.7.0_67\bin\java.exe'' finished with non-zero exit value 1
+#+END_VERSE
+因为之前在配置 Contacts 和 Dialer 时也遇到过，Contacts 之前遇到按照网络上说的方法，clean project 或者重启 AndroidStudio 在 clean project 就好了，在搭建 Contacts M 版本环境时 clean project 也不好使，网上说是资源冲突，发现 AndroidStudio 在我新建工程后自动给我引入了 AppCompat jar 包，去掉依赖就可以了。编译运行 Dialer 时也遇到此问题，简单尝试了 clean project 未遂，因为我负责开发 Contacts ，所以 Dialer 的环境也就没去花时间搞。
+
+此次遇到，真是冤家路窄。。。再次 google 发现 [[http://stackoverflow.com/questions/29045129/android-java-exe-finished-with-non-zero-exit-value-1][StackOverflow 上的答案]]
+其中一个答案说资源冲突：
+#+BEGIN_QUOTE
+Had the same error encountered which was due to conflicting drawable resources. I did a clean project and the error was no longer encountered.
+#+END_QUOTE
+按照资源冲突的思路去解决问题，应该是一些不该导入的 jar 包导入了，或者不该打包到 apk 里的 jar 包被编译进了最终的 apk。另一个答案里：
+#+BEGIN_QUOTE
+The fix was to use provided instead of compile for the processor dependency
+#+END_QUOTE
+我把 build.gradle 文件 dependencies 中的 compile 改为 provided 还真起作用了，但是运行时报错，说是找不到类，于是把
+#+BEGIN_EXAMPLE
+provided fileTree(dir: 'libs', include: ['*.jar'])
+#+END_EXAMPLE
+去掉，然后分别为每个 jar 包配置 compile 或 provided 关键字，只是编译时需要最终 apk 不需要的用 provided ，要打包进最终 apk 的用 compile。运行成功！
++ provided - compile-time only dependency
++ package - package-time only dependency
++ compile - compile-time and package-time dependency
+这时候就拿 Dialer 编译运行试试吧，把其中一个 ex.jar 的 compile 改为 provided 关键字成功运行。
+
+*ps* ：不过 Dialer 运行时报错，不是找不到类，而是：
+#+BEGIN_QUOTE
+Neither user 10076 nor current process has android.permission.READ_PHONE_STATE
+#+END_QUOTE
+[[http://developer.android.com/intl/zh-cn/training/permissions/requesting.html][在此找到答案]] ，文中提到：
+#+BEGIN_QUOTE
+Dangerous permissions can give the app access to the user's confidential data. If your app lists a normal permission in its manifest, the system grants the permission automatically. If you list a dangerous permission, the user has to explicitly give approval to your app
+#+END_QUOTE
+在 6.0 及以上版本，一些危险的权限用户必须手动开启，于是 设置 －》 应用 －》 电话 －》 权限，全部打勾，完美运行！perfect
