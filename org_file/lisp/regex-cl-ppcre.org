@@ -1,0 +1,347 @@
+#+TITLE: 正则表达式之 CL-PPCRE
+#+AUTHOR: Leon Yang
+#+EMAIL: yjg.2016@gmail.com
+#+OPTIONS: email:t ^:{}
+
+* 前言
+最近在用 CL-PPCRE 库写正则表达式时，发现很多地方不清楚，不太会用，然后花了点时间复习了正则表达式，并研究了 CL-PPCRE api 的一些不明白的地方，在此写下，作为笔记，也希望能帮助他人。
+
+* 何为 CL-PPCRE
+CL-PPCRE 是一个用 Common Lisp 语言写的正则表达式库，下面为[[http://weitz.de/cl-ppcre/][官方文挡]]的介绍：
+#+BEGIN_QUOTE
+CL-PPCRE is a portable regular expression library for Common Lisp which has the following features:
+
++ It is *compatible with Perl*.
++ It is pretty *fast*.
++ It is *portable* between ANSI-compliant Common Lisp implementations.
++ It is *thread-safe*.
++ In addition to specifying regular expressions as strings like in Perl you can also use S-expressions.
++ It comes with a [[http://www.opensource.org/licenses/bsd-license.php][BSD-style license]] so you can basically do with it whatever you want.
+CL-PPCRE has been used successfully in various applications like BioBike, clutu, LoGS, CafeSpot, Eboy, or The Regex Coach.
+#+END_QUOTE
+
+* Scanning
+
+** [Method] create-scanner
+*create-scanner* (parse-tree t)&key case-insensitive-mode multi-line-mode single-line-mode extended-mode destructive => scanner, register-names
+
+传递正则表达式（此方法中为 parse-tree），返回用此正则表达式浏览字符串的闭包。第二个返回值只有在*ALLOW-NAMED-REGISTERS*为 t 时返回，默认为 nil。
+
+参数：
++ case-insensitive-mode - 忽略大小写
++ multi-line-mode - 其中 ^ 和 $ 匹配每行的开头和末尾（不是输入字符串的开头和末尾）
++ single-line-mode - 更改.的含义，使它与每一个字符匹配（非单行模式 “.” 是不匹配换行符 \n 的）
++ extended-mode - 表达式中的空白“ ” 和“#”后面的字符会忽略，让正则表达式更加易读
++ destructive - The destructive keyword will be ignored.
+
+parse-tree 为 S-表达式。下面为 parse-tree 与字符串对应关系（可用 parse-string 来看）：
+#+BEGIN_VERSE
+:VOID - ""
+:EVERYTHING - .
+:WORD-BOUNDARY :NON-WORD-BOUNDARY - \b \B
+:DIGIT-CLASS :NON-DIGIT-CLASS - \d \D
+:WORD-CHAR-CLASS :NON-WORD-CHAR-CLASS - \w \W
+:WHITESPACE-CHAR-CLASS :NON-WHITESPACE-CHAR-CLASS - \s \ S
+:START-ANCHOR :END-ANCHOR - ^ $ （会受 multi-line-mode 影响）
+:MODELESS-START-ANCHOR :MODELESS-END-ANCHOR :MODELESS-END-ANCHOR-NO-NEWLINE - \A \Z \z （不受 multi-line-mode 影响）
+
+:CASE-INSENSITIVE-P :CASE-SENSITIVE-P :MULTI-LINE-MODE-P :NOT-MULTI-LINE-MODE-P :SINGLE-LINE-MODE-P :NOT-SINGLE-LINE-MODE-P - "(?i)", "(?-i)", "(?m)", "(?-m)", "(?s)", and "(?-s)"
+如：匹配 "abcd"，其中 "bc" 忽略大小写，可以这样写 "a(?:(?i)bc)d"。(?:) 下面提
+(parse-string "a(?:(?i)bc)d") ==> (:SEQUENCE #\a (:GROUP (:SEQUENCE (:FLAGS :CASE-INSENSITIVE-P) "bc")) #\d)
+
+:GROUP - (?:) 非捕获组。如果捕获组捕获到内容会把数据返回，非捕获组不会
+(:BRANCH <test> <parse-tree>) - (?(<condition>)<yes-pattern>|<no-pattern>) 其中 test 可以是反向数字引用或者零宽断言
+(:POSITIVE-LOOKAHEAD|:NEGATIVE-LOOKAHEAD|:POSITIVE-LOOKBEHIND|:NEGATIVE-LOOKBEHIND <parse-tree>) - (?=) (?!) (?<=) (?<!) 零宽断言
+
+(:GREEDY-REPETITION|:NON-GREEDY-REPETITION <min> <max> <parse-tree>) - 默认为贪婪模式，在 *,+,?,{} 等后加 "?" 为非贪婪模式
+(:STANDALONE <parse-tree>) - (?>) 不考虑回溯。grab all you can, and do not give anything back。(?>a*)ab 将不会匹配任何字符串，因为(?>a*) 已经把所有的 #\a 匹配了。而a*ab 则会匹配到字符串，因为 a* 会受后面的 ab 影响。
+
+(:REGISTER <parse-tree>) (:NAMED-REGISTER <name> <parse-tree>) - () (?<name> <regex>) 捕获组与命名捕获组。命名捕获组当变量*allow-named-registers*为 t 时才管用。
+(:BACK-REFERENCE <ref>) - \number \k<name> 反向引用
+
+(:PROPERTY|:INVERTED-PROPERTY <property>) (:FILTER <function> &optional <length>) - 这两个稍微高端一些，可以定义函数，目前没怎么用到，如果以后用到再更新下吧。
+
+(:CHAR-CLASS|:INVERTED-CHAR-CLASS {<item>}*) - [] [^]
+
+#+END_VERSE
+
+** [Generic Function] scan
+*scan* regex target-string &key start end => match-start, match-end, reg-starts, reg-ends
+
+regex 这个参数可以是字符串，也可以是 scanner。如果你传递的是字符串也会调用 create-scanner 方法，通过传递的字符串创建 scanner，所以如果一个正则表达式字符串要被调用多次，还是先创建 scanner 更有效率（后面的函数，方法或宏的 regex 参数一样）
+
+返回值 match-start, match-end, reg-starts, reg-ends 分别是匹配开始索引，结束索引，捕获组开始索引列表，结束索引列表
+
+** [Function] scan-to-strings
+*scan-to-strings* regex target-string &key start end sharedp => match, regs
+
+这里返回值就从广义函数 scan 中的索引变成了字符串（捕获组索引列表变成字符串列表）
+
+If sharedp is true, the substrings may share structure with target-string. 其实 sharedp 参数会决定用 nsubseq（破坏性函数） 还是 subseq 来根据把 target-string 应用到 scan 后得到的返回值索引从 target-string 解出子序列。所以一般对 target-string 的修改没有影响的情况下，将 sharedp 设置为 t 效率会高一些。下面是 *nsubseq* 和 *scan-to-strings* 源码：
+#+BEGIN_SRC lisp -n
+  (declaim (inline nsubseq))
+  (defun nsubseq (sequence start &optional (end (length sequence)))
+    "Returns a subsequence by pointing to location in original sequence."
+    (make-array (- end start)
+                :element-type (array-element-type sequence)
+                :displaced-to sequence
+                :displaced-index-offset start))
+
+  (defun scan-to-strings (regex target-string &key (start 0)
+                                                   (end (length target-string))
+                                                   sharedp)
+    "Like SCAN but returns substrings of TARGET-STRING instead of
+  positions, i.e. this function returns two values on success: the whole
+  match as a string plus an array of substrings (or NILs) corresponding
+  to the matched registers.  If SHAREDP is true, the substrings may
+  share structure with TARGET-STRING."
+    (declare #.*standard-optimize-settings*)
+    (multiple-value-bind (match-start match-end reg-starts reg-ends)
+        (scan regex target-string :start start :end end)
+      (unless match-start
+        (return-from scan-to-strings nil))
+      (let ((substr-fn (if sharedp #'nsubseq #'subseq)))
+        (values (funcall substr-fn
+                         target-string match-start match-end)
+                (map 'vector
+                     (lambda (reg-start reg-end)
+                       (if reg-start
+                         (funcall substr-fn
+                                  target-string reg-start reg-end)
+                         nil))
+                     reg-starts
+                     reg-ends)))))
+#+END_SRC
+
+** [Macro] register-groups-bind
+*register-groups-bind* var-list (regex target-string &key start end sharedp) declaration* statement* => result*
+
+这个看例子就可以
+#+BEGIN_EXAMPLE
+> (register-groups-bind (first second third fourth)
+      ("((a)|(b)|(c))+" "abababc" :sharedp t)
+    (list first second third fourth))
+("c" "a" "b" "c")
+
+> (register-groups-bind (nil second third fourth)
+      ;; note that we don't bind the first and fifth register group
+      ("((a)|(b)|(c))()+" "abababc" :start 6)
+    (list second third fourth))
+(NIL NIL "c")
+
+> (register-groups-bind (first)
+      ("(a|b)+" "accc" :start 1)
+    (format t "This will not be printed: ~A" first))
+NIL
+
+> (register-groups-bind (fname lname (#'parse-integer date month year))
+      ("(\\w+)\\s+(\\w+)\\s+(\\d{1,2})\\.(\\d{1,2})\\.(\\d{4})" "Frank Zappa 21.12.1940")
+    (list fname lname (encode-universal-time 0 0 0 date month year 0)))
+("Frank" "Zappa" 1292889600)
+#+END_EXAMPLE
+
+** 迭代
+[Macro] *do-scans* (match-start match-end reg-starts reg-ends regex target-string &optional result-form &key start end) declaration* statement* => result*
+
+[Macro] *do-matches* (match-start match-end regex target-string &optional result-form &key start end) declaration* statement* => result*
+
+[Macro] *do-matches-as-strings* (match-var regex target-string &optional result-form &key start end sharedp) declaration* statement* => result*
+
+[Macro] *do-register-groups* var-list (regex target-string &optional result-form &key start end sharedp) declaration* statement* => result*
+
+[Function] *all-matches* regex target-string &key start end => list
+
+[Function] *all-matches-as-strings* regex target-string &key start end sharedp => list
+
+*do-scans* 与 *do-matches* 基本一样，除了 *do-matches* 忽略了 reg-starts 和 reg-ends 两个绑定，如果不需要用到捕获组数据用 *do-matches* 更简便一些。
+* Splitting and replacing
+** [Function] split
+*split* regex target-string &key start end limit with-registers-p omit-unmatched-p sharedp => list
+
+这个看下例子就明白各个参数的用法了
+#+BEGIN_EXAMPLE
+> (split "\\s+" "foo   bar baz
+frob")
+("foo" "bar" "baz" "frob")
+
+> (split "\\s*" "foo bar   baz")
+("f" "o" "o" "b" "a" "r" "b" "a" "z")
+
+> (split "(\\s+)" "foo bar   baz")
+("foo" "bar" "baz")
+
+> (split "(\\s+)" "foo bar   baz" :with-registers-p t)
+("foo" " " "bar" "   " "baz")
+
+> (split "(\\s)(\\s*)" "foo bar   baz" :with-registers-p t)
+("foo" " " "" "bar" " " "  " "baz")
+
+> (split "(,)|(;)" "foo,bar;baz" :with-registers-p t)
+("foo" "," NIL "bar" NIL ";" "baz")
+
+> (split "(,)|(;)" "foo,bar;baz" :with-registers-p t :omit-unmatched-p t)
+("foo" "," "bar" ";" "baz")
+
+> (split ":" "a:b:c:d:e:f:g::")
+("a" "b" "c" "d" "e" "f" "g")
+
+> (split ":" "a:b:c:d:e:f:g::" :limit 1)
+("a:b:c:d:e:f:g::")
+
+> (split ":" "a:b:c:d:e:f:g::" :limit 2)
+("a" "b:c:d:e:f:g::")
+
+> (split ":" "a:b:c:d:e:f:g::" :limit 3)
+("a" "b" "c:d:e:f:g::")
+
+> (split ":" "a:b:c:d:e:f:g::" :limit 1000)
+("a" "b" "c" "d" "e" "f" "g" "" "")
+#+END_EXAMPLE
+
+** [Function] regex-replace
+*regex-replace* regex target-string replacement &key start end preserve-case simple-calls element-type => string, matchp
+
+preserve-case 会使 replacement 跟随匹配部分的大小写，看下面例子。
+
+replacement 可以是字符串，字符串中可以包含 "\&" 表示 regex 匹配的部分，"\`" 表示匹配之前的部分，"\'" 表示匹配之后的部分。对应了符号表示 :match, :before-match, or :after-match。也可以用 "\N" 或 "\{N}" 来表示第 N 个匹配组。也可以是一个函数对象（function designator），接受(target-string start end match-start match-end reg-starts reg-ends) 为参数，返回值替换匹配的部分。
+
+simple-calls 如果为 t，replacement 传递的函数对象参数就会变为 match, register-1, ..., register-n。
+
+#+BEGIN_EXAMPLE
+> (regex-replace "fo+" "foo bar" "frob")
+"frob bar"
+T
+
+> (regex-replace "fo+" "FOO bar" "frob")
+"FOO bar"
+NIL
+
+> (regex-replace "(?i)fo+" "FOO bar" "frob")
+"frob bar"
+T
+
+> (regex-replace "(?i)fo+" "FOO bar" "frob" :preserve-case t)
+"FROB bar"
+T
+
+> (regex-replace "(?i)fo+" "Foo bar" "frob" :preserve-case t)
+"Frob bar"
+T
+
+> (regex-replace "bar" "foo bar baz" "[frob (was '\\&' between '\\`' and '\\'')]")
+"foo [frob (was 'bar' between 'foo ' and ' baz')] baz"
+T
+
+> (regex-replace "bar" "foo bar baz"
+                          '("[frob (was '" :match "' between '" :before-match "' and '" :after-match "')]"))
+"foo [frob (was 'bar' between 'foo ' and ' baz')] baz"
+T
+
+> (regex-replace "(f)(o)" "fooba" "\\{2}")
+"ooba"
+T
+
+> (regex-replace "fo" "abfob"
+		       #'(lambda (target-string start end match-start match-end reg-starts reg-ends)
+			   (format nil "[target-string:~A start:~A end:~A match-start:~A match-end:~A reg-starts:~A reg-ends:~A]"
+				   target-string start end match-start match-end reg-starts reg-ends)))
+"ab[target-string:abfob start:0 end:5 match-start:2 match-end:4 reg-starts:#() reg-ends:#()]b"
+T
+
+> (regex-replace "(be)(nev)(o)(lent)"
+                          "benevolent: adj. generous, kind"
+                          #'(lambda (match &rest registers)
+                              (format nil "~A [~{~A~^.~}]" match registers))
+                          :simple-calls t)
+"benevolent [be.nev.o.lent]: adj. generous, kind"
+T
+#+END_EXAMPLE
+
+** [Function] regex-replace-all
+*regex-replace-all* regex target-string replacement &key start end preserve-case simple-calls element-type => string, matchp
+
+直接看例子
+#+BEGIN_EXAMPLE
+> (regex-replace-all "(?i)fo+" "foo Fooo FOOOO bar" "frob" :preserve-case t)
+"frob Frob FROB bar"
+T
+
+> (regex-replace-all "(?i)f(o+)" "foo Fooo FOOOO bar" "fr\\1b" :preserve-case t)
+"froob Frooob FROOOOB bar"
+T
+
+> (let ((qp-regex (create-scanner "[\\x80-\\xff]")))
+    (defun encode-quoted-printable (string)
+      "Converts 8-bit string to quoted-printable representation."
+      ;; won't work for Corman Lisp because non-ASCII characters aren't 8-bit there
+      (flet ((convert (target-string start end match-start match-end reg-starts reg-ends)
+             (declare (ignore start end match-end reg-starts reg-ends))
+             (format nil "=~2,'0x" (char-code (char target-string match-start)))))
+        (regex-replace-all qp-regex string #'convert))))
+Converted ENCODE-QUOTED-PRINTABLE.
+ENCODE-QUOTED-PRINTABLE
+
+> (encode-quoted-printable "Fête Sørensen naïve Hühner Straße")
+"F=EAte S=F8rensen na=EFve H=FChner Stra=DFe"
+T
+
+> (let ((url-regex (create-scanner "[^a-zA-Z0-9_\\-.]")))
+    (defun url-encode (string)
+      "URL-encodes a string."
+      ;; won't work for Corman Lisp because non-ASCII characters aren't 8-bit there
+      (flet ((convert (target-string start end match-start match-end reg-starts reg-ends)
+             (declare (ignore start end match-end reg-starts reg-ends))
+             (format nil "%~2,'0x" (char-code (char target-string match-start)))))
+        (regex-replace-all url-regex string #'convert))))
+Converted URL-ENCODE.
+URL-ENCODE
+
+> (url-encode "Fête Sørensen naïve Hühner Straße")
+"F%EAte%20S%F8rensen%20na%EFve%20H%FChner%20Stra%DFe"
+T
+
+> (defun how-many (target-string start end match-start match-end reg-starts reg-ends)
+    (declare (ignore start end match-start match-end))
+    (format nil "~A" (- (svref reg-ends 0)
+                        (svref reg-starts 0))))
+HOW-MANY
+
+> (regex-replace-all "{(.+?)}"
+                              "foo{...}bar{.....}{..}baz{....}frob"
+                              (list "[" 'how-many " dots]"))
+"foo[3 dots]bar[5 dots][2 dots]baz[4 dots]frob"
+T
+
+> (let ((qp-regex (create-scanner "[\\x80-\\xff]")))
+    (defun encode-quoted-printable (string)
+      "Converts 8-bit string to quoted-printable representation.
+Version using SIMPLE-CALLS keyword argument."
+      ;; ;; won't work for Corman Lisp because non-ASCII characters aren't 8-bit there
+      (flet ((convert (match)
+               (format nil "=~2,'0x" (char-code (char match 0)))))
+        (regex-replace-all qp-regex string #'convert
+                                    :simple-calls t))))
+
+Converted ENCODE-QUOTED-PRINTABLE.
+ENCODE-QUOTED-PRINTABLE
+
+> (encode-quoted-printable "Fête Sørensen naïve Hühner Straße")
+"F=EAte S=F8rensen na=EFve H=FChner Stra=DFe"
+T
+
+> (defun how-many (match first-register)
+    (declare (ignore match))
+    (format nil "~A" (length first-register)))
+HOW-MANY
+
+> (regex-replace-all "{(.+?)}"
+                              "foo{...}bar{.....}{..}baz{....}frob"
+                              (list "[" 'how-many " dots]")
+                              :simple-calls t)
+
+"foo[3 dots]bar[5 dots][2 dots]baz[4 dots]frob"
+T
+#+END_EXAMPLE
+
+* 总结
+有了以上的基础知识，基本可以无障碍使用 CL-PPCRE 库了。还有 CL-PPCRE 的细节没有讲到，如：改变一些变量，可以修改 scanner 的行为。一些其他的函数，宏等。这些可以等到 CL-PPCRE 用的更深入的时候再去研究。

@@ -1,0 +1,698 @@
+---
+layout: post
+title: 正则表达式之 CL-PPCRE
+category: lisp
+description: 正则表达式一些模式用法和 CL-PPCRE 库的使用
+---
+
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>正则表达式之 CL-PPCRE</title>
+<!-- 2016-03-25 Fri 22:34 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Leon Yang" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<script type="text/javascript" src="http://orgmode.org/mathjax/MathJax.js"></script>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+    MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
+        displayAlign: "center",
+        displayIndent: "2em",
+
+        "HTML-CSS": {
+             scale: 100,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
+             }
+        }
+    });
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">正则表达式之 CL-PPCRE</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. 前言</a></li>
+<li><a href="#sec-2">2. 何为 CL-PPCRE</a></li>
+<li><a href="#sec-3">3. Scanning</a>
+<ul>
+<li><a href="#sec-3-1">3.1. [Method] create-scanner</a></li>
+<li><a href="#sec-3-2">3.2. [Generic Function] scan</a></li>
+<li><a href="#sec-3-3">3.3. [Function] scan-to-strings</a></li>
+<li><a href="#sec-3-4">3.4. [Macro] register-groups-bind</a></li>
+<li><a href="#sec-3-5">3.5. 迭代</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">4. Splitting and replacing</a>
+<ul>
+<li><a href="#sec-4-1">4.1. [Function] split</a></li>
+<li><a href="#sec-4-2">4.2. [Function] regex-replace</a></li>
+<li><a href="#sec-4-3">4.3. [Function] regex-replace-all</a></li>
+</ul>
+</li>
+<li><a href="#sec-5">5. 总结</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> 前言</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+最近在用 CL-PPCRE 库写正则表达式时，发现很多地方不清楚，不太会用，然后花了点时间复习了正则表达式，并研究了 CL-PPCRE api 的一些不明白的地方，在此写下，作为笔记，也希望能帮助他人。
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> 何为 CL-PPCRE</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+CL-PPCRE 是一个用 Common Lisp 语言写的正则表达式库，下面为<a href="http://weitz.de/cl-ppcre/">官方文挡</a>的介绍：
+</p>
+<blockquote>
+<p>
+CL-PPCRE is a portable regular expression library for Common Lisp which has the following features:
+</p>
+
+<ul class="org-ul">
+<li>It is <b>compatible with Perl</b>.
+</li>
+<li>It is pretty <b>fast</b>.
+</li>
+<li>It is <b>portable</b> between ANSI-compliant Common Lisp implementations.
+</li>
+<li>It is <b>thread-safe</b>.
+</li>
+<li>In addition to specifying regular expressions as strings like in Perl you can also use S-expressions.
+</li>
+<li>It comes with a <a href="http://www.opensource.org/licenses/bsd-license.php">BSD-style license</a> so you can basically do with it whatever you want.
+</li>
+</ul>
+<p>
+CL-PPCRE has been used successfully in various applications like BioBike, clutu, LoGS, CafeSpot, Eboy, or The Regex Coach.
+</p>
+</blockquote>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Scanning</h2>
+<div class="outline-text-2" id="text-3">
+</div><div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> [Method] create-scanner</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+<b>create-scanner</b> (parse-tree t)&amp;key case-insensitive-mode multi-line-mode single-line-mode extended-mode destructive =&gt; scanner, register-names
+</p>
+
+<p>
+传递正则表达式（此方法中为 parse-tree），返回用此正则表达式浏览字符串的闭包。第二个返回值只有在*ALLOW-NAMED-REGISTERS*为 t 时返回，默认为 nil。
+</p>
+
+<p>
+参数：
+</p>
+<ul class="org-ul">
+<li>case-insensitive-mode - 忽略大小写
+</li>
+<li>multi-line-mode - 其中 ^ 和 $ 匹配每行的开头和末尾（不是输入字符串的开头和末尾）
+</li>
+<li>single-line-mode - 更改.的含义，使它与每一个字符匹配（非单行模式 “.” 是不匹配换行符 \n 的）
+</li>
+<li>extended-mode - 表达式中的空白“ ” 和“#”后面的字符会忽略，让正则表达式更加易读
+</li>
+<li>destructive - The destructive keyword will be ignored.
+</li>
+</ul>
+
+<p>
+parse-tree 为 S-表达式。下面为 parse-tree 与字符串对应关系（可用 parse-string 来看）：
+</p>
+<p class="verse">
+:VOID - ""<br  />
+:EVERYTHING - .<br  />
+:WORD-BOUNDARY :NON-WORD-BOUNDARY - \b \B<br  />
+:DIGIT-CLASS :NON-DIGIT-CLASS - \d \D<br  />
+:WORD-CHAR-CLASS :NON-WORD-CHAR-CLASS - \w \W<br  />
+:WHITESPACE-CHAR-CLASS :NON-WHITESPACE-CHAR-CLASS - \s \ S<br  />
+:START-ANCHOR :END-ANCHOR - ^ $ （会受 multi-line-mode 影响）<br  />
+:MODELESS-START-ANCHOR :MODELESS-END-ANCHOR :MODELESS-END-ANCHOR-NO-NEWLINE - \A \Z \z （不受 multi-line-mode 影响）<br  />
+<br  />
+:CASE-INSENSITIVE-P :CASE-SENSITIVE-P :MULTI-LINE-MODE-P :NOT-MULTI-LINE-MODE-P :SINGLE-LINE-MODE-P :NOT-SINGLE-LINE-MODE-P - "(?i)", "(?-i)", "(?m)", "(?-m)", "(?s)", and "(?-s)"<br  />
+如：匹配 "abcd"，其中 "bc" 忽略大小写，可以这样写 "a(?:(?i)bc)d"。(?:) 下面提<br  />
+(parse-string "a(?:(?i)bc)d") ==&gt; (:SEQUENCE #\a (:GROUP (:SEQUENCE (:FLAGS :CASE-INSENSITIVE-P) "bc")) #\d)<br  />
+<br  />
+:GROUP - (?:) 非捕获组。如果捕获组捕获到内容会把数据返回，非捕获组不会<br  />
+(:BRANCH &lt;test&gt; &lt;parse-tree&gt;) - (?(&lt;condition&gt;)&lt;yes-pattern&gt;|&lt;no-pattern&gt;) 其中 test 可以是反向数字引用或者零宽断言<br  />
+(:POSITIVE-LOOKAHEAD|:NEGATIVE-LOOKAHEAD|:POSITIVE-LOOKBEHIND|:NEGATIVE-LOOKBEHIND &lt;parse-tree&gt;) - (?=) (?!) (?&lt;=) (?&lt;!) 零宽断言<br  />
+<br  />
+(:GREEDY-REPETITION|:NON-GREEDY-REPETITION &lt;min&gt; &lt;max&gt; &lt;parse-tree&gt;) - 默认为贪婪模式，在 *,+,?,{} 等后加 "?" 为非贪婪模式<br  />
+(:STANDALONE &lt;parse-tree&gt;) - (?&gt;) 不考虑回溯。grab all you can, and do not give anything back。(?&gt;a*)ab 将不会匹配任何字符串，因为(?&gt;a*) 已经把所有的 #\a 匹配了。而a*ab 则会匹配到字符串，因为 a* 会受后面的 ab 影响。<br  />
+<br  />
+(:REGISTER &lt;parse-tree&gt;) (:NAMED-REGISTER &lt;name&gt; &lt;parse-tree&gt;) - () (?&lt;name&gt; &lt;regex&gt;) 捕获组与命名捕获组。命名捕获组当变量*allow-named-registers*为 t 时才管用。<br  />
+(:BACK-REFERENCE &lt;ref&gt;) - \number \k&lt;name&gt; 反向引用<br  />
+<br  />
+(:PROPERTY|:INVERTED-PROPERTY &lt;property&gt;) (:FILTER &lt;function&gt; &amp;optional &lt;length&gt;) - 这两个稍微高端一些，可以定义函数，目前没怎么用到，如果以后用到再更新下吧。<br  />
+<br  />
+(:CHAR-CLASS|:INVERTED-CHAR-CLASS {&lt;item&gt;}*) - [] [^]<br  />
+<br  />
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> [Generic Function] scan</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+<b>scan</b> regex target-string &amp;key start end =&gt; match-start, match-end, reg-starts, reg-ends
+</p>
+
+<p>
+regex 这个参数可以是字符串，也可以是 scanner。如果你传递的是字符串也会调用 create-scanner 方法，通过传递的字符串创建 scanner，所以如果一个正则表达式字符串要被调用多次，还是先创建 scanner 更有效率（后面的函数，方法或宏的 regex 参数一样）
+</p>
+
+<p>
+返回值 match-start, match-end, reg-starts, reg-ends 分别是匹配开始索引，结束索引，捕获组开始索引列表，结束索引列表
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> [Function] scan-to-strings</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+<b>scan-to-strings</b> regex target-string &amp;key start end sharedp =&gt; match, regs
+</p>
+
+<p>
+这里返回值就从广义函数 scan 中的索引变成了字符串（捕获组索引列表变成字符串列表）
+</p>
+
+<p>
+If sharedp is true, the substrings may share structure with target-string. 其实 sharedp 参数会决定用 nsubseq（破坏性函数） 还是 subseq 来根据把 target-string 应用到 scan 后得到的返回值索引从 target-string 解出子序列。所以一般对 target-string 的修改没有影响的情况下，将 sharedp 设置为 t 效率会高一些。下面是 <b>nsubseq</b> 和 <b>scan-to-strings</b> 源码：
+</p>
+<div class="org-src-container">
+
+<pre class="src src-lisp"><span class="linenr"> 1: </span>(<span style="color: #859900; font-weight: bold;">declaim</span> (inline nsubseq))
+<span class="linenr"> 2: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">nsubseq</span> (sequence start <span style="color: #b58900;">&amp;optional</span> (end (length sequence)))
+<span class="linenr"> 3: </span>  <span style="color: #2aa198;">"Returns a subsequence by pointing to location in original sequence."</span>
+<span class="linenr"> 4: </span>  (make-array (- end start)
+<span class="linenr"> 5: </span>              <span style="color: #657b83; font-weight: bold;">:element-type</span> (array-element-type sequence)
+<span class="linenr"> 6: </span>              <span style="color: #657b83; font-weight: bold;">:displaced-to</span> sequence
+<span class="linenr"> 7: </span>              <span style="color: #657b83; font-weight: bold;">:displaced-index-offset</span> start))
+<span class="linenr"> 8: </span>
+<span class="linenr"> 9: </span>(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">scan-to-strings</span> (regex target-string <span style="color: #b58900;">&amp;key</span> (start 0)
+<span class="linenr">10: </span>                                                 (end (length target-string))
+<span class="linenr">11: </span>                                                 sharedp)
+<span class="linenr">12: </span>  <span style="color: #2aa198;">"Like SCAN but returns substrings of TARGET-STRING instead of</span>
+<span class="linenr">13: </span><span style="color: #2aa198;">positions, i.e. this function returns two values on success: the whole</span>
+<span class="linenr">14: </span><span style="color: #2aa198;">match as a string plus an array of substrings (or NILs) corresponding</span>
+<span class="linenr">15: </span><span style="color: #2aa198;">to the matched registers.  If SHAREDP is true, the substrings may</span>
+<span class="linenr">16: </span><span style="color: #2aa198;">share structure with TARGET-STRING."</span>
+<span class="linenr">17: </span>  (<span style="color: #859900; font-weight: bold;">declare</span> #.*standard-optimize-settings*)
+<span class="linenr">18: </span>  (<span style="color: #859900; font-weight: bold;">multiple-value-bind</span> (match-start match-end reg-starts reg-ends)
+<span class="linenr">19: </span>      (scan regex target-string <span style="color: #657b83; font-weight: bold;">:start</span> start <span style="color: #657b83; font-weight: bold;">:end</span> end)
+<span class="linenr">20: </span>    (<span style="color: #859900; font-weight: bold;">unless</span> match-start
+<span class="linenr">21: </span>      (<span style="color: #859900; font-weight: bold;">return-from</span> scan-to-strings nil))
+<span class="linenr">22: </span>    (<span style="color: #859900; font-weight: bold;">let</span> ((substr-fn (<span style="color: #859900; font-weight: bold;">if</span> sharedp #'nsubseq #'subseq)))
+<span class="linenr">23: </span>      (values (funcall substr-fn
+<span class="linenr">24: </span>                       target-string match-start match-end)
+<span class="linenr">25: </span>              (map 'vector
+<span class="linenr">26: </span>                   (<span style="color: #859900; font-weight: bold;">lambda</span> (reg-start reg-end)
+<span class="linenr">27: </span>                     (<span style="color: #859900; font-weight: bold;">if</span> reg-start
+<span class="linenr">28: </span>                       (funcall substr-fn
+<span class="linenr">29: </span>                                target-string reg-start reg-end)
+<span class="linenr">30: </span>                       nil))
+<span class="linenr">31: </span>                   reg-starts
+<span class="linenr">32: </span>                   reg-ends)))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3-4" class="outline-3">
+<h3 id="sec-3-4"><span class="section-number-3">3.4</span> [Macro] register-groups-bind</h3>
+<div class="outline-text-3" id="text-3-4">
+<p>
+<b>register-groups-bind</b> var-list (regex target-string &amp;key start end sharedp) declaration* statement* =&gt; result*
+</p>
+
+<p>
+这个看例子就可以
+</p>
+<pre class="example">
+&gt; (register-groups-bind (first second third fourth)
+      ("((a)|(b)|(c))+" "abababc" :sharedp t)
+    (list first second third fourth))
+("c" "a" "b" "c")
+
+&gt; (register-groups-bind (nil second third fourth)
+      ;; note that we don't bind the first and fifth register group
+      ("((a)|(b)|(c))()+" "abababc" :start 6)
+    (list second third fourth))
+(NIL NIL "c")
+
+&gt; (register-groups-bind (first)
+      ("(a|b)+" "accc" :start 1)
+    (format t "This will not be printed: ~A" first))
+NIL
+
+&gt; (register-groups-bind (fname lname (#'parse-integer date month year))
+      ("(\\w+)\\s+(\\w+)\\s+(\\d{1,2})\\.(\\d{1,2})\\.(\\d{4})" "Frank Zappa 21.12.1940")
+    (list fname lname (encode-universal-time 0 0 0 date month year 0)))
+("Frank" "Zappa" 1292889600)
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-3-5" class="outline-3">
+<h3 id="sec-3-5"><span class="section-number-3">3.5</span> 迭代</h3>
+<div class="outline-text-3" id="text-3-5">
+<p>
+[Macro] <b>do-scans</b> (match-start match-end reg-starts reg-ends regex target-string &amp;optional result-form &amp;key start end) declaration* statement* =&gt; result*
+</p>
+
+<p>
+[Macro] <b>do-matches</b> (match-start match-end regex target-string &amp;optional result-form &amp;key start end) declaration* statement* =&gt; result*
+</p>
+
+<p>
+[Macro] <b>do-matches-as-strings</b> (match-var regex target-string &amp;optional result-form &amp;key start end sharedp) declaration* statement* =&gt; result*
+</p>
+
+<p>
+[Macro] <b>do-register-groups</b> var-list (regex target-string &amp;optional result-form &amp;key start end sharedp) declaration* statement* =&gt; result*
+</p>
+
+<p>
+[Function] <b>all-matches</b> regex target-string &amp;key start end =&gt; list
+</p>
+
+<p>
+[Function] <b>all-matches-as-strings</b> regex target-string &amp;key start end sharedp =&gt; list
+</p>
+
+<p>
+<b>do-scans</b> 与 <b>do-matches</b> 基本一样，除了 <b>do-matches</b> 忽略了 reg-starts 和 reg-ends 两个绑定，如果不需要用到捕获组数据用 <b>do-matches</b> 更简便一些。
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Splitting and replacing</h2>
+<div class="outline-text-2" id="text-4">
+</div><div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> [Function] split</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+<b>split</b> regex target-string &amp;key start end limit with-registers-p omit-unmatched-p sharedp =&gt; list
+</p>
+
+<p>
+这个看下例子就明白各个参数的用法了
+</p>
+<pre class="example">
+&gt; (split "\\s+" "foo   bar baz
+frob")
+("foo" "bar" "baz" "frob")
+
+&gt; (split "\\s*" "foo bar   baz")
+("f" "o" "o" "b" "a" "r" "b" "a" "z")
+
+&gt; (split "(\\s+)" "foo bar   baz")
+("foo" "bar" "baz")
+
+&gt; (split "(\\s+)" "foo bar   baz" :with-registers-p t)
+("foo" " " "bar" "   " "baz")
+
+&gt; (split "(\\s)(\\s*)" "foo bar   baz" :with-registers-p t)
+("foo" " " "" "bar" " " "  " "baz")
+
+&gt; (split "(,)|(;)" "foo,bar;baz" :with-registers-p t)
+("foo" "," NIL "bar" NIL ";" "baz")
+
+&gt; (split "(,)|(;)" "foo,bar;baz" :with-registers-p t :omit-unmatched-p t)
+("foo" "," "bar" ";" "baz")
+
+&gt; (split ":" "a:b:c:d:e:f:g::")
+("a" "b" "c" "d" "e" "f" "g")
+
+&gt; (split ":" "a:b:c:d:e:f:g::" :limit 1)
+("a:b:c:d:e:f:g::")
+
+&gt; (split ":" "a:b:c:d:e:f:g::" :limit 2)
+("a" "b:c:d:e:f:g::")
+
+&gt; (split ":" "a:b:c:d:e:f:g::" :limit 3)
+("a" "b" "c:d:e:f:g::")
+
+&gt; (split ":" "a:b:c:d:e:f:g::" :limit 1000)
+("a" "b" "c" "d" "e" "f" "g" "" "")
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-4-2" class="outline-3">
+<h3 id="sec-4-2"><span class="section-number-3">4.2</span> [Function] regex-replace</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+<b>regex-replace</b> regex target-string replacement &amp;key start end preserve-case simple-calls element-type =&gt; string, matchp
+</p>
+
+<p>
+preserve-case 会使 replacement 跟随匹配部分的大小写，看下面例子。
+</p>
+
+<p>
+replacement 可以是字符串，字符串中可以包含 "\&amp;" 表示 regex 匹配的部分，"\`" 表示匹配之前的部分，"\'" 表示匹配之后的部分。对应了符号表示 :match, :before-match, or :after-match。也可以用 "\N" 或 "\{N}" 来表示第 N 个匹配组。也可以是一个函数对象（function designator），接受(target-string start end match-start match-end reg-starts reg-ends) 为参数，返回值替换匹配的部分。
+</p>
+
+<p>
+simple-calls 如果为 t，replacement 传递的函数对象参数就会变为 match, register-1, &#x2026;, register-n。
+</p>
+
+<pre class="example">
+&gt; (regex-replace "fo+" "foo bar" "frob")
+"frob bar"
+T
+
+&gt; (regex-replace "fo+" "FOO bar" "frob")
+"FOO bar"
+NIL
+
+&gt; (regex-replace "(?i)fo+" "FOO bar" "frob")
+"frob bar"
+T
+
+&gt; (regex-replace "(?i)fo+" "FOO bar" "frob" :preserve-case t)
+"FROB bar"
+T
+
+&gt; (regex-replace "(?i)fo+" "Foo bar" "frob" :preserve-case t)
+"Frob bar"
+T
+
+&gt; (regex-replace "bar" "foo bar baz" "[frob (was '\\&amp;' between '\\`' and '\\'')]")
+"foo [frob (was 'bar' between 'foo ' and ' baz')] baz"
+T
+
+&gt; (regex-replace "bar" "foo bar baz"
+                          '("[frob (was '" :match "' between '" :before-match "' and '" :after-match "')]"))
+"foo [frob (was 'bar' between 'foo ' and ' baz')] baz"
+T
+
+&gt; (regex-replace "(f)(o)" "fooba" "\\{2}")
+"ooba"
+T
+
+&gt; (regex-replace "fo" "abfob"
+		       #'(lambda (target-string start end match-start match-end reg-starts reg-ends)
+			   (format nil "[target-string:~A start:~A end:~A match-start:~A match-end:~A reg-starts:~A reg-ends:~A]"
+				   target-string start end match-start match-end reg-starts reg-ends)))
+"ab[target-string:abfob start:0 end:5 match-start:2 match-end:4 reg-starts:#() reg-ends:#()]b"
+T
+
+&gt; (regex-replace "(be)(nev)(o)(lent)"
+                          "benevolent: adj. generous, kind"
+                          #'(lambda (match &amp;rest registers)
+                              (format nil "~A [~{~A~^.~}]" match registers))
+                          :simple-calls t)
+"benevolent [be.nev.o.lent]: adj. generous, kind"
+T
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-4-3" class="outline-3">
+<h3 id="sec-4-3"><span class="section-number-3">4.3</span> [Function] regex-replace-all</h3>
+<div class="outline-text-3" id="text-4-3">
+<p>
+<b>regex-replace-all</b> regex target-string replacement &amp;key start end preserve-case simple-calls element-type =&gt; string, matchp
+</p>
+
+<p>
+直接看例子
+</p>
+<pre class="example">
+&gt; (regex-replace-all "(?i)fo+" "foo Fooo FOOOO bar" "frob" :preserve-case t)
+"frob Frob FROB bar"
+T
+
+&gt; (regex-replace-all "(?i)f(o+)" "foo Fooo FOOOO bar" "fr\\1b" :preserve-case t)
+"froob Frooob FROOOOB bar"
+T
+
+&gt; (let ((qp-regex (create-scanner "[\\x80-\\xff]")))
+    (defun encode-quoted-printable (string)
+      "Converts 8-bit string to quoted-printable representation."
+      ;; won't work for Corman Lisp because non-ASCII characters aren't 8-bit there
+      (flet ((convert (target-string start end match-start match-end reg-starts reg-ends)
+             (declare (ignore start end match-end reg-starts reg-ends))
+             (format nil "=~2,'0x" (char-code (char target-string match-start)))))
+        (regex-replace-all qp-regex string #'convert))))
+Converted ENCODE-QUOTED-PRINTABLE.
+ENCODE-QUOTED-PRINTABLE
+
+&gt; (encode-quoted-printable "Fête Sørensen naïve Hühner Straße")
+"F=EAte S=F8rensen na=EFve H=FChner Stra=DFe"
+T
+
+&gt; (let ((url-regex (create-scanner "[^a-zA-Z0-9_\\-.]")))
+    (defun url-encode (string)
+      "URL-encodes a string."
+      ;; won't work for Corman Lisp because non-ASCII characters aren't 8-bit there
+      (flet ((convert (target-string start end match-start match-end reg-starts reg-ends)
+             (declare (ignore start end match-end reg-starts reg-ends))
+             (format nil "%~2,'0x" (char-code (char target-string match-start)))))
+        (regex-replace-all url-regex string #'convert))))
+Converted URL-ENCODE.
+URL-ENCODE
+
+&gt; (url-encode "Fête Sørensen naïve Hühner Straße")
+"F%EAte%20S%F8rensen%20na%EFve%20H%FChner%20Stra%DFe"
+T
+
+&gt; (defun how-many (target-string start end match-start match-end reg-starts reg-ends)
+    (declare (ignore start end match-start match-end))
+    (format nil "~A" (- (svref reg-ends 0)
+                        (svref reg-starts 0))))
+HOW-MANY
+
+&gt; (regex-replace-all "{(.+?)}"
+                              "foo{...}bar{.....}{..}baz{....}frob"
+                              (list "[" 'how-many " dots]"))
+"foo[3 dots]bar[5 dots][2 dots]baz[4 dots]frob"
+T
+
+&gt; (let ((qp-regex (create-scanner "[\\x80-\\xff]")))
+    (defun encode-quoted-printable (string)
+      "Converts 8-bit string to quoted-printable representation.
+Version using SIMPLE-CALLS keyword argument."
+      ;; ;; won't work for Corman Lisp because non-ASCII characters aren't 8-bit there
+      (flet ((convert (match)
+               (format nil "=~2,'0x" (char-code (char match 0)))))
+        (regex-replace-all qp-regex string #'convert
+                                    :simple-calls t))))
+
+Converted ENCODE-QUOTED-PRINTABLE.
+ENCODE-QUOTED-PRINTABLE
+
+&gt; (encode-quoted-printable "Fête Sørensen naïve Hühner Straße")
+"F=EAte S=F8rensen na=EFve H=FChner Stra=DFe"
+T
+
+&gt; (defun how-many (match first-register)
+    (declare (ignore match))
+    (format nil "~A" (length first-register)))
+HOW-MANY
+
+&gt; (regex-replace-all "{(.+?)}"
+                              "foo{...}bar{.....}{..}baz{....}frob"
+                              (list "[" 'how-many " dots]")
+                              :simple-calls t)
+
+"foo[3 dots]bar[5 dots][2 dots]baz[4 dots]frob"
+T
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> 总结</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+有了以上的基础知识，基本可以无障碍使用 CL-PPCRE 库了。还有 CL-PPCRE 的细节没有讲到，如：改变一些变量，可以修改 scanner 的行为。一些其他的函数，宏等。这些可以等到 CL-PPCRE 用的更深入的时候再去研究。
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Leon Yang</p>
+<p class="email">Email: <a href="mailto:yjg.2016@gmail.com">yjg.2016@gmail.com</a></p>
+<p class="date">Created: 2016-03-25 Fri 22:34</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
