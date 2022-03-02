@@ -1,0 +1,17 @@
+body {
+    font-family: "微软雅黑","Arial","Helvetica","sans-serif";
+    text-align: center;
+    line-height: 5em;
+}
+
+img {
+    max-width: 100%;
+}
+
+h1 {
+    font-size: 5em;
+}
+
+text {
+    font-size: 3em;
+}
