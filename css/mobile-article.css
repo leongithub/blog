@@ -1,8 +1,8 @@
 body {
     font-family: "微软雅黑","Arial","Helvetica","sans-serif";
     text-align: center;
-    line-height: 1.5em;
-    margin: 10px;
+    line-height: 3em;
+    border: 1em;
 }
 
 img {
@@ -10,9 +10,9 @@ img {
 }
 
 h1 {
-    font-size: 80px;
+    font-size: 4em;
 }
 
 text {
-    font-size: 40px;
+    font-size: 3em;
 }
