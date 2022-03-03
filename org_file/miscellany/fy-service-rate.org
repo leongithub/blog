@@ -1,4 +1,8 @@
 #+TITLE: 服务评价指引
 #+OPTIONS: html-postamble:nil
 
+<<<<<<< HEAD
 [[/blog/images/pingjia1.png]]
+=======
+[[/images/pingjia1.png]]
+>>>>>>> 2cd343cdd69acdada4d2e8ff250e0885834ed5c7
