@@ -1,12 +1,13 @@
 body {
     font-family: "微软雅黑","Arial","Helvetica","sans-serif";
     text-align: center;
+    line-height: 1.5em;
 }
 
 img {
     max-width: 100%;
 }
 
-.tttt {
-    color: red;
+text {
+    font-size: 20px;
 }
